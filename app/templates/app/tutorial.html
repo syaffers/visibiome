@@ -1,0 +1,147 @@
+{% extends 'app/layout.html' %}
+{% block content %}
+  <h1>Tutorial</h1>
+  <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+    <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="headingOne">
+        <h4 class="panel-title">
+          <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+            General
+          </a>
+        </h4>
+      </div>
+      <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+        <div class="panel-body">
+          <p>
+            Each user is only given one (1) session
+          </p>
+          <p>
+            User data is not available to any other user and confidentiality is maintained
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="headingTwo">
+        <h4 class="panel-title">
+          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+            Input
+          </a>
+        </h4>
+      </div>
+      <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+        <div class="panel-body">
+          DARP takes BIOM file as an input. BIOM file can either be in Sparse or Dense format. It is designed to be a general-use format for biological sample by observation contingency tables.BIOM is a recognized standard for the Earth Micro biome Project. User can use Qiime creating a BIOM table after running closed reference OUT picking on sequences against Green genes 13_5.
+        </div>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="headingThree">
+        <h4 class="panel-title">
+          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+            Output
+          </a>
+        </h4>
+      </div>
+      <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+        <div class="panel-body">
+          DARP has several ways to put the user in an environmental context:
+          <ol>
+            <li>Ranking</li>
+            <li>Heat map</li>
+            <li>
+              Dendrogram
+              <ol class="lower">
+                <li>Against 1000 representatives</li>
+                <li>Against 250 most similar samples</li>
+              </ol>
+            </li>
+            <li>
+              PCoA plots
+              <ol class="lower">
+                <li>Against 1000 representatives</li>
+                <li>Against 250 most similar samples</li>
+              </ol>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="headingFour">
+        <h4 class="panel-title">
+          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+            1. Ranking
+          </a>
+        </h4>
+      </div>
+      <div id="collapseFour" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
+        <div class="panel-body">
+          <p>
+            Ranking has 3 different ways to present the 20 most similar samples in our database to the user sample based upon the non-Phylogenetic (Bray Curtis) distance. Heat map, Dendrogram, and Tabular format.<br>
+      		  <em> *For heat map and dendrogram please look for their respective sections below.</em>
+          </p>
+          <p>
+            In tabular format user can view the 20 most similar samples to his sample. It contains the details for each sample such as study title and source,
+            EnvO(s), Ecosystem, and Sample depth.These details helps user to characterize his sample and perform more specific downstream analysis.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="headingFive">
+        <h4 class="panel-title">
+          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+            2. Heat map
+          </a>
+        </h4>
+      </div>
+      <div id="collapseFive" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFive">
+        <div class="panel-body">
+          <p>
+            Heat map enables user to directly view the distance between his sample and others. In Ranking portion user can see a heat map with 20 most similar
+        		samples, whereas a broader view of 250 similar samples can be seen the heat map portion. Hover mouse on each cell to see the distance between the
+        		respective cells, user sample however will always be first as the heat map is already sorted. The color gradient legend helps user to read the result.
+        		Where 0 denotes the most similar samples and 1 as most distant. Value for each cell will always lie between 0 &dash; 1.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="headingSix">
+        <h4 class="panel-title">
+          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
+            3. Dendrogram
+          </a>
+        </h4>
+      </div>
+      <div id="collapseSix" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingSix">
+        <div class="panel-body">
+          <p>
+            A dendrogram is a tree diagram used to illustrate the arrangement of the clusters produced by hierarchical clustering. Each sample has color(s) bar to
+        		represent the ecosystem(s) it belongs to, simplifying the environmental similarity to the user. Hovering the mouse will give the details about the sample
+        		and one or more EnvOs of the sample further increasing the comprehensiveness of result. On the sidebar user can find 2 dendogram options, one is against
+        		all the representatives of the reference database (15281 samples) while the second is against the 250 most similar samples.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="headingSeven">
+        <h4 class="panel-title">
+          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseSeven" aria-expanded="false" aria-controls="collapseSeven">
+            4. PCoA
+          </a>
+        </h4>
+      </div>
+      <div id="collapseSeven" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingSeven">
+        <div class="panel-body">
+          <p>
+            Principal coordinates analysis gives another dimension to understand the results. Two different options are given to see the principle coordinates against
+            the 250 most similar samples and against all the representatives.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

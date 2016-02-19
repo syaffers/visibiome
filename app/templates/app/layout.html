@@ -1,0 +1,101 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="Page Description">
+    <meta name="author" content="syafiq">
+    <title>DARP - Visualize Diversity Against Annotated 16s rRNA Microbial Profiles</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'app/style.css' %}">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+    <body>
+      <nav class="navbar navbar-default navbar-static-top" role="navigation">
+        <div class="container">
+          <a class="navbar-brand" href="{% url 'app:index' %}">DARP</a>
+          <ul class="nav navbar-nav">
+            <li>
+              <a href="{% url 'app:contact' %}">Contact</a>
+            </li>
+            <li>
+              <a href="{% url 'app:tutorial' %}">Tutorial</a>
+            </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            {% if user.is_authenticated %}
+              <li class="drowdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown"
+                   role="button" aria-haspopup="true" aria-expanded="false">
+                  Signed in as <strong>{{ user.username }}</strong>
+                  <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a href="{% url 'app:dashboard' %}">Dashboard</a>
+                  </li>
+                  <li role="separator" class="divider"></li>
+                  <li>
+                    <a href="{% url 'app:logout' %}">Logout</a>
+                  </li>
+                </ul>
+              </li>
+            {% else %}
+              <li>
+                <a href="{% url 'app:register' %}">Register</a>
+              </li>
+              <li>
+                <a href="{% url 'app:login' %}">Login</a>
+              </li>
+            {% endif %}
+
+          </ul>
+        </div>
+      </nav>
+
+      <div class="container container-page">
+        {% if warning %}
+          <div class="alert alert-warning">
+          	<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+          	<strong>Oops!</strong> {{ warning }}
+          </div>
+        {% endif %}
+        {% block content %}
+
+        {% endblock %}
+      </div>
+
+      <footer class="container-footer">
+        <div class="container">
+          <div class="row footer padded-top padded-bottom">
+            <div class="col-xs-10">
+              <p>
+                The DARP project is under the direction of Dr. Andreas Henschel and is funded through the Masdar Institute Research Grant.<br>
+                Unless otherwise stated, all material &copy; 2014 Department of Electrical Engineering and Computer Science<br>
+                Institute Center Smart Infrastructure (iSmart),<br>
+                Masdar Institute, Abu Dhabi, UAE.<br>
+              </p>
+
+            </div>
+            <div class="col-xs-2">
+              <img class="img-responsive" src="{% static 'app/masdar_logo.png' %}" alt="Masdar Insitute Logo">
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    </body>
+</html>
