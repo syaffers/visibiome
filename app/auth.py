@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import auth
+from django.contrib import messages
 
 
 def register(request):
@@ -13,10 +14,11 @@ def register(request):
         auth.models.User.objects.create_user(username, email, password)
         user = auth.authenticate(username=username, password=password)
         auth.login(request, user)
-        return render(request, "auth/dashboard.html")
+        return redirect("/dashboard")
 
 
 def login(request):
+    msg_storage = messages.get_messages(request)
     if request.method == "GET":
         return render(request, 'auth/login.html')
     elif request.method == "POST":
@@ -36,11 +38,15 @@ def login(request):
                     next_url = "/"
                 return redirect(next_url)
             else:
-                return render(request, "auth/login.html",
-                              {"warning": "Your account is not activated!"})
+                messages.add_message(
+                    request, messages.ERROR, "Your account is not activated!")
+                return render(
+                    request, "auth/login.html", {"flash": msg_storage})
         else:
-            return render(request, "auth/login.html",
-                          {"warning": "Invalid email and/or password"})
+            messages.add_message(
+                request, messages.ERROR, "Invalid email and/or password")
+            return render(
+                request, "auth/login.html", {"flash": msg_storage})
 
 
 def logout(request):

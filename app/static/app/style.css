@@ -12,3 +12,14 @@
     font-family: monospace;
     font-size: 12px;
 }
+
+.nav-divider-custom {
+    background-color: #ffffff;
+    color: #666666;
+    font-size: 12px;
+    font-weight: bold;
+    height: 1px;
+    margin: 9px 0;
+    overflow: hidden;
+    text-transform: uppercase;
+}
