@@ -6,48 +6,45 @@
       <h1 class="home-h1">DARP</h1>
       <h2 class="home-h2">A webserver to Visualize Diversity Against Annotated 16s rRNA Microbial Profiles</h2>
       <p>Analyze your 16s rRNA sample against the reference database.<br>Select a valid choice from the selection criteria below.</p>
-      <form class="form-horizontal" action="" method="post" enctype="multipart/form-data" id="usrform">
+
+      {% if user.is_authenticated %}
+        <form class="form-horizontal" action="{% url "app:search" %}" method="post" enctype="multipart/form-data" id="biom-search-form">
+      {% else %}
+        <form class="form-horizontal" action="{% url "app:guest_search" %}" method="post" enctype="multipart/form-data" id="biom-search-form">
+      {% endif %}
+        {% csrf_token %}
+        {% for field in biom_fields %}
         <div class="form-group">
-          <label for="otu-text" class="col-xs-3 control-label">
-            Paste your BIOM table<br>
+          <label for="{{ field.name }}" class="col-xs-3 control-label">{{ field.label }}<br>
             <em>Maximum 1 sample</em>
           </label>
           <div class="col-xs-9">
-            <textarea name="otu-text" id="otu-text" cols="30" rows="12" class="otu-textarea">Paste OTU table here</textarea>
+            {{ field.as_widget }}
           </div>
         </div>
-        <div class="form-group">
-          <label for="otu-upload" class="col-xs-3 control-label">or upload your BIOM table</label>
-          <div class="col-xs-9">
-            <input type="file" name="otu-upload" id="otu-upload" value="">
-          </div>
-        </div>
+        {% endfor %}
         <hr>
         <div class="form-group">
           <label for="ecosystem" class="col-xs-3 control-label">Select the ecosystem<br><em>All or max 3</em></label>
           <div class="col-xs-9">
             <div class="row">
-              <div class="col-xs-4">
-                <div class="checkbox"><label><input type="checkbox" name="ckb[]" value="All_eco" id="All_eco"checked>All Ecosystem</input></label></div>
-                <div class="checkbox"><label><input type="checkbox" name="ckb[]" value="Freshwater" id="Freshwater"></input>Freshwater</label></div>
-                <div class="checkbox"><label><input type="checkbox" name="ckb[]" value="Plant" id="Plant"></input>Plant</label></div>
-              </div>
-              <div class="col-xs-4">
-                <div class="checkbox"><label><input type="checkbox" name="ckb[]" value="Animal_Human" id="Animal_Human"></input>Animal/Human</label></div>
-                <div class="checkbox"><label><input type="checkbox" name="ckb[]" value="Marine" id="Marine"></input>Marine</label></div>
-                <div class="checkbox"><label><input type="checkbox" name="ckb[]" value="Geothermal" id="Geothermal"></input>Geothermal</label></div>
-              </div>
-              <div class="col-xs-4">
-                <div class="checkbox"><label><input type="checkbox" name="ckb[]" value="Anthropogenic" id="Anthropogenic"></input>Anthropogenic</label></div>
-                <div class="checkbox"><label><input type="checkbox" name="ckb[]" value="Soil" id="Soil"></input>Soil</label></div>
-                <div class="checkbox"><label><input type="checkbox" name="ckb[]" value="Biofilm" id="Biofilm"></input>Biofilm</label></div>
-              </div>
+              {% for ecosystem in ecosystems.selection_criteria %}
+                {% if forloop.counter0|divisibleby:3 %}
+                  <div class="col-xs-4">
+                {% endif %}
+                    <div class="checkbox">
+                      {{ ecosystem }}
+                    </div>
+                {% if forloop.counter|divisibleby:3 %}
+                  </div>
+                {% endif %}
+              {% endfor %}
             </div>
           </div>
         </div>
         <div class="row">
           <div class="col-xs-3 col-xs-offset-9">
-            <input type="button" name="submit" id="Submit1" value="Analyze" class="btn btn-primary">
+            <input type="submit" name="submit" id="submit" value="Analyze" class="btn btn-primary">
           </div>
         </div>
       </form>

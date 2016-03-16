@@ -1,13 +1,24 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
+from .forms import BiomSearchForm
 from .models import Job
 from .tasks import run_fibs
 
 
 def index(request):
-    return render(request, 'app/index.html')
+    form = BiomSearchForm()
+    # dereference the fields from the form so we can slice
+    biom_fields = [f for f in form][:2]
+    ecosystems = form
+    return render(
+        request, 'app/index.html',
+        {
+            'biom_fields': biom_fields,
+            'ecosystems': ecosystems,
+        }
+    )
 
 
 def contact(request):
@@ -38,14 +49,15 @@ def calculate(request):
 @login_required
 def dashboard(request):
     msg_storage = messages.get_messages(request)
-    jobs = Job.objects.filter(user=request.user.id).all()
+    jobs = Job.objects.filter(user=request.user.id)\
+        .order_by('-updated_at').all()[:5]
     return render(request, 'app/dashboard.html',
                   {'jobs': jobs, 'flash': msg_storage})
 
 
 @login_required
 def job_detail(request, job_id):
-    job = Job.objects.filter(pk=job_id).first()
+    job = get_object_or_404(Job, id=job_id)
     if job.user_id == request.user.id:
         return render(request, 'app/job.html', {'job': job})
     else:

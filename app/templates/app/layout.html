@@ -42,22 +42,15 @@
                   <span class="caret"></span>
                 </a>
                 <ul class="dropdown-menu">
-                  <li>
-                    <a href="{% url 'app:dashboard' %}">Dashboard</a>
-                  </li>
-                  <li role="separator" class="divider"></li>
-                  <li>
-                    <a href="{% url 'app:logout' %}">Logout</a>
-                  </li>
+                  <li><a href="{% url 'app:dashboard' %}">Dashboard</a></li>
+                  <li><a href="{% url 'app:update_details' %}">Update Details</a></li>
+                  <li role="separator" class="divider"></li><!-- divider -->
+                  <li><a href="{% url 'app:logout' %}">Logout</a></li>
                 </ul>
               </li>
             {% else %}
-              <li>
-                <a href="{% url 'app:register' %}">Register</a>
-              </li>
-              <li>
-                <a href="{% url 'app:login' %}">Login</a>
-              </li>
+              <li><a href="{% url 'app:register' %}">Register</a></li>
+              <li><a href="{% url 'app:login' %}">Login</a></li>
             {% endif %}
 
           </ul>
@@ -72,6 +65,12 @@
               <strong>{{ msg.tags|capfirst }}</strong> {{ msg }}
             </div>
           {% endfor %}
+        {% endif %}
+        {% if user.is_authenticated and user.guest.status %}
+          <div class="alert alert-warning">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            <strong>Guest account</strong> You are using a guest account, started job(s) will not be saved unless you update your details
+          </div>
         {% endif %}
         {% block content %}
 
@@ -99,5 +98,7 @@
 
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" crossorigin="anonymous"></script>
+      <script src="{% static 'app/websocket.js' %}"></script>
+      <script src="{% static 'app/script.js' %}"></script>
     </body>
 </html>
