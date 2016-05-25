@@ -13,22 +13,46 @@
         <form class="form-horizontal" action="{% url "app:guest_search" %}" method="post" enctype="multipart/form-data" id="biom-search-form">
       {% endif %}
         {% csrf_token %}
-        {% for field in biom_fields %}
         <div class="form-group">
-          <label for="{{ field.name }}" class="col-xs-3 control-label">{{ field.label }}<br>
+          <label for="{{ form.otu_text.name }}" class="col-xs-3 control-label">{{ form.otu_text.label }}<br>
             <em>Maximum 1 sample</em>
           </label>
           <div class="col-xs-9">
-            {{ field.as_widget }}
+            {{ form.otu_text.as_widget }}
+
+            {% if form.otu_text.errors %}
+              <ul class="errorlist">
+                {% for e in form.otu_text.errors %}
+                  <li>{{ e }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
           </div>
         </div>
-        {% endfor %}
+
+        <div class="form-group">
+          <label for="{{ form.biom_file.name }}" class="col-xs-3 control-label">{{ form.biom_file.label }}<br>
+            <em>Maximum 1 sample</em>
+          </label>
+          <div class="col-xs-9">
+            {{ form.biom_file.as_widget }}
+
+            {% if form.biom_file.errors %}
+              <ul class="errorlist">
+                {% for e in form.biom_file.errors %}
+                  <li>{{ e }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        </div>
+
         <hr>
         <div class="form-group">
           <label for="ecosystem" class="col-xs-3 control-label">Select the ecosystem<br><em>All or max 3</em></label>
           <div class="col-xs-9">
             <div class="row">
-              {% for ecosystem in ecosystems.selection_criteria %}
+              {% for ecosystem in form.criteria %}
                 {% if forloop.counter0|divisibleby:3 %}
                   <div class="col-xs-4">
                 {% endif %}
@@ -39,6 +63,14 @@
                   </div>
                 {% endif %}
               {% endfor %}
+
+              {% if ecosystems.criteria.errors %}
+                <ul class="errorlist">
+                  {% for e in ecosystems.criteria.errors %}
+                    <li>{{ e }}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
             </div>
           </div>
         </div>

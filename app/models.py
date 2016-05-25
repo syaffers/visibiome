@@ -1,10 +1,14 @@
 import requests
+import logging
 
+from django import forms
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from django.contrib.auth.models import User
+
+logger = logging.getLogger(__name__)
 
 
 def upload_path_handler(instance, filename):
@@ -20,9 +24,10 @@ class Guest(models.Model):
     status = models.BooleanField(default=False)
 
     def __str__(self):
-        is_or_is_not = "" if self.status else "not "
-        return "{uname} is {is_or_is_not}a guest".format(
-            uname=self.user.username, is_or_is_not=is_or_is_not)
+        if self.status:
+            return "{uname} is a guest".format(uname=self.user.username)
+        else:
+            return "{uname} is is not a guest".format(uname=self.user.username)
 
 
 class Job(models.Model):
@@ -36,22 +41,176 @@ class Job(models.Model):
         self.result = result
 
 
+class EcosystemChoices(models.Model):
+    ecosystem = models.CharField(verbose_name="Ecosystem Type", max_length=60)
+    ecosystem_proper_name = models.CharField(max_length=60)
+
+    def __str__(self):
+        return self.ecosystem_proper_name
+
+
 class BiomSearchJob(models.Model):
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     completed = models.BooleanField(default=False)
-    criteria = models.CharField(default="all", max_length=200)
-    input_file = models.FileField(
-        default=None, upload_to=upload_path_handler)
+    criteria = models.ManyToManyField('EcosystemChoices', blank=False,
+                                      max_length=3)
+    otu_text = models.TextField(default=None)
+    # TODO: handle file upload
+    biom_file = models.FileField(upload_to='uploads/' + str(user.pk))
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def set_result(self, result):
-        self.result = result
+    def set_completed(self, completed):
+        self.completed = completed
+
+    # def clean(self, *args, **kwargs):
+    #     if self.criteria.count > 3:
+    #         raise forms.ValidationError(
+    #             "You can't choose more than three ecosystems at this time."
+    #         )
+    #
+    #     if self.criteria.count == 0:
+    #         raise forms.ValidationError(
+    #             "You must pick at least one ecosystem."
+    #         )
+    #
+    #     super(BiomSearchJob, self).clean(*args, **kwargs)
 
 
-@receiver(post_save, sender=Job, dispatch_uid="job_post_save")
-def notify_job_update(sender, instance, **kwargs):
-    requests.post("http://127.0.0.1/notify", json={
-        'topic': 'job.' + str(instance.id),
-        'args': [model_to_dict(instance)]
-    })
+# TODO: Use ModelForm instead with custom validation for criteria
+class BiomSearchForm(forms.ModelForm):
+    """
+    The homepage form structure which has a text area, file upload and a set
+    of checkboxes for the selection criteria
+    """
+    class Meta:
+        model = BiomSearchJob
+        fields = {
+            "otu_text": forms.CharField,
+            "biom_file": forms.FileField,
+            "criteria": forms.MultipleChoiceField(required=True),
+        }
+        labels = {
+            "otu_text": "Paste your OTU table",
+            "criteria": "Select the ecosystem(s)",
+        }
+        widgets = {
+            "otu_text": forms.Textarea(attrs={'cols': 30, 'rows': 12}),
+            "criteria": forms.CheckboxSelectMultiple,
+        }
+
+    biom_file = forms.FileField(
+        label="or upload your BIOM file",
+        required=False,
+    )
+
+    def _empty_otu_text(self, otu_text):
+        """
+        Checks the validity of the OTU text in the textarea
+
+        :param otu_text: String OTU table in text format
+        :return: Boolean truth value of the check
+        """
+        # if the default string is found consider it empty
+        if otu_text == "Paste OTU table here":
+            return True
+        # if the box is empty
+        if otu_text is None:
+            return True
+        # otherwise
+        return False
+
+    def clean(self):
+        """
+        Microbiome search form validation. Checks for chosen criteria and if
+        both BIOM and OTU texts are uploaded properly
+
+        :return: Boolean truth value of the check
+        """
+        # check if OTU table is empty
+        try:
+            otu_text = self.cleaned_data["otu_text"]
+        except KeyError:
+            otu_text = None
+
+        # check if criteria is empty
+        try:
+            criteria = self.cleaned_data["criteria"]
+        except KeyError:
+            criteria = []
+
+        biom_file = self.cleaned_data["biom_file"]
+        print("**********THEBIOMFILE**************: {}".format(biom_file))
+
+        # if number of criteria chosen is more than 3
+        if len(criteria) > 3:
+            msg = forms.ValidationError(
+                "Maximum of 3 criteria allowed or all criteria"
+            )
+            self.add_error("criteria", msg)
+
+        # if number of criteria chosen is 0
+        if len(criteria) == 0:
+            msg = forms.ValidationError(
+                "At least one criteria must be selected"
+            )
+            self.add_error("criteria", msg)
+
+        # if BIOM file or OTU text is not filled in or submitted
+        if self._empty_otu_text(otu_text) and biom_file is None:
+            msg = forms.ValidationError(
+                "An upload of the OTU table or BIOM file is required"
+            )
+            self.add_error("biom_file", msg)
+            self.add_error("otu_text", msg)
+
+        # if BIOM file and OTU text is both filled in or submitted
+        if not self._empty_otu_text(otu_text) and biom_file is not None:
+            msg = forms.ValidationError(
+                "Only upload the OTU table or BIOM file and not both"
+            )
+            self.add_error("biom_file", msg)
+            self.add_error("otu_text", msg)
+
+        return self.cleaned_data
+
+
+class UserForm(forms.ModelForm):
+    """
+    General User form for registration and update details
+    """
+    class Meta:
+        model = User
+        fields = [
+            "username",
+            "email",
+            "password",
+            "confirm",
+        ]
+        labels = {
+            "email": "Email",
+        }
+        widgets = {
+            "password": forms.PasswordInput,
+        }
+
+    confirm = forms.CharField(
+        widget=forms.PasswordInput,
+        label="Confirm Password",
+    )
+
+    def clean_confirm(self):
+        password = self.cleaned_data.get("password")
+        confirm = self.cleaned_data.get("confirm")
+        if password and confirm and password != confirm:
+            msg = forms.ValidationError("Passwords must match")
+            self.add_error("password", msg)
+            self.add_error("confirm", msg)
+
+
+# @receiver(post_save, sender=Job, dispatch_uid="job_post_save")
+# def notify_job_update(sender, instance, **kwargs):
+#     requests.post("http://127.0.0.1/notify", json={
+#         'topic': 'job.' + str(instance.id),
+#         'args': [model_to_dict(instance)]
+#     })

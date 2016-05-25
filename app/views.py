@@ -2,30 +2,48 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .forms import BiomSearchForm
-from .models import Job
+from .models import Job, BiomSearchForm
 from .tasks import run_fibs
 
 
 def index(request):
+    """
+    Home page route. Contains a BIOM search form for submission which is
+    handled by guest_search() or search() in search.py depending on user.
+    HTML file can be found in templates/app/index.html
+
+    :param request: Request object
+    :return: Renders the home page
+    """
     form = BiomSearchForm()
-    # dereference the fields from the form so we can slice
-    biom_fields = [f for f in form][:2]
-    ecosystems = form
+
     return render(
         request, 'app/index.html',
         {
-            'biom_fields': biom_fields,
-            'ecosystems': ecosystems,
+            'form': form,
         }
     )
 
 
 def contact(request):
+    """
+    Contact page route. Static HTML can be found in
+    templates/app/contact.html
+
+    :param request: Request object
+    :return: Renders the contact page
+    """
     return render(request, 'app/contact.html')
 
 
 def tutorial(request):
+    """
+    Tutorial page route. Static HTML can be found in
+    templates/app/tutorial.html
+
+    :param request: Request object
+    :return: Renders the tutorial page
+    """
     return render(request, 'app/tutorial.html')
 
 
