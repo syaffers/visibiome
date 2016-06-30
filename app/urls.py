@@ -13,7 +13,7 @@ urlpatterns = [
     url(r'^login/$', auth.login, name='login'),
     url(r'^logout/$', auth.logout, name='logout'),
     url(r'^register/$', auth.register, name='register'),
-    url(r'^update_details/$', auth.update_details, name='update_details'),
+    url(r'^update/$', auth.update_details, name='update_details'),
 
     url(r'^guest_search/$', search.guest_search, name='guest_search'),
     url(r'^search/$', search.user_search, name='search'),
