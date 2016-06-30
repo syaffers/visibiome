@@ -35,7 +35,7 @@
           </ul>
           <ul class="nav navbar-nav navbar-right">
             {% if user.is_authenticated %}
-              <li class="drowdown">
+              <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown"
                    role="button" aria-haspopup="true" aria-expanded="false">
                   Signed in as <strong>{{ user.username }}</strong>
@@ -62,14 +62,14 @@
           {% for msg in flash %}
             <div class="alert alert-{{ msg.tags }}">
               <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-              <strong>{{ msg.tags|capfirst }}</strong> {{ msg }}
+              {{ msg }}
             </div>
           {% endfor %}
         {% endif %}
         {% if user.is_authenticated and user.guest.status %}
           <div class="alert alert-warning">
             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-            <strong>Guest account</strong> You are using a guest account, started job(s) will not be saved unless you update your details
+            You are using a guest account, started job(s) will not be saved unless you update your details
           </div>
         {% endif %}
         {% block content %}
