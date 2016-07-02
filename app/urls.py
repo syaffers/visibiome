@@ -18,4 +18,3 @@ urlpatterns = [
     url(r'^guest_search/$', search.guest_search, name='guest_search'),
     url(r'^search/$', search.user_search, name='search'),
 ]
-

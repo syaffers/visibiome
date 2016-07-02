@@ -43,9 +43,8 @@ def guest_search(request):
             )
             return redirect('/dashboard')
         else:
-            print(bsf.errors)
             messages.add_message(
-                request, messages.ERROR, "Search form has some errors"
+                request, messages.ERROR, "Search form has some errors."
             )
 
             context = {
@@ -57,22 +56,30 @@ def guest_search(request):
 
 @login_required
 def user_search(request):
+    """
+    Handler when user performs a search from the homepage while signed in
+
+    :param request:
+    :return:
+    """
     msg_storage = messages.get_messages(request)
     if request.method == "POST":
-        form = BiomSearchForm(request.POST, request.FILES)
-        # print("Okay")
-        # print(request.POST.get("otu_text"))
-        # print(request.FILES["otu_file"])
-        # print(request.POST.getlist("criteria"))
-        if form.is_valid():
-            return HttpResponse(request.POST, content_type="text/html")
-        else:
-            print(form.errors)
+        bsf = BiomSearchForm(request.POST, request.FILES)
+        if bsf.is_valid():
+            job = bsf.save(commit=False)
+            job.user = request.user
+            job.save()
             messages.add_message(
-                request, messages.ERROR, "Validation errors."
+                request, messages.SUCCESS, "Successfully created task."
+            )
+            return redirect('/dashboard')
+        else:
+            messages.add_message(
+                request, messages.ERROR, "Search form has some errors."
             )
 
-            return redirect('/')
-
-    # TODO: Handle normal users login
-    pass
+            context = {
+                "form": bsf,
+                "flash": msg_storage,
+            }
+            return render(request, "app/index.html", context)
