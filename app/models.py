@@ -12,10 +12,17 @@ logger = logging.getLogger(__name__)
 
 
 def upload_path_handler(instance, filename):
+    """
+    Upload path handler for dynamic naming of folders for user uploads
+    :param instance: BiomSearchJob instance of job
+    :param filename: String filename
+    :return: String the path to file upload for current user
+    """
     filename = filename.split('.')
     name, ext = filename[0:-1], filename[-1]
     file_path = 'uploads/{user_id}/{name}.{ext}'.format(
-        user_id=instance.user_id, name=name, ext=ext)
+        user_id=instance.user_id, name=".".join(name), ext=ext
+    )
     return file_path
 
 
@@ -27,7 +34,7 @@ class Guest(models.Model):
         if self.status:
             return "{uname} is a guest".format(uname=self.user.username)
         else:
-            return "{uname} is is not a guest".format(uname=self.user.username)
+            return "{uname} is not a guest".format(uname=self.user.username)
 
 
 class Job(models.Model):
@@ -41,7 +48,7 @@ class Job(models.Model):
         self.result = result
 
 
-class EcosystemChoices(models.Model):
+class EcosystemChoice(models.Model):
     ecosystem = models.CharField(verbose_name="Ecosystem Type", max_length=60)
     ecosystem_proper_name = models.CharField(max_length=60)
 
@@ -52,32 +59,22 @@ class EcosystemChoices(models.Model):
 class BiomSearchJob(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     completed = models.BooleanField(default=False)
-    criteria = models.ManyToManyField('EcosystemChoices', blank=False,
+    criteria = models.ManyToManyField('EcosystemChoice', blank=False,
                                       max_length=3)
     otu_text = models.TextField(default=None)
-    # TODO: handle file upload
-    biom_file = models.FileField(upload_to='uploads/' + str(user.pk))
+    biom_file = models.FileField(upload_to=upload_path_handler,
+                                 default=None, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def set_completed(self, completed):
         self.completed = completed
 
-    # def clean(self, *args, **kwargs):
-    #     if self.criteria.count > 3:
-    #         raise forms.ValidationError(
-    #             "You can't choose more than three ecosystems at this time."
-    #         )
-    #
-    #     if self.criteria.count == 0:
-    #         raise forms.ValidationError(
-    #             "You must pick at least one ecosystem."
-    #         )
-    #
-    #     super(BiomSearchJob, self).clean(*args, **kwargs)
+    def __str__(self):
+        return "Job by {} created at {}".format(self.user.username,
+                                                self.created_at)
 
 
-# TODO: Use ModelForm instead with custom validation for criteria
 class BiomSearchForm(forms.ModelForm):
     """
     The homepage form structure which has a text area, file upload and a set
@@ -140,7 +137,6 @@ class BiomSearchForm(forms.ModelForm):
             criteria = []
 
         biom_file = self.cleaned_data["biom_file"]
-        print("**********THEBIOMFILE**************: {}".format(biom_file))
 
         # if number of criteria chosen is more than 3
         if len(criteria) > 3:

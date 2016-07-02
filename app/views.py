@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .models import Job, BiomSearchForm
+from .models import Job, BiomSearchJob, BiomSearchForm
 from .tasks import run_fibs
 
 
@@ -67,8 +67,8 @@ def calculate(request):
 @login_required
 def dashboard(request):
     msg_storage = messages.get_messages(request)
-    jobs = Job.objects.filter(user=request.user.id)\
-        .order_by('-updated_at').all()[:5]
+    jobs = BiomSearchJob.objects.filter(user=request.user.id)
+    jobs = jobs.order_by('-updated_at').all()[:5]
     return render(request, 'app/dashboard.html',
                   {'jobs': jobs, 'flash': msg_storage})
 

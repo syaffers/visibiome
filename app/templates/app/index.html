@@ -15,7 +15,7 @@
         {% csrf_token %}
         <div class="form-group">
           <label for="{{ form.otu_text.name }}" class="col-xs-3 control-label">{{ form.otu_text.label }}<br>
-            <em>Maximum 1 sample</em>
+            <em>Maximum 1 sample (CSV format)</em>
           </label>
           <div class="col-xs-9">
             {{ form.otu_text.as_widget }}
@@ -32,7 +32,7 @@
 
         <div class="form-group">
           <label for="{{ form.biom_file.name }}" class="col-xs-3 control-label">{{ form.biom_file.label }}<br>
-            <em>Maximum 1 sample</em>
+            <em>Maximum 1 sample (JSON format)</em>
           </label>
           <div class="col-xs-9">
             {{ form.biom_file.as_widget }}
@@ -64,9 +64,9 @@
                 {% endif %}
               {% endfor %}
 
-              {% if ecosystems.criteria.errors %}
+              {% if form.criteria.errors %}
                 <ul class="errorlist">
-                  {% for e in ecosystems.criteria.errors %}
+                  {% for e in form.criteria.errors %}
                     <li>{{ e }}</li>
                   {% endfor %}
                 </ul>

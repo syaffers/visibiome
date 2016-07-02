@@ -15,37 +15,37 @@ def guest_search(request):
     """
     msg_storage = messages.get_messages(request)
     if request.method == "POST":
-        # get data
-        # from the search form submission
-        bsf = BiomSearchForm(request.POST)
-        print(request.POST)
+        # get data from the search form submission
+        bsf = BiomSearchForm(request.POST, request.FILES)
         # check if form submission is correct
-        # TODO: validate the number of ecosystems and work on m2m
         if bsf.is_valid():
-            # # create a guest user with a user number
-            # u = User.objects.create_user(
-            #     "guest", "email@example.com", "guest123"
-            # )
-            # u.username += str(u.pk)
-            # u.save()
-            #
-            # guest = Guest(status=True, user_id=u.id)
-            # guest.save()
-            #
-            # # log 'em in
-            # user = auth.authenticate(username=u.username, password="guest123")
-            # auth.login(request, user)
+            # create a guest user with a user number
+            u = User.objects.create_user(
+                "guest", "email@example.com", "guest123"
+            )
+            u.username += str(u.pk)
+            u.save()
 
-            job = bsf.save()
-            print(job)
-            # messages.add_message(
-            #     request, messages.SUCCESS, "Successfully created task."
-            # )
-            # return redirect('/dashboard')
+            guest = Guest(status=True, user_id=u.id)
+            guest.save()
+
+            # log 'em in
+            user = auth.authenticate(username=u.username, password="guest123")
+            auth.login(request, user)
+
+            # Make a job object from the form and add the newly created guest
+            # user as the user initiating this job
+            job = bsf.save(commit=False)
+            job.user = user
+            job.save()
+            messages.add_message(
+                request, messages.SUCCESS, "Successfully created task."
+            )
+            return redirect('/dashboard')
         else:
             print(bsf.errors)
             messages.add_message(
-                request, messages.ERROR, "Form has some errors"
+                request, messages.ERROR, "Search form has some errors"
             )
 
             context = {

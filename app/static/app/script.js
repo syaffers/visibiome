@@ -16,7 +16,7 @@ function handleBiomCheckbox() {
     $(all_eco_checkbox).prop("checked", false);
   }
 
-  if(checkedBoxes.reduce(add, 0) >= 3) {
+  if (checkedBoxes.reduce(add, 0) >= 3) {
     $(biom_search_form_id).find("input[type=checkbox]:not(:checked)").prop('disabled', true);
   }
   else {
@@ -24,12 +24,18 @@ function handleBiomCheckbox() {
   }
 }
 
-function handleEmptyTextfield() {
-  $(this).val('');
+function handleClearTextfield() {
+  if ($(this).val() == "Paste OTU table here")
+    $(this).val("");
+}
+
+function handleFillTextfield() {
+  if ($(this).val() == "")
+    $(this).val("Paste OTU table here");
 }
 
 function uncheck(index, elem) {
-  if($(elem).val() != all_eco_value)
+  if ($(elem).val() != all_eco_value)
     $(elem).prop("checked", false);
 }
 
@@ -44,5 +50,6 @@ function add(a, b) {
 $(document).ready(function() {
   $(biom_search_form_id).find("input[type=checkbox]").click(handleBiomCheckbox);
   $(otu_textarea).val(otu_textarea_placeholder);
-  $(otu_textarea).click(handleEmptyTextfield);
+  $(otu_textarea).click(handleClearTextfield);
+  $(otu_textarea).blur(handleFillTextfield);
 });
