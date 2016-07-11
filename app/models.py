@@ -62,8 +62,8 @@ class BiomSearchJob(models.Model):
     criteria = models.ManyToManyField('EcosystemChoice', blank=False,
                                       max_length=3)
     otu_text = models.TextField(default=None)
-    biom_file = models.FileField(upload_to=upload_path_handler,
-                                 default=None, null=True)
+    biom_file = models.FileField(upload_to=upload_path_handler, null=True,
+                                 blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

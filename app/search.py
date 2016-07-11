@@ -38,10 +38,11 @@ def guest_search(request):
             job = bsf.save(commit=False)
             job.user = user
             job.save()
+            bsf.save_m2m()
             messages.add_message(
                 request, messages.SUCCESS, "Successfully created task."
             )
-            return redirect('/dashboard')
+            return redirect('app:dashboard')
         else:
             messages.add_message(
                 request, messages.ERROR, "Search form has some errors."
@@ -69,10 +70,11 @@ def user_search(request):
             job = bsf.save(commit=False)
             job.user = request.user
             job.save()
+            bsf.save_m2m()
             messages.add_message(
                 request, messages.SUCCESS, "Successfully created task."
             )
-            return redirect('/dashboard')
+            return redirect('app:dashboard')
         else:
             messages.add_message(
                 request, messages.ERROR, "Search form has some errors."

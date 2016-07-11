@@ -17,12 +17,7 @@ def index(request):
     """
     form = BiomSearchForm()
 
-    return render(
-        request, 'app/index.html',
-        {
-            'form': form,
-        }
-    )
+    return render(request, 'app/index.html', {'form': form, 'flash': None})
 
 
 def contact(request):
@@ -33,7 +28,7 @@ def contact(request):
     :param request: Request object
     :return: Renders the contact page
     """
-    return render(request, 'app/contact.html')
+    return render(request, 'app/contact.html', {'flash': None})
 
 
 def tutorial(request):
@@ -44,7 +39,7 @@ def tutorial(request):
     :param request: Request object
     :return: Renders the tutorial page
     """
-    return render(request, 'app/tutorial.html')
+    return render(request, 'app/tutorial.html', {'flash': None})
 
 
 def calculate(request):
@@ -57,11 +52,11 @@ def calculate(request):
             run_fibs.delay(j.id, n)
         except ValueError:
             messages.add_message(request, messages.ERROR, "Value error.")
-            return redirect('/dashboard')
+            return redirect('app:dashboard')
         messages.add_message(request, messages.SUCCESS, "Task started for "
                                                         "fibs(%s)" % n)
-        return redirect('/dashboard')
-    return redirect('/dashboard')
+        return redirect('app:dashboard')
+    return redirect('app:dashboard')
 
 
 @login_required
@@ -77,8 +72,8 @@ def dashboard(request):
 def job_detail(request, job_id):
     job = get_object_or_404(BiomSearchJob, id=job_id)
     if job.user_id == request.user.id:
-        return render(request, 'app/job.html', {'job': job})
+        return render(request, 'app/job.html', {'job': job, 'flash': None})
     else:
         messages.add_message(request, messages.ERROR,
                              "Unauthorized access to Job " + job_id)
-        return redirect('/dashboard')
+        return redirect('app:dashboard')
