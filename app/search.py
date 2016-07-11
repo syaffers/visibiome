@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages, auth
 from .models import BiomSearchForm, Guest, BiomSearchJob
+from .tasks import simulate_task
 
 
 def guest_search(request):
@@ -39,6 +40,7 @@ def guest_search(request):
             job.user = user
             job.save()
             bsf.save_m2m()
+            simulate_task.delay(job.id)
             messages.add_message(
                 request, messages.SUCCESS, "Successfully created task."
             )
@@ -71,6 +73,7 @@ def user_search(request):
             job.user = request.user
             job.save()
             bsf.save_m2m()
+            simulate_task.delay(job.id)
             messages.add_message(
                 request, messages.SUCCESS, "Successfully created task."
             )

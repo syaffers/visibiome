@@ -4,7 +4,6 @@ from . import auth, views, search
 app_name = 'app'
 urlpatterns = [
     url(r'^$', views.index, name='index'),
-    url(r'^calculate/$', views.calculate, name='calculate'),
     url(r'^contact/$', views.contact, name='contact'),
     url(r'^dashboard/$', views.dashboard, name='dashboard'),
     url(r'^job/(?P<job_id>[0-9]+)$', views.job_detail, name='job_detail'),

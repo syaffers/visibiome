@@ -2,8 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .models import Job, BiomSearchJob, BiomSearchForm
-from .tasks import run_fibs
+from .models import BiomSearchJob, BiomSearchForm
 
 context = {'flash': None}
 
@@ -43,24 +42,6 @@ def tutorial(request):
     :return: Renders the tutorial page
     """
     return render(request, 'app/tutorial.html', context)
-
-
-def calculate(request):
-    if request.method == "POST":
-        n = request.POST['number']
-        j = Job(user=User.objects.filter(pk=request.user.id).first())
-        try:
-            n = int(n)
-            j.save()
-            run_fibs.delay(j.id, n)
-        except ValueError:
-            messages.add_message(request, messages.ERROR, "Value error.")
-            return redirect('app:dashboard')
-
-        messages.add_message(request, messages.SUCCESS, "Task started for "
-                                                        "fibs(%s)" % n)
-        return redirect('app:dashboard')
-    return redirect('app:dashboard')
 
 
 @login_required

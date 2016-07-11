@@ -1,5 +1,5 @@
 from django.contrib import admin
-from app.models import BiomSearchJob, EcosystemChoice, Guest, Job
+from app.models import BiomSearchJob, EcosystemChoice, Guest
 
 
 class BiomSearchJobAdmin(admin.ModelAdmin):
@@ -16,7 +16,6 @@ class GuestAdmin(admin.ModelAdmin):
     status_display.boolean = True
 
 
-admin.site.register(Job)
 admin.site.register(Guest, GuestAdmin)
 admin.site.register(BiomSearchJob, BiomSearchJobAdmin)
 admin.site.register(EcosystemChoice)

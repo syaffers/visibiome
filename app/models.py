@@ -37,17 +37,6 @@ class Guest(models.Model):
             return "{uname} is not a guest".format(uname=self.user.username)
 
 
-class Job(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    completed = models.BooleanField(default=False)
-    result = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def set_result(self, result):
-        self.result = result
-
-
 class EcosystemChoice(models.Model):
     ecosystem = models.CharField(verbose_name="Ecosystem Type", max_length=60)
     ecosystem_proper_name = models.CharField(max_length=60)

@@ -26,7 +26,12 @@
         <strong>Started on:</strong> {{ job.created_at }}
       </p>
       <p>
-        <strong>Updated on:</strong> {{ job.updated_at }}
+        <strong>Completed on:</strong>
+        {% if job.completed %}
+          {{ job.updated_at }}
+        {% else %}
+          Still running
+        {% endif %}
       </p>
     </div>
   </div>
