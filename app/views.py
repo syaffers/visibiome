@@ -5,6 +5,8 @@ from django.contrib import messages
 from .models import Job, BiomSearchJob, BiomSearchForm
 from .tasks import run_fibs
 
+context = {'flash': None}
+
 
 def index(request):
     """
@@ -16,8 +18,9 @@ def index(request):
     :return: Renders the home page
     """
     form = BiomSearchForm()
+    context['form'] = form
 
-    return render(request, 'app/index.html', {'form': form, 'flash': None})
+    return render(request, 'app/index.html', context)
 
 
 def contact(request):
@@ -28,7 +31,7 @@ def contact(request):
     :param request: Request object
     :return: Renders the contact page
     """
-    return render(request, 'app/contact.html', {'flash': None})
+    return render(request, 'app/contact.html', context)
 
 
 def tutorial(request):
@@ -39,7 +42,7 @@ def tutorial(request):
     :param request: Request object
     :return: Renders the tutorial page
     """
-    return render(request, 'app/tutorial.html', {'flash': None})
+    return render(request, 'app/tutorial.html', context)
 
 
 def calculate(request):
@@ -53,6 +56,7 @@ def calculate(request):
         except ValueError:
             messages.add_message(request, messages.ERROR, "Value error.")
             return redirect('app:dashboard')
+
         messages.add_message(request, messages.SUCCESS, "Task started for "
                                                         "fibs(%s)" % n)
         return redirect('app:dashboard')
@@ -64,16 +68,23 @@ def dashboard(request):
     msg_storage = messages.get_messages(request)
     jobs = BiomSearchJob.objects.filter(user=request.user.id)
     jobs = jobs.order_by('-updated_at').all()[:5]
-    return render(request, 'app/dashboard.html',
-                  {'jobs': jobs, 'flash': msg_storage})
+
+    context['jobs'] = jobs
+    context['flash'] = msg_storage
+    return render(request, 'app/dashboard.html', context)
 
 
 @login_required
 def job_detail(request, job_id):
+    msg_storage = messages.get_messages(request)
     job = get_object_or_404(BiomSearchJob, id=job_id)
     if job.user_id == request.user.id:
-        return render(request, 'app/job.html', {'job': job, 'flash': None})
+        context['job'] = job
+        context['flash'] = msg_storage
+        return render(request, 'app/job.html', context)
+
     else:
-        messages.add_message(request, messages.ERROR,
-                             "Unauthorized access to Job " + job_id)
+        messages.add_message(
+            request, messages.ERROR, "Unauthorized access to Job " + job_id
+        )
         return redirect('app:dashboard')
