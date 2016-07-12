@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.contrib import messages
 from .models import BiomSearchJob, BiomSearchForm
 
@@ -60,7 +59,14 @@ def job_detail(request, job_id):
     msg_storage = messages.get_messages(request)
     job = get_object_or_404(BiomSearchJob, id=job_id)
     if job.user_id == request.user.id:
+        if job.otu_text == "Paste OTU table here":
+            context["input_type"] = 1
+            context["input"] = job.biom_file
+        else:
+            context["input_type"] = 0
+            context["input"] = job.otu_text
         context['job'] = job
+        context['criteria'] = ", ".join(map(str, job.criteria.all()))
         context['flash'] = msg_storage
         return render(request, 'app/job.html', context)
 
