@@ -20,6 +20,14 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
+            name='EcosystemChoice',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('ecosystem', models.CharField(max_length=60, verbose_name='Ecosystem Type')),
+                ('ecosystem_proper_name', models.CharField(default='Test', max_length=60)),
+            ],
+        ),
+        migrations.CreateModel(
             name='BiomSearchJob',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -38,14 +46,6 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('status', models.BooleanField(default=False)),
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-            ],
-        ),
-        migrations.CreateModel(
-            name='EcosystemChoice',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('ecosystem', models.CharField(max_length=60, verbose_name='Ecosystem Type')),
-                ('ecosystem_proper_name', models.CharField(default='Test', max_length=60)),
             ],
         ),
     ]
