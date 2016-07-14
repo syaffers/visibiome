@@ -6,14 +6,17 @@
     <schema name="" catalog=""/>
     <table name="app_biomsearchjob" schema="" catalog="" type="TABLE">
       <column name="id" sqlType="INTEGER" precision="0" scale="-1" nullable="false" jdbcType="4"/>
-      <column name="completed" sqlType="BOOL" precision="0" scale="-1" nullable="false" jdbcType="4"/>
       <column name="created_at" sqlType="DATETIME" precision="0" scale="-1" nullable="false" jdbcType="12"/>
       <column name="updated_at" sqlType="DATETIME" precision="0" scale="-1" nullable="false" jdbcType="12"/>
       <column name="user_id" sqlType="INTEGER" precision="0" scale="-1" nullable="false" jdbcType="4"/>
       <column name="otu_text" sqlType="TEXT" precision="0" scale="-1" nullable="false" jdbcType="12"/>
       <column name="biom_file" sqlType="VARCHAR(100)" precision="0" scale="-1" nullable="true" jdbcType="12"/>
+      <column name="status" sqlType="INTEGER" precision="0" scale="-1" nullable="false" jdbcType="4"/>
+      <column name="error_code_id" sqlType="INTEGER" precision="0" scale="-1" nullable="false" jdbcType="4"/>
       <primary-key columns="id"/>
-      <foreign-key name="#FAKE_app_biomsearchjob_1" columns="user_id" ref-table="auth_user" ref-schema="" ref-catalog="" ref-columns="id" update-rule="3" delete-rule="3" deferrability="1"/>
+      <foreign-key name="#FAKE_app_biomsearchjob_1" columns="error_code_id" ref-table="app_biomsearchjoberror" ref-schema="" ref-catalog="" ref-columns="error_code" update-rule="3" delete-rule="3" deferrability="1"/>
+      <foreign-key name="#FAKE_app_biomsearchjob_2" columns="user_id" ref-table="auth_user" ref-schema="" ref-catalog="" ref-columns="id" update-rule="3" delete-rule="3" deferrability="1"/>
+      <index name="app_biomsearchjob_f9e281f1" unique="true" columns="error_code_id"/>
       <index name="app_biomsearchjob_e8701ad4" unique="true" columns="user_id"/>
     </table>
     <table name="app_biomsearchjob_criteria" schema="" catalog="" type="TABLE">
@@ -27,10 +30,15 @@
       <index name="app_biomsearchjob_criteria_1818d7fb" unique="true" columns="biomsearchjob_id"/>
       <index name="app_biomsearchjob_criteria_biomsearchjob_id_c0f22d0f_uniq" unique="true" columns="biomsearchjob_id,ecosystemchoice_id"/>
     </table>
+    <table name="app_biomsearchjoberror" schema="" catalog="" type="TABLE">
+      <column name="code" sqlType="INTEGER" precision="0" scale="-1" nullable="false" jdbcType="4"/>
+      <column name="message" sqlType="VARCHAR(256)" precision="0" scale="-1" nullable="false" jdbcType="12"/>
+      <primary-key columns="code"/>
+    </table>
     <table name="app_ecosystemchoice" schema="" catalog="" type="TABLE">
       <column name="id" sqlType="INTEGER" precision="0" scale="-1" nullable="false" jdbcType="4"/>
-      <column name="ecosystem_proper_name" sqlType="VARCHAR(60)" precision="0" scale="-1" nullable="false" jdbcType="12"/>
       <column name="ecosystem" sqlType="VARCHAR(60)" precision="0" scale="-1" nullable="false" jdbcType="12"/>
+      <column name="ecosystem_proper_name" sqlType="VARCHAR(60)" precision="0" scale="-1" nullable="false" jdbcType="12"/>
       <primary-key columns="id"/>
     </table>
     <table name="app_guest" schema="" catalog="" type="TABLE">

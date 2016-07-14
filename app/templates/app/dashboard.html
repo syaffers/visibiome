@@ -9,26 +9,32 @@
   			<th>Status</th>
         <th>Start time</th>
         <th>Completion time</th>
+        <th>Error messages</th>
+        <th>Remove</th>
   		</tr>
   	</thead>
   	<tbody>
     {% for job in jobs %}
       <tr>
-        <td><a href="{% url 'app:job_detail' job.id %}">{{ job.id }}</a></td>
+        <td><a href="{% url 'app:job_details' job.id %}">{{ job.id }}</a></td>
         <td>
-          {% if job.completed %}
-            Completed
-          {% else %}
-            Running
-          {% endif %}
+          {{ job.get_status_display }}
         </td>
-        <td>{{ job.created_at }}</td>
         <td>
-          {% if job.completed %}
+          {{ job.created_at }}
+        </td>
+        <td>
+          {% if job.status > 1 %}
             {{ job.updated_at }}
           {% else %}
             -
           {% endif %}
+        </td>
+        <td>
+          {{ job.get_error_code_display }}
+        </td>
+        <td>
+          <button data-remove-url="{% url 'app:job_remove' job.id %}" class="btn btn-danger btn-job-remove" type="submit">&times;</button>
         </td>
       </tr>
     {% endfor %}

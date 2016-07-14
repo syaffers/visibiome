@@ -26,21 +26,16 @@
         {% endif %}
       </p>
       <p>
-        <strong>Output:</strong> {{ job.result }}
+        <strong>Output:</strong>
       </p>
       <p>
-        <strong>Criteria:</strong> {{ criteria}}
+        <strong>Criteria:</strong> {{ criteria }}
       </p>
       <p>
         <strong>Started on:</strong> {{ job.created_at }}
       </p>
       <p>
         <strong>Completed on:</strong>
-        {% if job.completed %}
-          {{ job.updated_at }}
-        {% else %}
-          Still running
-        {% endif %}
       </p>
     </div>
   </div>

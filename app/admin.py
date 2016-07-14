@@ -3,7 +3,7 @@ from app.models import BiomSearchJob, EcosystemChoice, Guest
 
 
 class BiomSearchJobAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'created_at', 'completed')
+    list_display = ('id', 'user', 'created_at', 'status')
 
 
 class GuestAdmin(admin.ModelAdmin):

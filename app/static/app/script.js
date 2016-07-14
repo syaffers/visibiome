@@ -1,6 +1,7 @@
 "use strict";
 
 var biom_search_form_id = "#biom-search-form",
+    remove_job_button = ".btn-job-remove",
     all_eco_checkbox = "#id_criteria_0",
     all_eco_value = "1",
     otu_textarea = "#id_otu_text",
@@ -34,6 +35,12 @@ function handleFillTextfield() {
     $(this).val("Paste OTU table here");
 }
 
+function handleRemoveJob() {
+  var removeUrl = $(this).data("remove-url");
+  var remove = confirm("Are you sure you want to delete this job?");
+  remove ? location.href = removeUrl : false
+}
+
 function uncheck(index, elem) {
   if ($(elem).val() != all_eco_value)
     $(elem).prop("checked", false);
@@ -52,4 +59,5 @@ $(document).ready(function() {
   $(otu_textarea).val(otu_textarea_placeholder);
   $(otu_textarea).click(handleClearTextfield);
   $(otu_textarea).blur(handleFillTextfield);
+  $(remove_job_button).click(handleRemoveJob)
 });

@@ -46,13 +46,39 @@ class EcosystemChoice(models.Model):
 
 
 class BiomSearchJob(models.Model):
+    STOPPED = -1
+    QUEUED = 0
+    PROCESSING = 1
+    COMPLETED = 2
+
+    STATUSES = (
+        (STOPPED, "Stopped"),
+        (QUEUED, "Queued"),
+        (PROCESSING, "Processing"),
+        (COMPLETED, "Completed"),
+    )
+
+    NO_ERRORS = 0
+    FILE_VALIDATION_ERROR = 1
+    SAMPLE_COUNT_ERROR = 2
+
+    ERRORS = (
+        (NO_ERRORS, "No errors."),
+        (FILE_VALIDATION_ERROR,
+         "File/text content has errors. Only JSON or TSV content allowed."),
+        (SAMPLE_COUNT_ERROR, "Too many samples, only 1 sample allowed."),
+    )
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    completed = models.BooleanField(default=False)
-    criteria = models.ManyToManyField('EcosystemChoice', blank=False,
-                                      max_length=3)
+    biom_file = models.FileField(
+        upload_to=upload_path_handler, null=True, blank=True
+    )
     otu_text = models.TextField(default=None)
-    biom_file = models.FileField(upload_to=upload_path_handler, null=True,
-                                 blank=True)
+    criteria = models.ManyToManyField(
+        'EcosystemChoice', blank=False, max_length=3
+    )
+    status = models.IntegerField(choices=STATUSES, default=QUEUED)
+    error_code = models.IntegerField(choices=ERRORS, default=NO_ERRORS)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
