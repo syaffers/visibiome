@@ -1,11 +1,9 @@
 from django.shortcuts import redirect, render
-from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages, auth
 from .models import BiomSearchForm, Guest, BiomSearchJob
-from .tasks import simulate_task
-
+from .tasks import simulate_task, validate_input
 
 def guest_search(request):
     """
@@ -40,7 +38,12 @@ def guest_search(request):
             job.user = user
             job.save()
             bsf.save_m2m()
-            simulate_task.delay(job.id)
+
+            if job.biom_file.name == "" or job.biom_file.name is None:
+                validate_input.delay(job.id, job.otu_text, 1)
+            else:
+                validate_input.delay(job.id, job.biom_file, 0)
+
             messages.add_message(
                 request, messages.SUCCESS, "Successfully created task."
             )
@@ -73,7 +76,12 @@ def user_search(request):
             job.user = request.user
             job.save()
             bsf.save_m2m()
-            simulate_task.delay(job.id)
+
+            if job.biom_file.name == "" or job.biom_file.name is None:
+                validate_input.delay(job.id, job.otu_text, 1)
+            else:
+                validate_input.delay(job.id, job.biom_file, 0)
+
             messages.add_message(
                 request, messages.SUCCESS, "Successfully created task."
             )

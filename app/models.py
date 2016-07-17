@@ -1,5 +1,4 @@
 import requests
-import logging
 
 from django import forms
 from django.db import models
@@ -7,8 +6,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from django.contrib.auth.models import User
-
-logger = logging.getLogger(__name__)
 
 
 def upload_path_handler(instance, filename):
@@ -61,12 +58,14 @@ class BiomSearchJob(models.Model):
     NO_ERRORS = 0
     FILE_VALIDATION_ERROR = 1
     SAMPLE_COUNT_ERROR = 2
+    DUPLICATE_ID_ERROR = 3
 
     ERRORS = (
         (NO_ERRORS, "No errors."),
         (FILE_VALIDATION_ERROR,
          "File/text content has errors. Only JSON or TSV content allowed."),
         (SAMPLE_COUNT_ERROR, "Too many samples, only 1 sample allowed."),
+        (DUPLICATE_ID_ERROR, "Duplicate observation IDs.")
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)

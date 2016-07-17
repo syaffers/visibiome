@@ -14,10 +14,10 @@
       {% endif %}
         {% csrf_token %}
         <div class="form-group">
-          <label for="{{ form.otu_text.name }}" class="col-xs-3 control-label">{{ form.otu_text.label }}<br>
-            <em>Maximum 1 sample (CSV format)</em>
+          <label for="{{ form.otu_text.name }}" class="col-xs-12 col-sm-3 control-label">{{ form.otu_text.label }}<br>
+            <em>Maximum 1 sample (TSV/JSON format)</em>
           </label>
-          <div class="col-xs-9">
+          <div class="col-xs-12 col-sm-9">
             {{ form.otu_text.as_widget }}
 
             {% if form.otu_text.errors %}
@@ -31,10 +31,10 @@
         </div>
 
         <div class="form-group">
-          <label for="{{ form.biom_file.name }}" class="col-xs-3 control-label">{{ form.biom_file.label }}<br>
-            <em>Maximum 1 sample (JSON format)</em>
+          <label for="{{ form.biom_file.name }}" class="col-xs-12 col-sm-3 control-label">{{ form.biom_file.label }}<br>
+            <em>Maximum 1 sample (TSV/JSON format)</em>
           </label>
-          <div class="col-xs-9">
+          <div class="col-xs-12 col-sm-9">
             {{ form.biom_file.as_widget }}
 
             {% if form.biom_file.errors %}
@@ -49,8 +49,8 @@
 
         <hr>
         <div class="form-group">
-          <label for="ecosystem" class="col-xs-3 control-label">Select the ecosystem<br><em>All or max 3</em></label>
-          <div class="col-xs-9">
+          <label for="ecosystem" class="col-xs-12 col-sm-3 control-label">Select the ecosystem<br><em>All or max 3</em></label>
+          <div class="col-xs-12 col-sm-9">
             <div class="row">
               {% for ecosystem in form.criteria %}
                 {% if forloop.counter0|divisibleby:3 %}
@@ -75,7 +75,7 @@
           </div>
         </div>
         <div class="row">
-          <div class="col-xs-3 col-xs-offset-9">
+          <div class="col-xs-12 col-sm-3 col-xs-offset-9">
             <input type="submit" name="submit" id="submit" value="Analyze" class="btn btn-primary">
           </div>
         </div>
