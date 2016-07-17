@@ -34,7 +34,7 @@ def register(request):
 
         auth.login(request, user)
 
-        return redirect("/dashboard")
+        return redirect("app:dashboard")
 
     else:
         if request.method == "POST":
@@ -61,6 +61,8 @@ def login(request):
     :return: Redirects user to original path or renders the login page
     """
     msg_storage = messages.get_messages(request)
+    if request.user.is_authenticated():
+        return redirect("app:dashboard")
     if request.method == "GET":
         return render(request, 'auth/login.html')
     elif request.method == "POST":
@@ -101,7 +103,7 @@ def logout(request):
     :return: Redirects user to home while ending session
     """
     auth.logout(request)
-    return redirect('/')
+    return redirect('app:index')
 
 
 @login_required
@@ -134,7 +136,7 @@ def update_details(request):
         # update the authentication session so that user doesn't have to
         # log back in
         auth.update_session_auth_hash(request, user)
-        redirect('/dashboard/')
+        redirect('app:dashboard')
 
     else:
         if request.method == "POST":
