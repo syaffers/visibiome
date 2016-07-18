@@ -1,6 +1,5 @@
-import requests
-
 from django import forms
+from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -17,9 +16,13 @@ def upload_path_handler(instance, filename):
     """
     filename = filename.split('.')
     name, ext = filename[0:-1], filename[-1]
-    file_path = 'uploads/{user_id}/{name}.{ext}'.format(
-        user_id=instance.user_id, name=".".join(name), ext=ext
-    )
+    file_path = \
+        settings.MEDIA_ROOT + '{user_id}/{job_id}/{job_id_h}.{ext}'.format(
+            user_id=instance.user_id,
+            job_id=instance.id,
+            job_id_h="{uid}-{id}".format(uid=instance.user_id, id=instance.id),
+            ext=ext
+        )
     return file_path
 
 
@@ -81,8 +84,14 @@ class BiomSearchJob(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def set_completed(self, completed):
-        self.completed = completed
+    def save(self, *args, **kwargs):
+        if self.pk is None and self.biom_file.name is not None:
+            saved_file = self.biom_file
+            self.biom_file = None
+            super(BiomSearchJob, self).save(*args, **kwargs)
+            self.biom_file = saved_file
+
+        super(BiomSearchJob, self).save(*args, **kwargs)
 
     def __str__(self):
         return "Job by {} created at {}".format(self.user.username,
@@ -216,11 +225,3 @@ class UserForm(forms.ModelForm):
             msg = forms.ValidationError("Passwords must match")
             self.add_error("password", msg)
             self.add_error("confirm", msg)
-
-
-# @receiver(post_save, sender=Job, dispatch_uid="job_post_save")
-# def notify_job_update(sender, instance, **kwargs):
-#     requests.post("http://127.0.0.1/notify", json={
-#         'topic': 'job.' + str(instance.id),
-#         'args': [model_to_dict(instance)]
-#     })

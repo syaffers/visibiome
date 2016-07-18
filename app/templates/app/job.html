@@ -20,7 +20,7 @@
       <p>
         <strong>Input:</strong>
         {% if input_type %}
-          <a href="{% static input %}">{{ input }}</a>
+          <a href="{{ input }}">{{ input }}</a>
         {% else %}
           <pre>{{ input }}</pre>
         {% endif %}

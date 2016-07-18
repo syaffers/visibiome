@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -13,7 +14,13 @@ def details(request, job_id):
     if job.user_id == request.user.id:
         if job.otu_text == "Paste OTU table here":
             context["input_type"] = 1
-            context["input"] = job.biom_file
+            media_url = "{media_url}{user_id}/{job_id}/{file_id}".format(
+                media_url=settings.MEDIA_URL,
+                user_id=request.user.id,
+                job_id=job_id,
+                file_id=job.biom_file.name.split('/')[-1]
+            )
+            context["input"] = media_url
         else:
             context["input_type"] = 0
             context["input"] = job.otu_text
@@ -50,4 +57,3 @@ def remove(request, job_id):
             request, messages.ERROR, "Unauthorized access to Job " + job_id
         )
         return redirect('app:dashboard')
-

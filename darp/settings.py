@@ -122,10 +122,11 @@ LOGIN_URL = '/login/'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/home/qiime/www/staticfiles/media/'
 STATIC_URL = '/static/'
-STATIC_ROOT = '/home/syafiq/www/staticfiles/'
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'app/static/'),
 )
 
 # Redis as our task broker

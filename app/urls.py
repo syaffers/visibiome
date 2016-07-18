@@ -1,4 +1,7 @@
+from django.conf import settings
 from django.conf.urls import url
+from django.conf.urls.static import static
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from . import auth, jobs, views, search
 
 app_name = 'app'
@@ -19,3 +22,8 @@ urlpatterns = [
     url(r'^job/(?P<job_id>[0-9]+)$', jobs.details, name='job_details'),
     url(r'^job/(?P<job_id>[0-9]+)/remove$', jobs.remove, name='job_remove'),
 ]
+
+urlpatterns += staticfiles_urlpatterns()
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

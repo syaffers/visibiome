@@ -11,8 +11,8 @@
     <title>DARP - Visualize Diversity Against Annotated 16s rRNA Microbial Profiles</title>
 
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" crossorigin="anonymous">
-    <link rel="stylesheet" href="{% static 'app/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css'%}" media="screen">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" media="screen">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -69,7 +69,8 @@
         {% if user.is_authenticated and user.guest.status %}
           <div class="alert alert-warning">
             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-            You are using a guest account, started job(s) will not be saved unless you update your details
+            You are using a guest account, started job(s) will not be saved
+            unless you update your details
           </div>
         {% endif %}
         {% block content %}
@@ -82,22 +83,24 @@
           <div class="row footer padded-top padded-bottom">
             <div class="col-xs-10">
               <p>
-                The DARP project is under the direction of Dr. Andreas Henschel and is funded through the Masdar Institute Research Grant.<br>
-                Unless otherwise stated, all material &copy; 2014 Department of Electrical Engineering and Computer Science<br>
+                The DARP project is under the direction of Dr. Andreas Henschel
+                and is funded through the Masdar Institute Research Grant.<br>
+                Unless otherwise stated, all material &copy; 2014 Department of
+                Electrical Engineering and Computer Science<br>
                 Institute Center Smart Infrastructure (iSmart),<br>
                 Masdar Institute, Abu Dhabi, UAE.<br>
               </p>
 
             </div>
             <div class="col-xs-2">
-              <img class="img-responsive" src="{% static 'app/masdar_logo.png' %}" alt="Masdar Insitute Logo">
+              <img class="img-responsive" src="{% static 'img/masdar_logo.png' %}" alt="Masdar Insitute Logo">
             </div>
           </div>
         </div>
       </footer>
 
-      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" crossorigin="anonymous"></script>
-      <script src="{% static 'app/script.js' %}"></script>
+      <script src="{% static 'js/jquery.min.js' %}"></script>
+      <script src="{% static 'js/bootstrap.min.js' %}"></script>
+      <script src="{% static 'js/script.js' %}"></script>
     </body>
 </html>

@@ -42,7 +42,7 @@ def guest_search(request):
             if job.biom_file.name == "" or job.biom_file.name is None:
                 validate_input.delay(job.id, job.otu_text, 1)
             else:
-                validate_input.delay(job.id, job.biom_file, 0)
+                validate_input.delay(job.id, job.biom_file.path, 0)
 
             messages.add_message(
                 request, messages.SUCCESS, "Successfully created task."
@@ -74,13 +74,14 @@ def user_search(request):
         if bsf.is_valid():
             job = bsf.save(commit=False)
             job.user = request.user
+
             job.save()
             bsf.save_m2m()
 
             if job.biom_file.name == "" or job.biom_file.name is None:
                 validate_input.delay(job.id, job.otu_text, 1)
             else:
-                validate_input.delay(job.id, job.biom_file, 0)
+                validate_input.delay(job.id, job.biom_file.path, 0)
 
             messages.add_message(
                 request, messages.SUCCESS, "Successfully created task."
