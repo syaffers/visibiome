@@ -47,13 +47,15 @@ class EcosystemChoice(models.Model):
 
 class BiomSearchJob(models.Model):
     STOPPED = -1
-    QUEUED = 0
-    PROCESSING = 1
-    COMPLETED = 2
+    VALIDATING = 0
+    QUEUED = 1
+    PROCESSING = 2
+    COMPLETED = 3
 
     STATUSES = (
         (STOPPED, "Stopped"),
         (QUEUED, "Queued"),
+        (VALIDATING, "Validating"),
         (PROCESSING, "Processing"),
         (COMPLETED, "Completed"),
     )
@@ -79,7 +81,7 @@ class BiomSearchJob(models.Model):
     criteria = models.ManyToManyField(
         'EcosystemChoice', blank=False, max_length=3
     )
-    status = models.IntegerField(choices=STATUSES, default=QUEUED)
+    status = models.IntegerField(choices=STATUSES, default=VALIDATING)
     error_code = models.IntegerField(choices=ERRORS, default=NO_ERRORS)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -49,6 +49,8 @@ def validate_input(job_id, text, input_type):
 @app.task
 def simulate_task(job_id):
     j = BiomSearchJob.objects.filter(id=job_id).first()
-    sleep(60)
+    j.status = BiomSearchJob.PROCESSING
+    j.save()
+    sleep(60) # basically doing some tasks here
     j.status = BiomSearchJob.COMPLETED
     j.save()
