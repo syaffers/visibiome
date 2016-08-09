@@ -1,20 +1,27 @@
 from StringIO import StringIO
 from app.models import BiomSearchJob
-from biom import parse_table
+from biom import parse_table, load_table
 from biom.exception import TableException
 from darp.celery import app
 from time import sleep
 
 
 @app.task
-def validate_input(job_id, text, input_type):
+def validate_input(job_id, input_str, input_type):
+    """
+    Async task to perform validation of input files/text. This function checks
+    whether the input is a valid OTU table or BIOM file by parsing the input
+    file/text. If it fails then chances are it is not a valid OTU table or
+    BIOM file. If it succeeds, the function then checks if there is exactly
+    one sample in the valid OTU table of BIOM file.
+    """
     job = BiomSearchJob.objects.filter(id=job_id).first()
     try:
         if input_type == 1:
-            str_stream = StringIO(text)
+            str_stream = StringIO(input_str)
             otu_table = parse_table(str_stream)
         else:
-            otu_table = parse_table(open(text))
+            otu_table = load_table(input_str)
 
         if len(otu_table.ids()) == 1:
             job.status = BiomSearchJob.QUEUED
@@ -27,19 +34,19 @@ def validate_input(job_id, text, input_type):
             job.save()
             return False
 
+    except IOError:
+        job.status = BiomSearchJob.STOPPED
+        job.error_code = BiomSearchJob.FILE_IO_ERROR
+        job.save()
+        return False
+
     except TableException:
         job.status = BiomSearchJob.STOPPED
         job.error_code = BiomSearchJob.DUPLICATE_ID_ERROR
         job.save()
         return False
 
-    except IndexError:
-        job.status = BiomSearchJob.STOPPED
-        job.error_code = BiomSearchJob.FILE_VALIDATION_ERROR
-        job.save()
-        return False
-
-    except ValueError:
+    except (IndexError, TypeError, ValueError):
         job.status = BiomSearchJob.STOPPED
         job.error_code = BiomSearchJob.FILE_VALIDATION_ERROR
         job.save()

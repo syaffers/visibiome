@@ -60,6 +60,7 @@ class BiomSearchJob(models.Model):
         (COMPLETED, "Completed"),
     )
 
+    FILE_IO_ERROR = -1
     NO_ERRORS = 0
     FILE_VALIDATION_ERROR = 1
     SAMPLE_COUNT_ERROR = 2
@@ -68,9 +69,10 @@ class BiomSearchJob(models.Model):
     ERRORS = (
         (NO_ERRORS, "No errors."),
         (FILE_VALIDATION_ERROR,
-         "File/text content has errors. Only JSON or TSV content allowed."),
+         "File/text content has errors. Check JSON/TSV content."),
         (SAMPLE_COUNT_ERROR, "Too many samples, only 1 sample allowed."),
-        (DUPLICATE_ID_ERROR, "Duplicate observation IDs.")
+        (DUPLICATE_ID_ERROR, "Duplicate observation IDs."),
+        (FILE_IO_ERROR, "Error opening uploaded file. Contact site admin."),
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
