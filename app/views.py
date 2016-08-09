@@ -45,11 +45,17 @@ def tutorial(request):
 
 @login_required
 def dashboard(request):
+    """
+    Dashboard page route. Static HTML can be found in
+    templates/app/dashboard.html
+
+    :param request: Request object
+    :return: Renders the tutorial page
+    """
     msg_storage = messages.get_messages(request)
     jobs = BiomSearchJob.objects.filter(user=request.user.id)
-    jobs = jobs.order_by('-updated_at').all()[:5]
+    jobs = jobs.order_by('-updated_at').all()
 
     context['jobs'] = jobs
     context['flash'] = msg_storage
     return render(request, 'app/dashboard.html', context)
-

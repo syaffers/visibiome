@@ -12,18 +12,22 @@ def details(request, job_id):
     msg_storage = messages.get_messages(request)
     job = get_object_or_404(BiomSearchJob, id=job_id)
     if job.user_id == request.user.id:
-        if job.otu_text == "Paste OTU table here":
-            context["input_type"] = 1
+        if job.biom_file != "" or job.biom_file is None:
             media_url = "{media_url}{user_id}/{job_id}/{file_id}".format(
                 media_url=settings.MEDIA_URL,
                 user_id=request.user.id,
                 job_id=job_id,
                 file_id=job.biom_file.name.split('/')[-1]
             )
-            context["input"] = media_url
+            context["file_path"] = media_url
         else:
-            context["input_type"] = 0
-            context["input"] = job.otu_text
+            media_url = \
+                "{media_url}{user_id}/{job_id}/{user_id}-{job_id}.biom".format(
+                    media_url=settings.MEDIA_URL,
+                    user_id=request.user.id,
+                    job_id=job_id,
+                )
+            context["file_path"] = media_url
         context['job'] = job
         context['criteria'] = ", ".join(map(str, job.criteria.all()))
         context['flash'] = msg_storage
