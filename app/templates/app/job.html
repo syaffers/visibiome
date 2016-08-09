@@ -19,11 +19,7 @@
       <h1>Job {{ job.id }}</h1>
       <p>
         <strong>Input:</strong>
-        {% if input_type %}
-          <a href="{{ input }}">{{ input }}</a>
-        {% else %}
-          <pre>{{ input }}</pre>
-        {% endif %}
+        <a href="{{ file_path }}">BIOM File</a>
       </p>
       <p>
         <strong>Output:</strong>
