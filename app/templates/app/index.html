@@ -3,9 +3,11 @@
 {% block content %}
   <div class="row">
     <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-      <h1 class="home-h1">DARP</h1>
-      <h2 class="home-h2">A webserver to Visualize Diversity Against Annotated 16s rRNA Microbial Profiles</h2>
-      <p>Analyze your 16s rRNA sample against the reference database.<br>Select a valid choice from the selection criteria below.</p>
+      <h1>
+        Visibiome <br>
+        <small>A webserver to Visualize Diversity Against Annotated 16s rRNA Microbial Profiles</small>
+      </h1>
+      <p>Analyze your 16s rRNA sample against the reference database.</p>
 
       {% if user.is_authenticated %}
         <form class="form-horizontal" action="{% url "app:search" %}" method="post" enctype="multipart/form-data" id="biom-search-form">

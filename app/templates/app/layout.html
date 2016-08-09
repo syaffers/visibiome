@@ -22,9 +22,9 @@
     <![endif]-->
   </head>
     <body>
-      <nav class="navbar navbar-default navbar-static-top" role="navigation">
+      <nav class="navbar navbar-inverse navbar-default navbar-static-top" role="navigation">
         <div class="container">
-          <a class="navbar-brand" href="{% url 'app:index' %}">DARP</a>
+          <a class="navbar-brand" href="{% url 'app:index' %}">Visibiome</a>
           <ul class="nav navbar-nav">
             <li>
               <a href="{% url 'app:contact' %}">Contact</a>
@@ -81,18 +81,18 @@
       <footer class="container-footer">
         <div class="container">
           <div class="row footer padded-top padded-bottom">
-            <div class="col-xs-10">
-              <p>
+            <div class="col-xs-9">
+              <p class="text-sm">
                 The DARP project is under the direction of Dr. Andreas Henschel
-                and is funded through the Masdar Institute Research Grant.<br>
+                and is funded through the Masdar Institute Research Grant.
                 Unless otherwise stated, all material &copy; 2014 Department of
-                Electrical Engineering and Computer Science<br>
-                Institute Center Smart Infrastructure (iSmart),<br>
-                Masdar Institute, Abu Dhabi, UAE.<br>
+                Electrical Engineering and Computer Science,
+                Institute Center Smart Infrastructure (iSmart),
+                Masdar Institute, Abu Dhabi, UAE.
               </p>
 
             </div>
-            <div class="col-xs-2">
+            <div class="col-xs-3">
               <img class="img-responsive" src="{% static 'img/masdar_logo.png' %}" alt="Masdar Insitute Logo">
             </div>
           </div>
