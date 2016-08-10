@@ -24,17 +24,19 @@
           {{ job.created_at }}
         </td>
         <td>
-          {% if job.status > 2 %}
-            {{ job.updated_at }}
-          {% else %}
+          {% if job.status < 10 %}
             -
+          {% else %}
+            {{ job.updated_at }}
           {% endif %}
         </td>
         <td>
           {{ job.get_error_code_display }}
         </td>
         <td>
-          <button data-remove-url="{% url 'app:job_remove' job.id %}" class="btn btn-danger btn-job-remove" type="submit">&times;</button>
+          <button data-remove-url="{% url 'app:job_remove' job.id %}" class="btn btn-danger btn-job-remove" type="submit">
+            <span class="glyphicon glyphicon-remove"></span>
+          </button>
         </td>
       </tr>
     {% endfor %}

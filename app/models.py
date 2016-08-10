@@ -3,7 +3,6 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.forms.models import model_to_dict
 from django.contrib.auth.models import User
 
 
@@ -50,7 +49,7 @@ class BiomSearchJob(models.Model):
     VALIDATING = 0
     QUEUED = 1
     PROCESSING = 2
-    COMPLETED = 3
+    COMPLETED = 10
 
     STATUSES = (
         (STOPPED, "Stopped"),
@@ -78,7 +77,7 @@ class BiomSearchJob(models.Model):
         (OTU_NOT_EXIST,
          "Some OTUs do not exist in the database. Cannot proceed."),
         (UNKNOWN_ERROR,
-         "An error occurred. This may be a problem with the system. " +\
+         "An error occurred. This may be a problem with the system. " +
          "Contact site admin."),
     )
 
@@ -86,7 +85,6 @@ class BiomSearchJob(models.Model):
     biom_file = models.FileField(
         upload_to=upload_path_handler, null=True, blank=True
     )
-    otu_text = models.TextField(default=None)
     criteria = models.ManyToManyField(
         'EcosystemChoice', blank=False, max_length=3
     )
@@ -117,22 +115,24 @@ class BiomSearchForm(forms.ModelForm):
     class Meta:
         model = BiomSearchJob
         fields = {
-            "otu_text": forms.CharField,
             "biom_file": forms.FileField,
             "criteria": forms.MultipleChoiceField(required=True),
         }
         labels = {
-            "otu_text": "Paste your OTU table",
             "criteria": "Select the ecosystem(s)",
         }
         widgets = {
-            "otu_text": forms.Textarea(attrs={'cols': 30, 'rows': 12}),
             "criteria": forms.CheckboxSelectMultiple,
         }
 
     biom_file = forms.FileField(
         label="or upload your BIOM file",
         required=False,
+    )
+
+    otu_text = forms.CharField(
+        label="Paste your OTU table",
+        widget=forms.Textarea(attrs={'cols': 30, 'rows': 12}),
     )
 
     def _empty_otu_text(self, otu_text):
@@ -142,11 +142,11 @@ class BiomSearchForm(forms.ModelForm):
         :param otu_text: String OTU table in text format
         :return: Boolean truth value of the check
         """
-        # if the default string is found consider it empty
+        # if the default string is found, consider it empty
         if otu_text == "Paste OTU table here":
             return True
         # if the box is empty
-        if otu_text is None:
+        if otu_text is None or otu_text == "":
             return True
         # otherwise
         return False

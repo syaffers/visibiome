@@ -2,12 +2,14 @@ from django.shortcuts import redirect, render
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages, auth
-from .models import BiomSearchForm, Guest, BiomSearchJob
-from .tasks import simulate_task, validate_input
+from .models import BiomSearchForm, Guest
+from .tasks import validate_input
+
 
 def guest_search(request):
     """
-    Handler when user performs a search from the homepage without signing in
+    Handler when user performs a search from the homepage without signing in.
+    This handler creates a user when an unsigned-in user performs a search.
 
     :param request:
     :return:
@@ -20,9 +22,9 @@ def guest_search(request):
         if bsf.is_valid():
             # create a guest user with a user number
             u = User.objects.create_user(
-                "guest", "email@example.com", "guest123"
+                "Guest", "email@example.com", "guest123"
             )
-            u.username += str(u.pk)
+            u.username += " _{}".format(str(u.pk))
             u.save()
 
             guest = Guest(status=True, user_id=u.id)
@@ -40,7 +42,7 @@ def guest_search(request):
             bsf.save_m2m()
 
             if job.biom_file.name == "" or job.biom_file.name is None:
-                validate_input.delay(job.id, job.otu_text, 1)
+                validate_input.delay(job.id, bsf.data['otu_text'], 1)
             else:
                 validate_input.delay(job.id, job.biom_file.path, 0)
 
@@ -63,7 +65,11 @@ def guest_search(request):
 @login_required
 def user_search(request):
     """
-    Handler when user performs a search from the homepage while signed in
+    Handler when user performs a search from the homepage while signed in.
+    This handler DOES NOT create a user when a form is submitted. That's really
+    the only difference between this function and the previous one. Otherwise
+    it should perform the same thing.
+
 
     :param request:
     :return:
@@ -79,7 +85,7 @@ def user_search(request):
             bsf.save_m2m()
 
             if job.biom_file.name == "" or job.biom_file.name is None:
-                validate_input.delay(job.id, job.otu_text, 1)
+                validate_input.delay(job.id, bsf.data['otu_text'], 1)
             else:
                 validate_input.delay(job.id, job.biom_file.path, 0)
 

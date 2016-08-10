@@ -11,28 +11,20 @@ context = {'flash': None}
 def details(request, job_id):
     msg_storage = messages.get_messages(request)
     job = get_object_or_404(BiomSearchJob, id=job_id)
+
     if job.user_id == request.user.id:
-        if job.biom_file != "" or job.biom_file is None:
-            media_url = "{media_url}{user_id}/{job_id}/{file_id}".format(
+        file_path = \
+            "{media_url}{user_id}/{job_id}/{file_name}".format(
                 media_url=settings.MEDIA_URL,
                 user_id=request.user.id,
                 job_id=job_id,
-                file_id=job.biom_file.name.split('/')[-1]
+                file_name=job.biom_file.path.split('/')[-1]
             )
-            context["file_path"] = media_url
-        else:
-            media_url = \
-                "{media_url}{user_id}/{job_id}/{user_id}-{job_id}.biom".format(
-                    media_url=settings.MEDIA_URL,
-                    user_id=request.user.id,
-                    job_id=job_id,
-                )
-            context["file_path"] = media_url
+        context["file_path"] = file_path
         context['job'] = job
         context['criteria'] = ", ".join(map(str, job.criteria.all()))
         context['flash'] = msg_storage
         return render(request, 'app/job.html', context)
-
     else:
         messages.add_message(
             request, messages.ERROR,
@@ -45,6 +37,7 @@ def details(request, job_id):
 def remove(request, job_id):
     msg_storage = messages.get_messages(request)
     job = get_object_or_404(BiomSearchJob, id=job_id)
+
     if job.user_id == request.user.id:
         deleted_job_id = job.id
         job.delete()
@@ -55,7 +48,6 @@ def remove(request, job_id):
         )
         context['flash'] = msg_storage
         return redirect('app:dashboard')
-
     else:
         messages.add_message(
             request, messages.ERROR, "Unauthorized access to Job " + job_id
