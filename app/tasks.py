@@ -25,65 +25,43 @@ import sys
 
 
 @app.task
-def validate_input(job_id, input_str, input_type):
+def validate_biom(job, file_path):
     """
     Async task to perform validation of input files/text. This function checks
-    whether the input is a valid OTU table or BIOM file by parsing the input
-    file/text. If it fails then chances are it is not a valid OTU table or
-    BIOM file. If it succeeds, the function then checks if there is exactly
-    one sample in the valid OTU table of BIOM file. Text inputs are saved as
-    a BIOM file before being processsed
+    whether the input is a valid BIOM file by parsing the input file. If it
+    fails then chances are it is not a valid BIOM file. If it succeeds, the
+    function then checks if there is exactly one sample in the valid OTU table
+    of BIOM file.
 
-    :param job_id: Integer representing the ID of the job
-    :param input_str: String containing file path to uploaded file or uploaded
-    text
-    TODO: Refactor to make Job object have this flag since it will be used
-          elsewhere
-    :param input_type: Integer flag to differentiate text or file upload
-    :return Boolean True if successfully validated, False otherwise
+    :param job: BiomSearchJob object passed from search.py
+    :param file_path: String containing file path to uploaded file
     """
-    job = BiomSearchJob.objects.filter(id=job_id).first()
     try:
-        if input_type == 1:
-            str_stream = StringIO(input_str)
-            otu_table = parse_table(str_stream)
-            text_file = \
-                settings.MEDIA_ROOT + \
-                '{user_id}/{job_id}/{user_id}-{job_id}.biom'.format(
-                    user_id=job.user_id, job_id=job.id
-                )
-            save_text.delay(job_id, otu_table, text_file)
-        else:
-            otu_table = load_table(input_str)
+        otu_table = load_table(file_path)
 
         if len(otu_table.ids()) == 1:
             job.status = BiomSearchJob.QUEUED
             job.save()
             m_n_betadiversity.delay(job.id)
-            return True
         else:
             job.status = BiomSearchJob.STOPPED
             job.error_code = BiomSearchJob.SAMPLE_COUNT_ERROR
             job.save()
-            return False
 
     except IOError:
         job.status = BiomSearchJob.STOPPED
         job.error_code = BiomSearchJob.FILE_IO_ERROR
         job.save()
-        return False
 
     except TableException:
         job.status = BiomSearchJob.STOPPED
         job.error_code = BiomSearchJob.DUPLICATE_ID_ERROR
         job.save()
-        return False
 
     except (IndexError, TypeError, ValueError):
         job.status = BiomSearchJob.STOPPED
         job.error_code = BiomSearchJob.FILE_VALIDATION_ERROR
         job.save()
-        return False
 
 
 @app.task
@@ -92,31 +70,22 @@ def m_n_betadiversity(job_id):
     job.status = BiomSearchJob.PROCESSING
     job.save()
 
-    # TODO: Refactor this so that only the BIOM file attribute is in the
-    # database so that when users upload using text it still goes to file and
-    # we don't have to hack up the file path
     userdir = settings.MEDIA_ROOT + "{user_id}/{job_id}/".format(
         user_id=job.user_id, job_id=job.id
     )
-    if job.biom_file != "" or job.biom_file is not None:
-        userbiom = job.biom_file.name
-    else:
-        userbiom = userdir + "{user_id}-{job_id}.biom".format(
-            user_id=job.user_id, job_id=job.id
-        )
+    userbiom = job.biom_file.path
 
     # TODO: any way to do this cleaner?
     user_choice = map(
         lambda x: x.replace("/", "_"), map(str, job.criteria.all())
     )
-    # TODO: Hack! Find a better way to include the 10k files
-    largedata = '/home/qiime/www/staticfiles/data/10k'
+    # TODO: Still hack-y! Find a better way to include the 10k files
+    largedata = settings.LARGE_DATA_PATH
 
     try:
         # load submitted biom file/text into otutableS
         print("Getting file {}...".format(userbiom))
         otutableS = load_table(userbiom)
-        print("To array...")
         n_sample_otu_matrix = np.asarray(
             [v for v in otutableS.iter_data(axis="sample")]
         )
@@ -255,19 +224,37 @@ def m_n_betadiversity(job_id):
 
 
 @app.task
-def save_text(job_id, biom_table, file_path):
+def save_text(job, input_str):
+    """
+    Async task to perform saving of input text. This function saves the input
+    text into a file to be processed later. Once the file is saved, validation
+    will follow immediately.
+
+    :param job: BiomSearchJob object passed from search.py
+    :param input_str: String containing user input text
+    """
+    file_path = \
+        settings.MEDIA_ROOT + \
+        '{user_id}/{job_id}/{user_id}-{job_id}.txt'.format(
+            user_id=job.user_id, job_id=job.id
+        )
+
     if not os.path.exists(os.path.dirname(file_path)):
         try:
             os.makedirs(os.path.dirname(file_path))
-        except OSError as exc: # Guard against race condition
+        # Guard against race condition
+        except OSError as exc:
             if exc.errno != errno.EEXIST:
+                job.status = BiomSearchJob.STOPPED
+                job.error_code = BiomSearchJob.UNKNOWN_ERROR
                 raise
 
     with open(file_path, "wb") as f:
-        f.write(biom_table.to_json(qiime_ver))
+        f.write(input_str)
 
-    m_n_betadiversity.delay(job_id)
-
+    job.biom_file = file_path
+    job.save()
+    validate_biom.delay(job, file_path)
 
 
 @app.task

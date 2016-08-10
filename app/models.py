@@ -78,7 +78,7 @@ class BiomSearchJob(models.Model):
          "Some OTUs do not exist in the database. Cannot proceed."),
         (UNKNOWN_ERROR,
          "An error occurred. This may be a problem with the system. " +
-         "Contact site admin."),
+         "Try again or contact site admin."),
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)

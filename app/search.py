@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages, auth
 from .models import BiomSearchForm, Guest
-from .tasks import validate_input
+from .tasks import validate_biom, save_text
 
 
 def guest_search(request):
@@ -42,9 +42,9 @@ def guest_search(request):
             bsf.save_m2m()
 
             if job.biom_file.name == "" or job.biom_file.name is None:
-                validate_input.delay(job.id, bsf.data['otu_text'], 1)
+                save_text.delay(job, bsf.data['otu_text'])
             else:
-                validate_input.delay(job.id, job.biom_file.path, 0)
+                validate_biom.delay(job, job.biom_file.path)
 
             messages.add_message(
                 request, messages.SUCCESS, "Successfully created task."
@@ -85,9 +85,9 @@ def user_search(request):
             bsf.save_m2m()
 
             if job.biom_file.name == "" or job.biom_file.name is None:
-                validate_input.delay(job.id, bsf.data['otu_text'], 1)
+                save_text.delay(job, bsf.data['otu_text'])
             else:
-                validate_input.delay(job.id, job.biom_file.path, 0)
+                validate_biom.delay(job, job.biom_file.path)
 
             messages.add_message(
                 request, messages.SUCCESS, "Successfully created task."

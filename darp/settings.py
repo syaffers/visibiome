@@ -129,6 +129,9 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'app/static/'),
 )
 
+# 10k files directory
+LARGE_DATA_PATH = '/home/qiime/www/staticfiles/data/10k'
+
 # Redis as our task broker
 
 # BROKER_URL = "redis://:pizza@pub-redis-13991" \
