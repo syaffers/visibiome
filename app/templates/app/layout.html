@@ -26,12 +26,11 @@
         <div class="container">
           <a class="navbar-brand" href="{% url 'app:index' %}">Visibiome</a>
           <ul class="nav navbar-nav">
-            <li>
-              <a href="{% url 'app:contact' %}">Contact</a>
-            </li>
-            <li>
-              <a href="{% url 'app:tutorial' %}">Tutorial</a>
-            </li>
+            {% if user.is_authenticated %}
+              <li><a href="{% url 'app:dashboard' %}">Dashboard</a></li>
+            {% endif %}
+            <li><a href="{% url 'app:contact' %}">Contact</a></li>
+            <li><a href="{% url 'app:tutorial' %}">Tutorial</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
             {% if user.is_authenticated %}
@@ -42,7 +41,6 @@
                   <span class="caret"></span>
                 </a>
                 <ul class="dropdown-menu">
-                  <li><a href="{% url 'app:dashboard' %}">Dashboard</a></li>
                   <li><a href="{% url 'app:update_details' %}">Update Details</a></li>
                   <li role="separator" class="divider"></li><!-- divider -->
                   <li><a href="{% url 'app:logout' %}">Logout</a></li>
