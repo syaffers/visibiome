@@ -71,7 +71,7 @@
         </div>
       </nav>
 
-      <div class="container container-page">
+      <div class="container container-page" id="content-top">
         {% if flash %}
           {% for msg in flash %}
             <div class="alert alert-{{ msg.tags }}">
@@ -116,5 +116,8 @@
       <script src="{% static 'js/jquery.min.js' %}"></script>
       <script src="{% static 'js/bootstrap.min.js' %}"></script>
       <script src="{% static 'js/script.js' %}"></script>
+      {% block lazy_js %}
+
+      {% endblock %}
     </body>
 </html>
