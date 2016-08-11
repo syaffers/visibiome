@@ -8,7 +8,7 @@
 
     <meta name="description" content="Page Description">
     <meta name="author" content="syafiq">
-    <title>Visibiome - Visualize Diversity Against Annotated 16s rRNA Microbial Profiles</title>
+    <title>Visibiome - {% block title %}{% endblock %}</title>
 
     <!-- Bootstrap -->
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css'%}" media="screen">
@@ -27,16 +27,32 @@
           <a class="navbar-brand" href="{% url 'app:index' %}">Visibiome</a>
           <ul class="nav navbar-nav">
             {% if user.is_authenticated %}
-              <li><a href="{% url 'app:dashboard' %}">Dashboard</a></li>
+              <li>
+                <a href="{% url 'app:dashboard' %}">
+                  <span class="glyphicon glyphicon-tasks"></span>
+                  Dashboard
+                </a>
+              </li>
             {% endif %}
-            <li><a href="{% url 'app:contact' %}">Contact</a></li>
-            <li><a href="{% url 'app:tutorial' %}">Tutorial</a></li>
+            <li>
+              <a href="{% url 'app:contact' %}">
+                <span class="glyphicon glyphicon-envelope"></span>
+                Contact
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'app:tutorial' %}">
+                <span class="glyphicon glyphicon-pencil"></span>
+                Tutorial
+              </a>
+            </li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
             {% if user.is_authenticated %}
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown"
                    role="button" aria-haspopup="true" aria-expanded="false">
+                  <span class="glyphicon glyphicon-user"></span>
                   Signed in as <strong>{{ user.username }}</strong>
                   <span class="caret"></span>
                 </a>
@@ -67,8 +83,8 @@
         {% if user.is_authenticated and user.guest.status %}
           <div class="alert alert-warning">
             <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-            You are using a guest account, started job(s) will not be saved
-            unless you update your details
+            You are using a guest account. Started or completed job(s) may not
+            be permanently saved unless you update your details
           </div>
         {% endif %}
         {% block content %}

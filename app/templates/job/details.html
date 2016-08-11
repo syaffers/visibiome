@@ -1,0 +1,32 @@
+{% extends "job/job_base.html" %}
+{% load staticfiles %}
+
+{% block title %}Details for Job #{{ job.id }}{% endblock %}
+{% block job_page %}
+  <h2>Details for Job #{{ job.id }}</h2>
+  <p>
+    <strong>Input:</strong>
+    <a target="_blank" href="{{ file_path }}">
+      Uploaded File
+      <span class="glyphicon glyphicon-save" aria-hidden="true"></span>
+    </a>
+  </p>
+  <p>
+    <strong>Criteria:</strong> {{ criteria }}
+  </p>
+  <p>
+    <strong>Status:</strong> {{ job.get_status_display }}
+  </p>
+  <p>
+    <strong>Started on:</strong> {{ job.created_at }}
+  </p>
+  <p>
+    <strong>Completed on:</strong>
+    {% if job.status < 10 %}
+      -
+    {% else %}
+      {{ job.updated_at }}
+    {% endif %}
+  </p>
+
+{% endblock %}

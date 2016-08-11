@@ -1,0 +1,51 @@
+{% extends "app/layout.html" %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2">
+    <ul class="nav nav-pills nav-stacked">
+      <li><span class="nav-divider-custom">Details</span></li>
+      <li><a href="{% url 'app:job_details' job.id %}">Details</a></li>
+      <li><span class="nav-divider-custom">Visualization</span></li>
+      <li class="{% if job.status < 10 %} disabled {% endif %}">
+        <a href="{% if job.status < 10 %} # {% else %}{% url 'app:job_ranking' job.id %}{% endif %}">
+          Ranking
+        </a>
+      </li>
+      <li class="{% if job.status < 10 %} disabled {% endif %}">
+        <a href="{% if job.status < 10 %} # {% else %}{% url 'app:job_heatmap' job.id %}{% endif %}">
+          Heatmap
+        </a>
+      </li>
+      <li><span class="nav-divider-custom">PCoA</span></li>
+      <li class="{% if job.status < 10 %} disabled {% endif %}">
+        <a href="{% if job.status < 10 %} # {% else %}{% url 'app:job_pcoa_reps' job.id %}{% endif %}">
+          Representatives
+        </a>
+      </li>
+      <li class="{% if job.status < 10 %} disabled {% endif %}">
+        <a href="{% if job.status < 10 %} # {% else %}{% url 'app:job_pcoa_similar' job.id %}{% endif %}">
+          250 Most Similar
+        </a>
+      </li>
+      <li><span class="nav-divider-custom">Dendrogram</span></li>
+      <li class="{% if job.status < 10 %} disabled {% endif %}">
+        <a href="{% if job.status < 10 %} # {% else %}{% url 'app:job_dend_reps' job.id %}{% endif %}">
+          Representatives
+        </a>
+      </li>
+      <li class="{% if job.status < 10 %} disabled {% endif %}">
+        <a href="{% if job.status < 10 %} # {% else %}{% url 'app:job_dend_similar' job.id %}{% endif %}">
+          250 Most Similar
+        </a>
+      </li>
+    </ul>
+  </div>
+  <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10">
+    {% block job_page %}
+
+    {% endblock %}
+  </div>
+</div>
+
+{% endblock %}
