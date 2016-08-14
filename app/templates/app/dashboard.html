@@ -7,7 +7,8 @@
   <table class="table table-striped table-hover">
   	<thead>
   		<tr>
-  			<th>Job ID</th>
+  			<th>Sample Name</th>
+  			<th>Criteria</th>
   			<th>Status</th>
         <th>Start time</th>
         <th>Completion time</th>
@@ -18,7 +19,16 @@
   	<tbody>
     {% for job in jobs %}
       <tr>
-        <td><a href="{% url 'app:job_details' job.id %}">{{ job.id }}</a></td>
+        <td>
+          <a href="{% url 'app:job_details' job.id %}">
+            {{ job.sample_name }}
+          </a>
+        </td>
+        <td>
+          {% for criterion in job.criteria.all %}
+            <span class="criterion">{{ criterion }}</span>
+          {% endfor %}
+        </td>
         <td>
           {{ job.get_status_display }}
         </td>

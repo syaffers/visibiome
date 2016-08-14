@@ -21,6 +21,7 @@ import MySQLdb
 import json
 import numpy as np
 import os
+import re
 import sys
 
 
@@ -41,6 +42,8 @@ def validate_biom(job, file_path):
 
         if len(otu_table.ids()) == 1:
             job.status = BiomSearchJob.QUEUED
+            # HARDCODE! Bad practice!
+            job.sample_name = otu_table.ids()[0]
             job.save()
             m_n_betadiversity.delay(job.id)
         else:
@@ -70,6 +73,7 @@ def m_n_betadiversity(job_id):
     job.status = BiomSearchJob.PROCESSING
     job.save()
 
+    regexp = re.compile("[^A-Za-z0-9]")
     userdir = settings.MEDIA_ROOT + "{user_id}/{job_id}/".format(
         user_id=job.user_id, job_id=job.id
     )
@@ -203,7 +207,8 @@ def m_n_betadiversity(job_id):
                     userdir
                 )
 
-                filename = userdir + n_sample_id[0].replace('.','_') + ".json"
+                sample_filename = "_".join(regexp.split(n_sample_id[0]))
+                filename = userdir + sample_filename + ".json"
                 with open(filename, "w") as json_output_file:
                     json.dump(samplejson, json_output_file, sort_keys=True,
                               indent=4)

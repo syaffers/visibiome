@@ -30,3 +30,58 @@
     overflow: hidden;
     text-transform: uppercase;
 }
+
+.criterion::after {
+  content: ",";
+}
+
+.criterion:last-child::after {
+  content: "";
+}
+
+#plot {
+    overflow-x: scroll;
+}
+
+.card {
+    box-shadow: 1px 1px 1px #CCCCCC;
+    margin-bottom: 15px;
+    padding: 12px;
+    border: 1px solid #E0E0E0;
+}
+
+.tick line {
+    shape-rendering: crispEdges;
+    stroke: #000;
+}
+
+line.minor {
+    stroke: #777;
+    stroke-dasharray: 2, 2;
+}
+
+.caption {
+    font-weight: bold;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: left;
+    pointer-events: none;
+    padding: 10px;
+    white-space: pre-wrap;
+}
+
+div.tooltip::after {
+    width: 0px;
+    height: 0px;
+    background: #fff;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-top: 4px solid #FF6666;
+    border-right: 4px solid #FFFF66;
+    border-left: 4px solid #FF6666;
+    border-bottom: 4px solid #FFFF66;
+}

@@ -55,7 +55,9 @@
       </div>
 
     </div>
-    <div id="ranking-table"></div>
+    <div class="row">
+      <div class="col-xs-12" id="card-container"></div>
+    </div>
   </section>
 {% endblock %}
 
@@ -65,8 +67,9 @@
 <script src="{% static 'js/ranking.js'%}" type="text/javascript"></script>
 <script>
   var dataPath = "{{data_path}}";
+  var sampleName = "{{job.sample_name}}";
   $(document).ready(function () {
-    adjacency(dataPath);
+    adjacency(dataPath, sampleName);
   });
 </script>
 {% endblock %}

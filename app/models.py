@@ -88,6 +88,7 @@ class BiomSearchJob(models.Model):
     criteria = models.ManyToManyField(
         'EcosystemChoice', blank=False, max_length=3
     )
+    sample_name = models.CharField(null=False, max_length=100)
     status = models.IntegerField(choices=STATUSES, default=VALIDATING)
     error_code = models.IntegerField(choices=ERRORS, default=NO_ERRORS)
     created_at = models.DateTimeField(auto_now_add=True)
