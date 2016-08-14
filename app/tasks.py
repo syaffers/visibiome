@@ -83,6 +83,10 @@ def m_n_betadiversity(job_id):
     user_choice = map(
         lambda x: x.replace("/", "_"), map(str, job.criteria.all())
     )
+    # Due to database table naming, this is necessary
+    if 'All' in user_choice:
+        user_choice[user_choice.index('All')] = 'All_eco'
+    
     # TODO: Still hack-y! Find a better way to include the 10k files
     largedata = settings.LARGE_DATA_PATH
 
