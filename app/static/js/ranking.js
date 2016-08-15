@@ -1,6 +1,9 @@
 var width = 900,
 height = 50;
 
+/**
+ * Drawing the heatmap legend
+ */
 var threshold = d3.scale.threshold()
 .domain([0, .1, .2, .3, .4, .5, .6])
 .range(["#ffffff", "#dde9f3", "#bbd3e7", "#99bddb", "#77a6cf", "#5590c3", "#337ab7"]);
@@ -36,7 +39,7 @@ gleg.selectAll("rect")
   return d;
 }))
 .enter().append("rect")
-.attr("height", 18)
+.attr("height", blockSize)
 .attr("x", function(d) {
   return x_scale(d[0]);
 })
@@ -54,6 +57,9 @@ gleg.call(xAxis_g).append("text")
 .text("Beta Diveristy (Bray Curtis)");
 
 
+/**
+ * Drawing the actual heatmap
+ */
 function adjacency(dataPath, sampleId) {
 
   queue()
@@ -75,6 +81,7 @@ function adjacency(dataPath, sampleId) {
 
   /* function to draw adjacency matrix on the ranking page */
   function createAdjacencyMatrix(nodes, edges) {
+    var blockSize = 18;
     var div = d3.select("#tooltip-heatmap").append("div")
     .attr("class", "tooltip")
     .style("opacity", 1e-6)
@@ -119,13 +126,13 @@ function adjacency(dataPath, sampleId) {
     .data(matrix)
     .enter()
     .append("rect")
-    .attr("width", 18)
-    .attr("height", 18)
+    .attr("width", blockSize)
+    .attr("height", blockSize)
     .attr("x", function(d) {
-      return d.x * 18
+      return d.x * blockSize
     })
     .attr("y", function(d) {
-      return d.y * 18
+      return d.y * blockSize
     })
     .style("stroke", "black")
     .style("stroke-width", "1px")
@@ -137,13 +144,14 @@ function adjacency(dataPath, sampleId) {
     .on("mousemove", gridOver)
     .on("mouseout", mouseout);
 
-    var scaleSize = nodes.length * 18;
+    var scaleSize = nodes.length * blockSize;
     var nameScale = d3.scale.ordinal().domain(nodes.map(function(el) {
       return el.id
     })).rangePoints([0, scaleSize], 1);
 
     xAxis = d3.svg.axis().scale(nameScale).orient("top").tickSize(2);
     yAxis = d3.svg.axis().scale(nameScale).orient("left").tickSize(2);
+
     d3.select("#adjacencyG")
     .append("g")
     .call(xAxis)
@@ -164,19 +172,19 @@ function adjacency(dataPath, sampleId) {
       // })
       div
       .text("Sample ID:  " + d.id.replace("-", "\nSample ID:  ") + "\nDistance:  " + d.weight)
-      .style("left", Number(d.x) * 18 + 225 + "px")
-      .style("top", Number(d.y) * 18 + 380 + "px");
+      .style("left", Number(d.x) * blockSize + 200 + (blockSize / 1.5) + "px")
+      .style("top", Number(d.y) * blockSize + 200 + (blockSize / 1.5) + "px");
     }
 
     function mouseover() {
       div.transition()
-      .duration(1)
+      .duration(10)
       .style("opacity", 1);
     }
 
     function mouseout() {
       div.transition()
-      .duration(1)
+      .duration(10)
       .style("opacity", 1e-6);
     }
 
@@ -362,13 +370,13 @@ function adjacency(dataPath, sampleId) {
 
     function mouseoverNonLeafNode() {
       div1.transition()
-      .duration(300)
+      .duration(10)
       .style("opacity", 1);
     }
 
     function mouseoutNonLeafNode() {
       div1.transition()
-      .duration(300)
+      .duration(10)
       .style("opacity", 1e-6);
     }
 
@@ -388,13 +396,13 @@ function adjacency(dataPath, sampleId) {
 
     function mouseoverLeafNode() {
       div1.transition()
-      .duration(1)
+      .duration(10)
       .style("opacity", 1);
     }
 
     function mouseoutLeafNode() {
       div1.transition()
-      .duration(1)
+      .duration(10)
       .style("opacity", 1e-6);
     }
 
@@ -407,8 +415,8 @@ function adjacency(dataPath, sampleId) {
       "\n\nStudy Source: " + d.study_source
       div1
       .text(nodeText)
-      .style("left", (d.y + 150) + "px")
-      .style("top", (d.x + 920) + "px");
+      .style("left", 450 + "px")
+      .style("top", d.x + 50 + "px");
     }
 
     // replace comma with comma space for cleaner viewing and add index

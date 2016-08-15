@@ -157,8 +157,8 @@ function adjacency(dataPath) {
       "\nDistance:  " + d.weight
       div
       .text(details)
-      .style("left", Number(d.x) * 8 + 204 - plotScrollLeft + "px")
-      .style("top", Number(d.y) * 8 + 398 + "px");
+      .style("left", Number(d.x) * 8 + 190 - plotScrollLeft + "px")
+      .style("top", Number(d.y) * 8 + 180 + "px");
     }
 
     function mouseover() {

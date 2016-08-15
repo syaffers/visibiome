@@ -257,8 +257,8 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
 
     div
       .text(nodeText)
-      .style("left", (d.y + 300) + "px")
-      .style("top", (d.x + 350) + "px");
+      .style("left", (d.y + 230) + "px")
+      .style("top", (d.x + 50) + "px");
   }
 
   function mouseoverNonLeafNode() {
