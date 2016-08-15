@@ -19,7 +19,7 @@ urlpatterns = [
     url(r'^guest_search/$', search.guest_search, name='guest_search'),
     url(r'^search/$', search.user_search, name='search'),
 
-    url(r'^job/(?P<job_id>[0-9]+)$', jobs.details, name='job_details'),
+    url(r'^job/(?P<job_id>[0-9]+)/details$', jobs.details, name='job_details'),
     url(r'^job/(?P<job_id>[0-9]+)/ranking$', jobs.ranking, name='job_ranking'),
     url(r'^job/(?P<job_id>[0-9]+)/heatmap$', jobs.heatmap, name='job_heatmap'),
     url(r'^job/(?P<job_id>[0-9]+)/pcoa-representatives$', jobs.pcoa_reps,
