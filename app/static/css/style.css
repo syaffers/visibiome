@@ -39,6 +39,10 @@
   content: "";
 }
 
+.plot-container {
+  position: relative;
+}
+
 #plot {
     overflow-x: scroll;
 }
