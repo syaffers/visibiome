@@ -1,8 +1,8 @@
 {% extends 'app/layout.html' %}
 
-{% block title %}Tutorial{% endblock %}
+{% block title %}Help{% endblock %}
 {% block content %}
-  <h1>Tutorial</h1>
+  <h1>Help</h1>
   <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
     <div class="panel panel-default">
       <div class="panel-heading" role="tab" id="headingOne">
@@ -58,7 +58,9 @@ O10   1.0
 O11   2.0
           </pre>
           <p>
-            Example JSON text:
+            Example JSON text (output from
+            <code>biom-format.Table</code> object using the
+            <code>as_json()</code> method):
           </p>
           <pre>
 {
@@ -66,7 +68,7 @@ O11   2.0
   "format": "Biological Observation Matrix 1.0.0",
   "format_url": "http://biom-format.org",
   "matrix_type": "sparse",
-  "generated_by": "example_generator",
+  "generated_by": "Qiime 1.8.3",
   "date": "2016-07-17T12:36:44.034878",
   "type": null,
   "matrix_element_type": "float",
@@ -75,13 +77,7 @@ O11   2.0
     [1, 0, 3],
     [2, 0, 5],
     [3, 0, 5],
-    [4, 0, 5],
-    [5, 0, 5],
-    [6, 0, 5],
-    [7, 0, 5],
-    [8, 0, 5],
-    [9, 0, 5],
-    [10, 0, 5]
+    // ...
   ],
   "rows": [
     {
@@ -96,38 +92,7 @@ O11   2.0
       "id": "O3",
       "metadata": null
     },
-    {
-      "id": "O4",
-      "metadata": null
-    },
-    {
-      "id": "O5",
-      "metadata": null
-    },
-    {
-      "id": "O6",
-      "metadata": null
-    },
-    {
-      "id": "O7",
-      "metadata": null
-    },
-    {
-      "id": "O8",
-      "metadata": null
-    },
-    {
-      "id": "O9",
-      "metadata": null
-    },
-    {
-      "id": "O10",
-      "metadata": null
-    },
-    {
-      "id": "O11",
-      "metadata": null
-    }
+    // ...
   ],
   "columns": [
     {

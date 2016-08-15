@@ -32,15 +32,15 @@ def contact(request):
     return render(request, 'app/contact.html', context)
 
 
-def tutorial(request):
+def help(request):
     """
     Tutorial page route. Static HTML can be found in
-    templates/app/tutorial.html
+    templates/app/help.html
 
     :param request: Request object
-    :return: Renders the tutorial page
+    :return: Renders the help page
     """
-    return render(request, 'app/tutorial.html', context)
+    return render(request, 'app/help.html', context)
 
 
 @login_required

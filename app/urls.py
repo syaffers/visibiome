@@ -9,7 +9,7 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^contact/$', views.contact, name='contact'),
     url(r'^dashboard/$', views.dashboard, name='dashboard'),
-    url(r'^tutorial/$', views.tutorial, name='tutorial'),
+    url(r'^help/$', views.help, name='help'),
 
     url(r'^login/$', auth.login, name='login'),
     url(r'^logout/$', auth.logout, name='logout'),
