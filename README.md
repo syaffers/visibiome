@@ -24,15 +24,15 @@
 
         $ python manage.py createsuperuser
 
-5. Setup a Redis cache (try RedisLabs, AWS ElastiCache is a little diffifcult to configure)
+6. Setup a Redis cache (try RedisLabs, AWS ElastiCache is a little diffifcult to configure)
 
-6. Edit `app/settings.py` to include Redis server URL by editing the following line
+7. Edit `app/settings.py` to include Redis server URL by editing the following line
 
         ...
         BROKER_URL = "redis://<REDIS_IP_ADDRESS>//"
         ...
 
-7. Update `app/betadiversity_scripts/config.py` to match current microbiome DB service
+8. Update `app/betadiversity_scripts/config.py` to match current microbiome DB service
 
         server_db = dict(
             # assuming you kept the name of the DB as ServerMicroBiome
@@ -42,7 +42,7 @@
             passwd="<server_password>",
         )
 
-8. Set public directories by editing the `MEDIA_ROOT` and `LARGE_DATA_PATH`
+9. Set public directories by editing the `MEDIA_ROOT` and `LARGE_DATA_PATH`
 
         ...
         MEDIA_ROOT = '/path/to/user/writable/directory/media'
@@ -50,12 +50,25 @@
         LARGE_DATA_PATH = '/path/to/user/writable/directory/data'
         ...
 
-8. Make two folders in the public path
+10. Make the two folders with the paths you just assigned to the public
+directories
 
-7. Start worker
+        $ mkdir /path/to/user/writable/directory/media
+        $ mkdir /path/to/user/writable/directory/data
+
+11. Copy the 10k files into the `/path/to/user/writable/directory/data`
+directory 
+
+12. Start worker
 
         $ celery -A darp worker
-    
+
+13. Start (development) server
+
+        $ python manage.py runserver 0.0.0.0:8000
+
+14. Hope for the best 😎
+
 ## TODO List ##
 * http://docs.celeryproject.org/en/latest/tutorials/daemonizing.html
 * WSGI integration using Apache backend or something
