@@ -6,10 +6,11 @@ from celery import Celery
 
 from django.conf import settings
 
-# set the default Django settings module for the 'celery' program.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'darp.settings')
+# Set the default Django settings module for the 'celery' program.
+# Shange this according to the detup that you need, local, development or prod.
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vzb.settings.local')
 
-app = Celery('darp')
+app = Celery('vzb')
 
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.

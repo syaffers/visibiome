@@ -82,9 +82,10 @@ def return_represent_sample(largedata, user_choice):
     """
     print("\nLoading 10k files... ({})".format(__file__))
     # load files from binary
-    totsample = cPickle.load(open(largedata + "_samples.pcl"))
+    print("\n    from  ({})".format(largedata + "10k_samples.pcl"))
+    totsample = cPickle.load(open(largedata + "10k_samples.pcl"))
     # distance matrix
-    totMatrix = np.load(largedata + "_bray_curtis_adaptive.npy")
+    totMatrix = np.load(largedata + "10k_bray_curtis_adaptive.npy")
     totsample_dict = dict(zip(totsample, range(len(totsample))))
     mMatrix = []
     Msample = []
@@ -137,9 +138,9 @@ def return_rep_original_samples(m_repsampleid,
     """
     print("\nLoading 10k files... ({})".format(__file__))
     # load files from binary:
-    totsample = cPickle.load(open(largedata + "_samples.pcl"))
+    totsample = cPickle.load(open(largedata + "10k_samples.pcl"))
     # distance matrix
-    totMatrix = np.load(largedata + "_bray_curtis_adaptive.npy")
+    totMatrix = np.load(largedata + "10k_bray_curtis_adaptive.npy")
     totsample_dict = dict(zip(totsample, range(len(totsample))))
     mMatrix = []
     Msample = []

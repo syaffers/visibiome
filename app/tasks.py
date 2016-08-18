@@ -13,7 +13,7 @@ from betadiversity_scripts.select_samples import (return_represent_sample,
 from biom.parse import parse_biom_table
 from biom import parse_table, load_table
 from biom.exception import TableException
-from darp.celery import app
+from vzb.celery import app
 from django.conf import settings
 from qiime import __version__ as qiime_ver
 from time import sleep
@@ -86,9 +86,9 @@ def m_n_betadiversity(job_id):
     # Due to database table naming, this is necessary
     if 'All' in user_choice:
         user_choice[user_choice.index('All')] = 'All_eco'
-    
+
     # TODO: Still hack-y! Find a better way to include the 10k files
-    largedata = settings.LARGE_DATA_PATH
+    largedata = settings.TEN_K_DATA_PATH
 
     try:
         # load submitted biom file/text into otutableS

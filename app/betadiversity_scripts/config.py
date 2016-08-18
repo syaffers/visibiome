@@ -1,8 +1,7 @@
+from django.conf import settings
 server_db = dict(
-    db="ServerMicroBiome", host="localhost", user="root", passwd="qiime",
+    db=settings.MICROBIOME_DB['NAME'],
+    host=settings.MICROBIOME_DB['HOST'],
+    user=settings.MICROBIOME_DB['USER'],
+    passwd=settings.MICROBIOME_DB['PASSWORD'],
 )
-# server_db = dict(
-#     db="ServerMicroBiome",
-#     host="testmicrobiome.chrriu1vj8tf.us-east-1.rds.amazonaws.com",
-#     user="qiime", passwd="TONYHAWK",
-# )
