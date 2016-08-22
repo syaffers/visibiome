@@ -6,42 +6,70 @@
   <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2">
     <ul class="nav nav-pills nav-stacked">
       <li><span class="nav-divider-custom">Details</span></li>
-      {% url 'app:job_details' job.id as details_url  %}
-      <li class="{% active details_url %}"><a href="{% url 'app:job_details' job.id %}">Details</a></li>
+      {% if is_example %}
+        {% url 'app:example_job_details' as details_url %}
+      {% else %}
+        {% url 'app:job_details' job.id as details_url  %}
+      {% endif %}
+      <li class="{% active details_url %}"><a href="{{ details_url }}">Details</a></li>
       <li><span class="nav-divider-custom">Visualization</span></li>
-      {% url 'app:job_ranking' job.id as ranking_url %}
+      {% if is_example %}
+        {% url 'app:example_job_ranking' as ranking_url %}
+      {% else %}
+        {% url 'app:job_ranking' job.id as ranking_url %}
+      {% endif %}
       <li class="{% active ranking_url %}">
         <a href="{% if job.status < 10 %} # {% else %}{{ ranking_url }}{% endif %}">
           Ranking
         </a>
       </li>
-      {% url 'app:job_heatmap' job.id as heatmap_url %}
+      {% if is_example %}
+        {% url 'app:example_job_heatmap' as heatmap_url %}
+      {% else %}
+        {% url 'app:job_heatmap' job.id as heatmap_url %}
+      {% endif %}
       <li class="{% active heatmap_url %}">
         <a href="{% if job.status < 10 %} # {% else %}{{ heatmap_url }}{% endif %}">
           Heatmap
         </a>
       </li>
-      {% url 'app:job_pcoa_reps' job.id as pcoa_url %}
+      {% if is_example %}
+        {% url 'app:example_job_pcoa_reps' as pcoa_url %}
+      {% else %}
+        {% url 'app:job_pcoa_reps' job.id as pcoa_url %}
+      {% endif %}
       <li><span class="nav-divider-custom">PCoA</span></li>
       <li class="{% active pcoa_url %}">
         <a href="{% if job.status < 10 %} # {% else %}{{ pcoa_url }}{% endif %}">
           Representatives
         </a>
       </li>
-      {% url 'app:job_pcoa_similar' job.id as pcoa_250_url %}
+      {% if is_example %}
+        {% url 'app:example_job_pcoa_similar' as pcoa_250_url %}
+      {% else %}
+        {% url 'app:job_pcoa_similar' job.id as pcoa_250_url %}
+      {% endif %}
       <li class="{% active pcoa_250_url %}">
         <a href="{% if job.status < 10 %} # {% else %}{{ pcoa_250_url }}{% endif %}">
           250 Most Similar
         </a>
       </li>
-      {% url 'app:job_dend_reps' job.id as dend_url %}
+      {% if is_example %}
+        {% url 'app:example_job_dend_reps' as dend_url %}
+      {% else %}
+        {% url 'app:job_dend_reps' job.id as dend_url %}
+      {% endif %}
       <li><span class="nav-divider-custom">Dendrogram</span></li>
       <li class="{% active dend_url %}">
         <a href="{% if job.status < 10 %} # {% else %}{{ dend_url }}{% endif %}">
           Representatives
         </a>
       </li>
-      {% url 'app:job_dend_similar' job.id as dend_250_url %}
+      {% if is_example %}
+        {% url 'app:example_job_dend_similar' as dend_250_url %}
+      {% else %}
+        {% url 'app:job_dend_similar' job.id as dend_250_url %}
+      {% endif %}
       <li class="{% active dend_250_url %}">
         <a href="{% if job.status < 10 %} # {% else %}{{ dend_250_url }}{% endif %}">
           250 Most Similar

@@ -234,6 +234,27 @@ O11   2.0
         </div>
       </div>
     </div>
+    <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="headingEight">
+        <h4 class="panel-title">
+          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseEight" aria-expanded="false" aria-controls="collapseEight">
+            5. Test Example
+          </a>
+        </h4>
+      </div>
+      <div id="collapseEight" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingSeven">
+        <div class="panel-body">
+          <p>
+            If you wish to run an example task to be familiar with the user
+            interface, you can
+            <a href="{% url 'app:example_job_details' %}">
+              view an example result of a pre-run job.
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
+</div>
 
 {% endblock %}

@@ -5,9 +5,27 @@ from django.contrib import messages
 from .models import BiomSearchJob
 
 # general context for all pages
-context = {"flash": None}
+context = {"flash": None, "is_example": False}
 
 # TODO: Refactor later to use class based views for cleaner code
+@login_required
+def dashboard(request):
+    """
+    Dashboard page route. Static HTML can be found in
+    templates/app/dashboard.html
+
+    :param request: Request object
+    :return: Renders the dashboard
+    """
+    msg_storage = messages.get_messages(request)
+    jobs = BiomSearchJob.objects.filter(user=request.user.id)
+    jobs = jobs.order_by('-created_at').all()
+
+    context['jobs'] = jobs
+    context['flash'] = msg_storage
+    return render(request, 'app/dashboard.html', context)
+
+    
 @login_required
 def details(request, job_id):
     msg_storage = messages.get_messages(request)

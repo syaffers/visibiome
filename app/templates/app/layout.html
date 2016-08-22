@@ -52,6 +52,12 @@
                 Help
               </a>
             </li>
+            <li>
+              <a href="{% url 'app:example_job_details' %}">
+                <span class="glyphicon glyphicon-flash"></span>
+                Test Example
+              </a>
+            </li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
             {% if user.is_authenticated %}

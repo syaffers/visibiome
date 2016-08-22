@@ -1,0 +1,840 @@
+{
+    "children": [
+        {
+            "OntologyTerm": [
+                "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                "ENVO:00002003,feces", 
+                "ENVO:00009002,mammalia-associated habitat"
+            ], 
+            "children": [
+                {
+                    "OntologyTerm": [
+                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                        "ENVO:00002003,feces", 
+                        "ENVO:00009002,mammalia-associated habitat"
+                    ], 
+                    "children": [
+                        {
+                            "OntologyTerm": [], 
+                            "children": [], 
+                            "ecocolor": [
+                                "White", 
+                                "White", 
+                                "White"
+                            ], 
+                            "ecosystem": [], 
+                            "length": 116.03938303685435, 
+                            "name": "LD.Ptepar_usersample", 
+                            "node_id": 0, 
+                            "study_source": "", 
+                            "title": ""
+                        }, 
+                        {
+                            "OntologyTerm": [
+                                "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                "ENVO:00002003,feces", 
+                                "ENVO:00009002,mammalia-associated habitat"
+                            ], 
+                            "children": [], 
+                            "ecocolor": [
+                                "Gold", 
+                                "DarkViolet", 
+                                "DarkViolet"
+                            ], 
+                            "ecosystem": [
+                                "Soil", 
+                                "Animal/Human"
+                            ], 
+                            "length": 116.03938303685435, 
+                            "name": "LD.Ptepar1.710963", 
+                            "node_id": 1, 
+                            "study_source": "Earth Microbiome Project", 
+                            "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                        }
+                    ], 
+                    "ecocolor": [], 
+                    "ecosystem": [
+                        "Soil", 
+                        "Animal/Human"
+                    ], 
+                    "length": 118.75903445016023, 
+                    "name": "2", 
+                    "node_id": 38, 
+                    "study_source": "", 
+                    "title": ""
+                }, 
+                {
+                    "OntologyTerm": [
+                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                        "ENVO:00002003,feces", 
+                        "ENVO:00009002,mammalia-associated habitat"
+                    ], 
+                    "children": [
+                        {
+                            "OntologyTerm": [
+                                "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                "ENVO:00002003,feces", 
+                                "ENVO:00009002,mammalia-associated habitat"
+                            ], 
+                            "children": [
+                                {
+                                    "OntologyTerm": [
+                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                        "ENVO:00002003,feces", 
+                                        "ENVO:00009002,mammalia-associated habitat"
+                                    ], 
+                                    "children": [], 
+                                    "ecocolor": [
+                                        "Gold", 
+                                        "DarkViolet", 
+                                        "DarkViolet"
+                                    ], 
+                                    "ecosystem": [
+                                        "Soil", 
+                                        "Animal/Human"
+                                    ], 
+                                    "length": 51.560559618786272, 
+                                    "name": "LD.NBS1047C.710992", 
+                                    "node_id": 2, 
+                                    "study_source": "Earth Microbiome Project", 
+                                    "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                                }, 
+                                {
+                                    "OntologyTerm": [
+                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                        "ENVO:00002003,feces", 
+                                        "ENVO:00009002,mammalia-associated habitat"
+                                    ], 
+                                    "children": [
+                                        {
+                                            "OntologyTerm": [
+                                                "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                "ENVO:00002003,feces", 
+                                                "ENVO:00009002,mammalia-associated habitat"
+                                            ], 
+                                            "children": [
+                                                {
+                                                    "OntologyTerm": [
+                                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                        "ENVO:00002003,feces", 
+                                                        "ENVO:00009002,mammalia-associated habitat"
+                                                    ], 
+                                                    "children": [], 
+                                                    "ecocolor": [
+                                                        "Gold", 
+                                                        "DarkViolet", 
+                                                        "DarkViolet"
+                                                    ], 
+                                                    "ecosystem": [
+                                                        "Soil", 
+                                                        "Animal/Human"
+                                                    ], 
+                                                    "length": 19.277977933618445, 
+                                                    "name": "LD.NBS1049B.710931", 
+                                                    "node_id": 12, 
+                                                    "study_source": "Earth Microbiome Project", 
+                                                    "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                                                }, 
+                                                {
+                                                    "OntologyTerm": [
+                                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                        "ENVO:00002003,feces", 
+                                                        "ENVO:00009002,mammalia-associated habitat"
+                                                    ], 
+                                                    "children": [
+                                                        {
+                                                            "OntologyTerm": [
+                                                                "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                "ENVO:00002003,feces", 
+                                                                "ENVO:00009002,mammalia-associated habitat"
+                                                            ], 
+                                                            "children": [], 
+                                                            "ecocolor": [
+                                                                "Gold", 
+                                                                "DarkViolet", 
+                                                                "DarkViolet"
+                                                            ], 
+                                                            "ecosystem": [
+                                                                "Soil", 
+                                                                "Animal/Human"
+                                                            ], 
+                                                            "length": 15.52354522284401, 
+                                                            "name": "BD.ERD505.710945", 
+                                                            "node_id": 3, 
+                                                            "study_source": "Earth Microbiome Project", 
+                                                            "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                                                        }, 
+                                                        {
+                                                            "OntologyTerm": [
+                                                                "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                "ENVO:00002003,feces", 
+                                                                "ENVO:00009002,mammalia-associated habitat"
+                                                            ], 
+                                                            "children": [], 
+                                                            "ecocolor": [
+                                                                "Gold", 
+                                                                "DarkViolet", 
+                                                                "DarkViolet"
+                                                            ], 
+                                                            "ecosystem": [
+                                                                "Soil", 
+                                                                "Animal/Human"
+                                                            ], 
+                                                            "length": 15.52354522284401, 
+                                                            "name": "LD.DTS1225.710993", 
+                                                            "node_id": 5, 
+                                                            "study_source": "Earth Microbiome Project", 
+                                                            "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                                                        }
+                                                    ], 
+                                                    "ecocolor": [], 
+                                                    "ecosystem": [
+                                                        "Soil", 
+                                                        "Animal/Human"
+                                                    ], 
+                                                    "length": 3.7544327107744357, 
+                                                    "name": "2", 
+                                                    "node_id": 30, 
+                                                    "study_source": "", 
+                                                    "title": ""
+                                                }
+                                            ], 
+                                            "ecocolor": [], 
+                                            "ecosystem": [
+                                                "Soil", 
+                                                "Animal/Human"
+                                            ], 
+                                            "length": 8.7453317133102004, 
+                                            "name": "3", 
+                                            "node_id": 32, 
+                                            "study_source": "", 
+                                            "title": ""
+                                        }, 
+                                        {
+                                            "OntologyTerm": [
+                                                "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                "ENVO:00002003,feces", 
+                                                "ENVO:00009002,mammalia-associated habitat"
+                                            ], 
+                                            "children": [
+                                                {
+                                                    "OntologyTerm": [
+                                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                        "ENVO:00002003,feces", 
+                                                        "ENVO:00009002,mammalia-associated habitat"
+                                                    ], 
+                                                    "children": [
+                                                        {
+                                                            "OntologyTerm": [
+                                                                "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                "ENVO:00002003,feces", 
+                                                                "ENVO:00009002,mammalia-associated habitat"
+                                                            ], 
+                                                            "children": [
+                                                                {
+                                                                    "OntologyTerm": [
+                                                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                        "ENVO:00002003,feces", 
+                                                                        "ENVO:00009002,mammalia-associated habitat"
+                                                                    ], 
+                                                                    "children": [], 
+                                                                    "ecocolor": [
+                                                                        "Gold", 
+                                                                        "DarkViolet", 
+                                                                        "DarkViolet"
+                                                                    ], 
+                                                                    "ecosystem": [
+                                                                        "Soil", 
+                                                                        "Animal/Human"
+                                                                    ], 
+                                                                    "length": 5.5584787444689807, 
+                                                                    "name": "LD.Urobil1.711000", 
+                                                                    "node_id": 8, 
+                                                                    "study_source": "Earth Microbiome Project", 
+                                                                    "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                                                                }, 
+                                                                {
+                                                                    "OntologyTerm": [
+                                                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                        "ENVO:00002003,feces", 
+                                                                        "ENVO:00009002,mammalia-associated habitat"
+                                                                    ], 
+                                                                    "children": [
+                                                                        {
+                                                                            "OntologyTerm": [
+                                                                                "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                                "ENVO:00002003,feces", 
+                                                                                "ENVO:00009002,mammalia-associated habitat"
+                                                                            ], 
+                                                                            "children": [], 
+                                                                            "ecocolor": [
+                                                                                "Gold", 
+                                                                                "DarkViolet", 
+                                                                                "DarkViolet"
+                                                                            ], 
+                                                                            "ecosystem": [
+                                                                                "Soil", 
+                                                                                "Animal/Human"
+                                                                            ], 
+                                                                            "length": 4.0112875488657576, 
+                                                                            "name": "LD.NBS1076E.711003", 
+                                                                            "node_id": 16, 
+                                                                            "study_source": "Earth Microbiome Project", 
+                                                                            "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                                                                        }, 
+                                                                        {
+                                                                            "OntologyTerm": [
+                                                                                "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                                "ENVO:00002003,feces", 
+                                                                                "ENVO:00009002,mammalia-associated habitat"
+                                                                            ], 
+                                                                            "children": [
+                                                                                {
+                                                                                    "OntologyTerm": [
+                                                                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                                        "ENVO:00002003,feces", 
+                                                                                        "ENVO:00009002,mammalia-associated habitat"
+                                                                                    ], 
+                                                                                    "children": [], 
+                                                                                    "ecocolor": [
+                                                                                        "Gold", 
+                                                                                        "DarkViolet", 
+                                                                                        "DarkViolet"
+                                                                                    ], 
+                                                                                    "ecosystem": [
+                                                                                        "Soil", 
+                                                                                        "Animal/Human"
+                                                                                    ], 
+                                                                                    "length": 3.7225620804681774, 
+                                                                                    "name": "LD.NBS1073B.710977", 
+                                                                                    "node_id": 15, 
+                                                                                    "study_source": "Earth Microbiome Project", 
+                                                                                    "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                                                                                }, 
+                                                                                {
+                                                                                    "OntologyTerm": [
+                                                                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                                        "ENVO:00002003,feces", 
+                                                                                        "ENVO:00009002,mammalia-associated habitat"
+                                                                                    ], 
+                                                                                    "children": [
+                                                                                        {
+                                                                                            "OntologyTerm": [
+                                                                                                "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                                                "ENVO:00002003,feces", 
+                                                                                                "ENVO:00009002,mammalia-associated habitat"
+                                                                                            ], 
+                                                                                            "children": [], 
+                                                                                            "ecocolor": [
+                                                                                                "Gold", 
+                                                                                                "DarkViolet", 
+                                                                                                "DarkViolet"
+                                                                                            ], 
+                                                                                            "ecosystem": [
+                                                                                                "Soil", 
+                                                                                                "Animal/Human"
+                                                                                            ], 
+                                                                                            "length": 3.2633529413192779, 
+                                                                                            "name": "LD.Glosor1.710919", 
+                                                                                            "node_id": 13, 
+                                                                                            "study_source": "Earth Microbiome Project", 
+                                                                                            "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                                                                                        }, 
+                                                                                        {
+                                                                                            "OntologyTerm": [
+                                                                                                "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                                                "ENVO:00002003,feces", 
+                                                                                                "ENVO:00009002,mammalia-associated habitat"
+                                                                                            ], 
+                                                                                            "children": [
+                                                                                                {
+                                                                                                    "OntologyTerm": [
+                                                                                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                                                        "ENVO:00002003,feces", 
+                                                                                                        "ENVO:00009002,mammalia-associated habitat"
+                                                                                                    ], 
+                                                                                                    "children": [], 
+                                                                                                    "ecocolor": [
+                                                                                                        "Gold", 
+                                                                                                        "DarkViolet", 
+                                                                                                        "DarkViolet"
+                                                                                                    ], 
+                                                                                                    "ecosystem": [
+                                                                                                        "Soil", 
+                                                                                                        "Animal/Human"
+                                                                                                    ], 
+                                                                                                    "length": 2.3765110795256263, 
+                                                                                                    "name": "BD.NBS1076.710971", 
+                                                                                                    "node_id": 14, 
+                                                                                                    "study_source": "Earth Microbiome Project", 
+                                                                                                    "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                                                                                                }, 
+                                                                                                {
+                                                                                                    "OntologyTerm": [
+                                                                                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                                                        "ENVO:00002003,feces", 
+                                                                                                        "ENVO:00009002,mammalia-associated habitat"
+                                                                                                    ], 
+                                                                                                    "children": [], 
+                                                                                                    "ecocolor": [
+                                                                                                        "Gold", 
+                                                                                                        "DarkViolet", 
+                                                                                                        "DarkViolet"
+                                                                                                    ], 
+                                                                                                    "ecosystem": [
+                                                                                                        "Soil", 
+                                                                                                        "Animal/Human"
+                                                                                                    ], 
+                                                                                                    "length": 2.3765110795256263, 
+                                                                                                    "name": "LD.QCAZ.M51307.710925", 
+                                                                                                    "node_id": 19, 
+                                                                                                    "study_source": "Earth Microbiome Project", 
+                                                                                                    "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                                                                                                }
+                                                                                            ], 
+                                                                                            "ecocolor": [], 
+                                                                                            "ecosystem": [
+                                                                                                "Soil", 
+                                                                                                "Animal/Human"
+                                                                                            ], 
+                                                                                            "length": 0.88684186179365176, 
+                                                                                            "name": "2", 
+                                                                                            "node_id": 21, 
+                                                                                            "study_source": "", 
+                                                                                            "title": ""
+                                                                                        }
+                                                                                    ], 
+                                                                                    "ecocolor": [], 
+                                                                                    "ecosystem": [
+                                                                                        "Soil", 
+                                                                                        "Animal/Human"
+                                                                                    ], 
+                                                                                    "length": 0.45920913914889938, 
+                                                                                    "name": "3", 
+                                                                                    "node_id": 22, 
+                                                                                    "study_source": "", 
+                                                                                    "title": ""
+                                                                                }
+                                                                            ], 
+                                                                            "ecocolor": [], 
+                                                                            "ecosystem": [
+                                                                                "Soil", 
+                                                                                "Animal/Human"
+                                                                            ], 
+                                                                            "length": 0.28872546839758051, 
+                                                                            "name": "4", 
+                                                                            "node_id": 24, 
+                                                                            "study_source": "", 
+                                                                            "title": ""
+                                                                        }
+                                                                    ], 
+                                                                    "ecocolor": [], 
+                                                                    "ecosystem": [
+                                                                        "Soil", 
+                                                                        "Animal/Human"
+                                                                    ], 
+                                                                    "length": 1.5471911956032232, 
+                                                                    "name": "5", 
+                                                                    "node_id": 25, 
+                                                                    "study_source": "", 
+                                                                    "title": ""
+                                                                }
+                                                            ], 
+                                                            "ecocolor": [], 
+                                                            "ecosystem": [
+                                                                "Soil", 
+                                                                "Animal/Human"
+                                                            ], 
+                                                            "length": 1.3756095625562876, 
+                                                            "name": "6", 
+                                                            "node_id": 26, 
+                                                            "study_source": "", 
+                                                            "title": ""
+                                                        }, 
+                                                        {
+                                                            "OntologyTerm": [
+                                                                "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                "ENVO:00002003,feces", 
+                                                                "ENVO:00009002,mammalia-associated habitat"
+                                                            ], 
+                                                            "children": [
+                                                                {
+                                                                    "OntologyTerm": [
+                                                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                        "ENVO:00002003,feces", 
+                                                                        "ENVO:00009002,mammalia-associated habitat"
+                                                                    ], 
+                                                                    "children": [], 
+                                                                    "ecocolor": [
+                                                                        "Gold", 
+                                                                        "DarkViolet", 
+                                                                        "DarkViolet"
+                                                                    ], 
+                                                                    "ecosystem": [
+                                                                        "Soil", 
+                                                                        "Animal/Human"
+                                                                    ], 
+                                                                    "length": 6.2002417448148748, 
+                                                                    "name": "LD.Perkap1.710954", 
+                                                                    "node_id": 9, 
+                                                                    "study_source": "Earth Microbiome Project", 
+                                                                    "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                                                                }, 
+                                                                {
+                                                                    "OntologyTerm": [
+                                                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                        "ENVO:00002003,feces", 
+                                                                        "ENVO:00009002,mammalia-associated habitat"
+                                                                    ], 
+                                                                    "children": [], 
+                                                                    "ecocolor": [
+                                                                        "Gold", 
+                                                                        "DarkViolet", 
+                                                                        "DarkViolet"
+                                                                    ], 
+                                                                    "ecosystem": [
+                                                                        "Soil", 
+                                                                        "Animal/Human"
+                                                                    ], 
+                                                                    "length": 6.2002417448148748, 
+                                                                    "name": "LD.NBS1070E.710990", 
+                                                                    "node_id": 11, 
+                                                                    "study_source": "Earth Microbiome Project", 
+                                                                    "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                                                                }
+                                                            ], 
+                                                            "ecocolor": [], 
+                                                            "ecosystem": [
+                                                                "Soil", 
+                                                                "Animal/Human"
+                                                            ], 
+                                                            "length": 0.73384656221039402, 
+                                                            "name": "2", 
+                                                            "node_id": 27, 
+                                                            "study_source": "", 
+                                                            "title": ""
+                                                        }
+                                                    ], 
+                                                    "ecocolor": [], 
+                                                    "ecosystem": [
+                                                        "Soil", 
+                                                        "Animal/Human"
+                                                    ], 
+                                                    "length": 12.924260550812919, 
+                                                    "name": "8", 
+                                                    "node_id": 28, 
+                                                    "study_source": "", 
+                                                    "title": ""
+                                                }, 
+                                                {
+                                                    "OntologyTerm": [
+                                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                        "ENVO:00002003,feces", 
+                                                        "ENVO:00009002,mammalia-associated habitat"
+                                                    ], 
+                                                    "children": [
+                                                        {
+                                                            "OntologyTerm": [
+                                                                "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                "ENVO:00002003,feces", 
+                                                                "ENVO:00009002,mammalia-associated habitat"
+                                                            ], 
+                                                            "children": [
+                                                                {
+                                                                    "OntologyTerm": [
+                                                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                        "ENVO:00002003,feces", 
+                                                                        "ENVO:00009002,mammalia-associated habitat"
+                                                                    ], 
+                                                                    "children": [], 
+                                                                    "ecocolor": [
+                                                                        "Gold", 
+                                                                        "DarkViolet", 
+                                                                        "DarkViolet"
+                                                                    ], 
+                                                                    "ecosystem": [
+                                                                        "Soil", 
+                                                                        "Animal/Human"
+                                                                    ], 
+                                                                    "length": 3.3706071362235064, 
+                                                                    "name": "BD.NBS1062.710926", 
+                                                                    "node_id": 6, 
+                                                                    "study_source": "Earth Microbiome Project", 
+                                                                    "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                                                                }, 
+                                                                {
+                                                                    "OntologyTerm": [
+                                                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                        "ENVO:00002003,feces", 
+                                                                        "ENVO:00009002,mammalia-associated habitat"
+                                                                    ], 
+                                                                    "children": [], 
+                                                                    "ecocolor": [
+                                                                        "Gold", 
+                                                                        "DarkViolet", 
+                                                                        "DarkViolet"
+                                                                    ], 
+                                                                    "ecosystem": [
+                                                                        "Soil", 
+                                                                        "Animal/Human"
+                                                                    ], 
+                                                                    "length": 3.3706071362235064, 
+                                                                    "name": "LD.NBS1062E.710936", 
+                                                                    "node_id": 7, 
+                                                                    "study_source": "Earth Microbiome Project", 
+                                                                    "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                                                                }
+                                                            ], 
+                                                            "ecocolor": [], 
+                                                            "ecosystem": [
+                                                                "Soil", 
+                                                                "Animal/Human"
+                                                            ], 
+                                                            "length": 13.30383559543295, 
+                                                            "name": "2", 
+                                                            "node_id": 23, 
+                                                            "study_source": "", 
+                                                            "title": ""
+                                                        }, 
+                                                        {
+                                                            "OntologyTerm": [
+                                                                "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                "ENVO:00002003,feces", 
+                                                                "ENVO:00009002,mammalia-associated habitat"
+                                                            ], 
+                                                            "children": [
+                                                                {
+                                                                    "OntologyTerm": [
+                                                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                        "ENVO:00002003,feces", 
+                                                                        "ENVO:00009002,mammalia-associated habitat"
+                                                                    ], 
+                                                                    "children": [], 
+                                                                    "ecocolor": [
+                                                                        "Gold", 
+                                                                        "DarkViolet", 
+                                                                        "DarkViolet"
+                                                                    ], 
+                                                                    "ecosystem": [
+                                                                        "Soil", 
+                                                                        "Animal/Human"
+                                                                    ], 
+                                                                    "length": 14.917440670481641, 
+                                                                    "name": "LD.NBS1081E.710921", 
+                                                                    "node_id": 18, 
+                                                                    "study_source": "Earth Microbiome Project", 
+                                                                    "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                                                                }, 
+                                                                {
+                                                                    "OntologyTerm": [
+                                                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                                        "ENVO:00002003,feces", 
+                                                                        "ENVO:00009002,mammalia-associated habitat"
+                                                                    ], 
+                                                                    "children": [], 
+                                                                    "ecocolor": [
+                                                                        "Gold", 
+                                                                        "DarkViolet", 
+                                                                        "DarkViolet"
+                                                                    ], 
+                                                                    "ecosystem": [
+                                                                        "Soil", 
+                                                                        "Animal/Human"
+                                                                    ], 
+                                                                    "length": 14.917440670481641, 
+                                                                    "name": "BD.ERD501.710983", 
+                                                                    "node_id": 20, 
+                                                                    "study_source": "Earth Microbiome Project", 
+                                                                    "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                                                                }
+                                                            ], 
+                                                            "ecocolor": [], 
+                                                            "ecosystem": [
+                                                                "Soil", 
+                                                                "Animal/Human"
+                                                            ], 
+                                                            "length": 1.7570020611748172, 
+                                                            "name": "2", 
+                                                            "node_id": 29, 
+                                                            "study_source": "", 
+                                                            "title": ""
+                                                        }
+                                                    ], 
+                                                    "ecocolor": [], 
+                                                    "ecosystem": [
+                                                        "Soil", 
+                                                        "Animal/Human"
+                                                    ], 
+                                                    "length": 3.1839061261817294, 
+                                                    "name": "4", 
+                                                    "node_id": 31, 
+                                                    "study_source": "", 
+                                                    "title": ""
+                                                }
+                                            ], 
+                                            "ecocolor": [], 
+                                            "ecosystem": [
+                                                "Soil", 
+                                                "Animal/Human"
+                                            ], 
+                                            "length": 8.1649607890904576, 
+                                            "name": "12", 
+                                            "node_id": 33, 
+                                            "study_source": "", 
+                                            "title": ""
+                                        }
+                                    ], 
+                                    "ecocolor": [], 
+                                    "ecosystem": [
+                                        "Soil", 
+                                        "Animal/Human"
+                                    ], 
+                                    "length": 23.537249971857626, 
+                                    "name": "15", 
+                                    "node_id": 34, 
+                                    "study_source": "", 
+                                    "title": ""
+                                }
+                            ], 
+                            "ecocolor": [], 
+                            "ecosystem": [
+                                "Soil", 
+                                "Animal/Human"
+                            ], 
+                            "length": 65.75193519986297, 
+                            "name": "16", 
+                            "node_id": 35, 
+                            "study_source": "", 
+                            "title": ""
+                        }, 
+                        {
+                            "OntologyTerm": [
+                                "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                "ENVO:00002003,feces", 
+                                "ENVO:00009002,mammalia-associated habitat"
+                            ], 
+                            "children": [
+                                {
+                                    "OntologyTerm": [
+                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                        "ENVO:00002003,feces", 
+                                        "ENVO:00009002,mammalia-associated habitat"
+                                    ], 
+                                    "children": [], 
+                                    "ecocolor": [
+                                        "Gold", 
+                                        "DarkViolet", 
+                                        "DarkViolet"
+                                    ], 
+                                    "ecosystem": [
+                                        "Soil", 
+                                        "Animal/Human"
+                                    ], 
+                                    "length": 59.568341247734871, 
+                                    "name": "LD.DTS1224.710958", 
+                                    "node_id": 4, 
+                                    "study_source": "Earth Microbiome Project", 
+                                    "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                                }, 
+                                {
+                                    "OntologyTerm": [
+                                        "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                        "ENVO:00002003,feces", 
+                                        "ENVO:00009002,mammalia-associated habitat"
+                                    ], 
+                                    "children": [
+                                        {
+                                            "OntologyTerm": [
+                                                "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                "ENVO:00002003,feces", 
+                                                "ENVO:00009002,mammalia-associated habitat"
+                                            ], 
+                                            "children": [], 
+                                            "ecocolor": [
+                                                "Gold", 
+                                                "DarkViolet", 
+                                                "DarkViolet"
+                                            ], 
+                                            "ecosystem": [
+                                                "Soil", 
+                                                "Animal/Human"
+                                            ], 
+                                            "length": 55.295435655070747, 
+                                            "name": "BD.ERD503.710979", 
+                                            "node_id": 10, 
+                                            "study_source": "Earth Microbiome Project", 
+                                            "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                                        }, 
+                                        {
+                                            "OntologyTerm": [
+                                                "ENVO:00000879,Tropical and subtropical moist broadleaf forest biome", 
+                                                "ENVO:00002003,feces", 
+                                                "ENVO:00009002,mammalia-associated habitat"
+                                            ], 
+                                            "children": [], 
+                                            "ecocolor": [
+                                                "Gold", 
+                                                "DarkViolet", 
+                                                "DarkViolet"
+                                            ], 
+                                            "ecosystem": [
+                                                "Soil", 
+                                                "Animal/Human"
+                                            ], 
+                                            "length": 55.295435655070747, 
+                                            "name": "LD.QCAZ.M51303.711012", 
+                                            "node_id": 17, 
+                                            "study_source": "Earth Microbiome Project", 
+                                            "title": "Gut microbiota of phyllostomid bats that span a breadth of diets"
+                                        }
+                                    ], 
+                                    "ecocolor": [], 
+                                    "ecosystem": [
+                                        "Soil", 
+                                        "Animal/Human"
+                                    ], 
+                                    "length": 4.272905592664122, 
+                                    "name": "2", 
+                                    "node_id": 36, 
+                                    "study_source": "", 
+                                    "title": ""
+                                }
+                            ], 
+                            "ecocolor": [], 
+                            "ecosystem": [
+                                "Soil", 
+                                "Animal/Human"
+                            ], 
+                            "length": 57.744153570914378, 
+                            "name": "3", 
+                            "node_id": 37, 
+                            "study_source": "", 
+                            "title": ""
+                        }
+                    ], 
+                    "ecocolor": [], 
+                    "ecosystem": [
+                        "Soil", 
+                        "Animal/Human"
+                    ], 
+                    "length": 117.48592266836533, 
+                    "name": "19", 
+                    "node_id": 39, 
+                    "study_source": "", 
+                    "title": ""
+                }
+            ], 
+            "ecocolor": [], 
+            "ecosystem": [
+                "Soil", 
+                "Animal/Human"
+            ], 
+            "length": 0.0, 
+            "name": "21", 
+            "node_id": 40, 
+            "study_source": "", 
+            "title": ""
+        }
+    ], 
+    "name": "Root1"
+}
