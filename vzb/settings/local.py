@@ -1,6 +1,8 @@
 # Local server settings - unsuitable for production. Use these settings
 # when you are testing on your personal computer and are making rapid,
-# potentially fatal changes and testing new ideas.
+# potentially fatal changes and testing new ideas. This is optimized to run
+# in a Qiime 1.90 virtual machine with a Redis message queue setup in the host
+# machine and a local installation of mysql with the microbiome database
 
 from vzb.settings.base import *
 

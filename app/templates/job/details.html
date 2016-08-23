@@ -31,5 +31,16 @@
       {{ job.updated_at }}
     {% endif %}
   </p>
+  {% if is_example %}
+    <p>
+      <em>
+        This example job was run by performing the following query in the
+        search/home page
+      </em>
+    </p>
+    <img src="{% static 'img/visibiome-screenshot.png' %}"
+         alt="A screenshot of submitting an input for processing"
+         class="img-responsive img-thumbnail">
+  {% endif %}
 
 {% endblock %}
