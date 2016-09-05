@@ -29,11 +29,22 @@ DATABASES = {
         # Or an IP Address that your DB is hosted on
         'HOST': 'localhost',
         'PORT': '3306',
+    },
+    # Microbiome Database configuration. This database is not handled by
+    # Django due to legacy reasons so no engine configuration needed.
+    'microbiome': {
+        'NAME': 'ServerMicroBiome',
+        # Currently it's pointing to the old microbiome sevrer in an EC2
+        'HOST': '52.33.150.116',
+        'USER': 'syafiq',
+        # Consider placing the password in an environment variable for
+        # production
+        'PASSWORD': 'syafiq123',
     }
 }
 
 # Log everything!
-LOG_FILE = BASE_DIR + 'vzb_prd.log'
+LOG_FILE = BASE_DIR + '/vzb_prd.log'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -62,16 +73,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'app/static/'),
 )
-
-# Microbiome Database configuration.
-MICROBIOME_DB = {
-    'NAME': 'ServerMicroBiome',
-    # Currently it's pointing to the old microbiome sevrer in an EC2
-    'HOST': '52.33.150.116',
-    'USER': 'syafiq',
-    # Consider placing the password in an environment variable
-    'PASSWORD': os.environ.get('MB_DB_PASSWORD')
-}
 
 # The 10K matrix path. This is placed wherever you want as long as it is
 # readable by the user deploying the webserver. Assuming you are using an EC2

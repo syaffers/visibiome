@@ -43,6 +43,17 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'db.sqlite3',
         'USER': '',
+    },
+    # Microbiome Database configuration. This database is not handled by
+    # Django due to legacy reasons so no engine configuration needed.
+    'microbiome': {
+        'NAME': 'ServerMicroBiome',
+        # Currently it's pointing to the old microbiome sevrer in an EC2
+        'HOST': 'localhost',
+        'USER': 'root',
+        # Consider placing the password in an environment variable for
+        # production
+        'PASSWORD': 'qiime',
     }
 }
 
@@ -51,20 +62,10 @@ DATABASES = {
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = '/home/qiime/www/staticfiles/media/'
+# Static files are handled by whitenoise and hence doesn't need Apache's
+# permissions. This reduces dependencies and configuration
 STATIC_URL = '/static/'
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'app/static/'),
-)
-
-# Microbiome Database configuration
-MICROBIOME_DB = {
-    'NAME': 'ServerMicroBiome',
-    # Currently it's pointing a local copy of the live microbiome database
-    'HOST': 'localhost',
-    'USER': 'root',
-    # Consider placing the password in an environment variable for production
-    'PASSWORD': 'qiime'
-}
+STATIC_ROOT = os.path.join(BASE_DIR, 'app/static/')
 
 # The 10K matrix path. This is placed wherever you want as long as it is
 # readable by the user deploying the webserver. Assuming you are using the

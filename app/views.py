@@ -4,17 +4,19 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from .models import BiomSearchJob, BiomSearchForm
 import cPickle
+import os
 
 context = {'flash': None, 'is_example': True}
 # HACK: Really dirty stuff going on here, won't modularize at all! WTF!
 # Paths are bieng set in OS-depedent manner, not using dynamic paths
 # Find a better way, and quick! Maybe checkout STATIC_ROOT for production
-example_data_path = "/static/example_data/"
-example_data_abs_path = settings.STATICFILES_DIRS[0]
+example_data_path = os.path.join(settings.STATIC_URL, "example_data/")
+example_data_abs_path = settings.STATIC_ROOT or settings.STATICFILES_DIRS[0]
+
 # load example job details as if it was loaded from database
-example_job = cPickle.load(
-    open(example_data_abs_path + "example_data/example_job.pcl", "r")
-)
+example_job_path = os.path.join(example_data_abs_path, "example_data/")
+example_job_path = os.path.join(example_job_path, "example_job.pcl")
+example_job = cPickle.load(open(example_job_path, "r"))
 
 
 def index(request):
