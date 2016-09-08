@@ -42,7 +42,7 @@ def validate_biom(job, file_path):
 
         if len(otu_table.ids()) == 1:
             job.status = BiomSearchJob.QUEUED
-            # HARDCODE! Bad practice!
+            # HACK: HARDCODE! Bad practice!
             job.sample_name = otu_table.ids()[0]
             job.save()
             m_n_betadiversity.delay(job.id)
@@ -79,7 +79,8 @@ def m_n_betadiversity(job_id):
     )
     userbiom = job.biom_file.path
 
-    # TODO: any way to do this cleaner?
+    # Changing Animal/Human to Animal_Human for database table processing
+    # HACK: any way to do this cleaner?
     user_choice = map(
         lambda x: x.replace("/", "_"), map(str, job.criteria.all())
     )
@@ -103,8 +104,16 @@ def m_n_betadiversity(job_id):
         n_otu_id = otutableS.ids(axis="observation")
         n_sample_id = list(otutableS.ids(axis="sample"))
 
-        # stringify tuple of observation IDs
-        notuids = str(tuple(map(int, n_otu_id)))
+        # trying to parse GreenGenes IDs
+        try:
+            # stringify tuple of observation IDs
+            notuids = str(tuple(map(int, n_otu_id)))
+        except ValueError:
+            # stop the job if non integer strings were found
+            job.status = BiomSearchJob.STOPPED
+            job.error_code = BiomSearchJob.STRICT_GREENGENES_ID
+            job.save()
+            return
 
         # preparing SQL query to get 16s copy number of each observation IDs
         query_str = """
