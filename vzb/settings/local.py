@@ -61,7 +61,7 @@ DATABASES = {
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/home/qiime/www/staticfiles/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles/')
 # Static files are handled by whitenoise and hence doesn't need Apache's
 # permissions. This reduces dependencies and configuration
 STATIC_URL = '/static/'
@@ -70,9 +70,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'app/static/')
 # The 10K matrix path. This is placed wherever you want as long as it is
 # readable by the user deploying the webserver. Assuming you are using the
 # Ubuntu VM provided by Qiime, the path should look something like below
-TEN_K_DATA_PATH = '/home/qiime/www/staticfiles/data/'
+TEN_K_DATA_PATH = os.path.join(STATIC_ROOT, 'data/')
 
 # If you can host a redis on your machine, just use 127.0.0.1, else
 # use an online one. If you can setup a redis on your home machine and is
 # running a VM of Ubuntu with Qiime with VirtualBox, use 10.0.2.2
-BROKER_URL = "redis://10.0.2.2//"
+BROKER_URL = "redis://127.0.0.1//"

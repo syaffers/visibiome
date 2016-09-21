@@ -44,7 +44,7 @@ DATABASES = {
 }
 
 # Log everything!
-LOG_FILE = BASE_DIR + '/vzb_prd.log'
+LOG_FILE = os.path.join(BASE_DIR, 'logs/vzb_prd.log')
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -68,16 +68,16 @@ LOGGING = {
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/home/qiime/www/staticfiles/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles/')
+# Static files are handled by whitenoise and hence doesn't need Apache's
+# permissions. This reduces dependencies and configuration
 STATIC_URL = '/static/'
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'app/static/'),
-)
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles/')
 
 # The 10K matrix path. This is placed wherever you want as long as it is
 # readable by the user deploying the webserver. Assuming you are using an EC2
 # server with the Qiime AMI, it should look something like the string below
-TEN_K_DATA_PATH = '/home/ubuntu/www/staticfiles/data/10k'
+TEN_K_DATA_PATH = os.path.join(STATIC_ROOT, 'data/')
 
 # Use a live redis cache to do message queueing. Consider putting the password
 # to the redis server in an environment variable

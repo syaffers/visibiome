@@ -18,17 +18,6 @@ DEBUG = False
 # Allowed hosts can be empty since debug is True
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
-# Use sqlite3 since it's easier to refresh and manage if problem occurs
-# database should be located at visibiome/db.sqlite3. Try to config for
-# databases you are planning to use here
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': 'db.sqlite3',
-#         'USER': '',
-#     }
-# }
-
 DATABASES = {
     'default': {
         # Django default development database
@@ -58,7 +47,7 @@ DATABASES = {
 }
 
 # Log all the requests and (potential) errors to file
-LOG_FILE = '/home/qiime/logs/vzb.log'
+LOG_FILE = os.path.join(BASE_DIR, 'logs/vzb.log')
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -82,16 +71,16 @@ LOGGING = {
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/home/qiime/dev/staticfiles/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles/')
 # Static files are handled by whitenoise and hence doesn't need Apache's
 # permissions. This reduces dependencies and configuration
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles/')
 
 # The 10K matrix path. This is placed wherever you want as long as it is
 # readable by the user deploying the webserver. Assuming you are using an EC2
 # server with the Qiime AMI, it should look something like the string below
-TEN_K_DATA_PATH = '/home/qiime/dev/staticfiles/data/'
+TEN_K_DATA_PATH = os.path.join(STATIC_ROOT, 'data/')
 
 # Use a live redis cache to do message queueing
 # BROKER_URL = "redis://:pizzaisgreat@"\

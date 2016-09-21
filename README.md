@@ -8,32 +8,35 @@
         $ git clone https://syaffers@bitbucket.org/syaffers/visibiome.git
         $ cd visibiome
 
-
 3. Install app dependencies
 
         $ pip install -r requirements.txt
 
+4. Migrate and populate database. Clear (or delete) the current database to
+start with a fresh installation. Change `<SETTING>` to your current
+deployment settings (e.g. `local`, `deployment`, `production`)
 
-4. Migrate and populate database (delete current DB to start fresh)
+        $ python manage.py migrate --settings=vzb.settings.<SETTING>
+        $ python manage.py loaddata data/ecosystem_choices.json --settings=vzb.settings.<SETTING>
 
-        $ python manage.py migrate
-        $ python manage.py loaddata data/ecosystem_choices.json
+5. Create a superuser (optional, but useful!). Change `--settings=` to your
+current deployment settings
 
-5. Create a superuser (optional, but useful!)
+        $ python manage.py createsuperuser --settings=vzb.settings.<SETTING>
 
-        $ python manage.py createsuperuser
+6. Setup a Redis cache. For distributed task queueing try RedisLabs, AWS
+ElastiCache is a little difficult to configure. For local redis deployment:
 
-6. Setup a Redis cache (try RedisLabs, AWS ElastiCache is a little difficult to
-configure)
+        $ sudo apt-get install redis-server
 
-7. Edit `app/settings.py` to include Redis server URL by editing the following
-line
+7. Edit `app/settings/<SETTING>.py` to include Redis server URL by editing the
+following line. Set `<REDIS_IP_ADDRESS>` to `127.0.0.1` for local redis.
 
         ...
         BROKER_URL = "redis://<REDIS_IP_ADDRESS>//"
         ...
 
-8. Update `settings.py` to match current Microbiome DB service
+8. Update `app/settings/<SETTING>.py` to match current Microbiome DB service
 
         ...
         # Microbiome Database configuration. This database is not handled by
@@ -49,48 +52,43 @@ line
         }
         ...
 
-9. Set public directories by editing the `MEDIA_ROOT` and `LARGE_DATA_PATH`
+9. Copy the 10k files into the `staticfiles/data` directory
 
-        ...
-        MEDIA_ROOT = '/path/to/user/writable/directory/media'
-        ...
-        LARGE_DATA_PATH = '/path/to/user/writable/directory/data'
-        ...
-
-10. Make the two folders with the paths you just assigned to the public
-directories
-
-        $ mkdir /path/to/user/writable/directory/media
-        $ mkdir /path/to/user/writable/directory/data
-
-11. Copy the 10k files into the `/path/to/user/writable/directory/data`
-directory
-
-12. Run `python manage.py collectstatic` to move the static files to a preset
+10. Run `python manage.py collectstatic` to move the static files to a preset
 location
 
 ### Optional settings for production
-12. Edit the `uwsgi.ini` file to configure logging and development server
-details (optional)
+1. Edit the `uwsgi.ini` file to configure logging and development/production
+server details (optional)
 
-12. Update celery settings to point to current deployment type (optional).
-Possible deployment types: `local` (default), `development`, `production`
+#### Using `nginx`
+1. Install nginx
 
-12. Make sure `mod_wsgi` is installed and enabled on your system
+        $ sudo apt-get install nginx
 
-        $ sudo apt-get install libapache2-mod-wsgi
-        $ sudo a2enmod wsgi
+2. Copy the nginx configuration into `sites-available` and link to
+`sites-enabled`
 
-## Running a local server_password
-12. Start worker
+        $ sudo cp vzb_nginx.conf /etc/nginx/sites-available/
+        $ sudo ln -s /etc/nginx/sites-available/vzb_nginx.conf /etc/nginx/sites-enabled/
+        $ sudo service nginx restart
+
+3. Test by checking if the static files are being served. If not check sockets
+to make sure the file has the right permissions or the socket port is not
+in use
+
+        http://<SERVER_IP_ADDRESS>:8000/static/css/style.css
+
+## Running a local server
+1. Start worker
 
         $ celery -A darp worker
 
-13. Start `local` server
+2. Start `local` server
 
         $ python manage.py runserver 0.0.0.0:8000
 
-14. Hope for the best 😎
+3. Hope for the best 😎
 
 ## Running a development or production server
 14. Start `development` or `production` server
@@ -98,3 +96,10 @@ Possible deployment types: `local` (default), `development`, `production`
         $ uwsgi --ini uwsgi.ini
 
 14. Hope for the best 😎
+
+## Stopping servers
+- Local servers: `Ctrl-C` in the window where `python manage.py runserver` was
+called
+- Development or production server:
+
+      $ uwsgi --stop /tmp/vzb-master.pid
