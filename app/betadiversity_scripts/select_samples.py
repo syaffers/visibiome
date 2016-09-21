@@ -1,9 +1,11 @@
 from MySQLdb.cursors import DictCursor
 from config import server_db
+from django.conf import settings
 from string import strip
 import MySQLdb
 import cPickle
 import numpy as np
+import os
 import random
 import re
 import sys
@@ -81,11 +83,15 @@ def return_represent_sample(largedata, user_choice):
     :return: Tuple of submatrix of representative samples and list of sample IDs
     """
     print("\nLoading 10k files... ({})".format(__file__))
+    # set path for each file
+    ten_k_samples_file = os.path.join(largedata, "10k_samples.pcl")
+    ten_k_distances_file = os.path.join(largedata,
+                                        "10k_bray_curtis_adaptive.npy")
     # load files from binary
-    print("\n    from  ({})".format(largedata + "10k_samples.pcl"))
-    totsample = cPickle.load(open(largedata + "10k_samples.pcl"))
+    print("\n    from  ({})".format(ten_k_samples_file))
+    totsample = cPickle.load(open(ten_k_samples_file))
     # distance matrix
-    totMatrix = np.load(largedata + "10k_bray_curtis_adaptive.npy")
+    totMatrix = np.load(ten_k_distances_file)
     totsample_dict = dict(zip(totsample, range(len(totsample))))
     mMatrix = []
     Msample = []
@@ -137,14 +143,18 @@ def return_rep_original_samples(m_repsampleid,
     :return: Tuple of submatrix of representative samples and list of sample IDs
     """
     print("\nLoading 10k files... ({})".format(__file__))
-    # load files from binary:
-    totsample = cPickle.load(open(largedata + "10k_samples.pcl"))
+    # set path for each file
+    ten_k_samples_file = os.path.join(largedata, "10k_samples.pcl")
+    ten_k_distances_file = os.path.join(largedata,
+                                        "10k_bray_curtis_adaptive.npy")
+    # load files from binary
+    print("\n    from  ({})".format(ten_k_samples_file))
+    totsample = cPickle.load(open(ten_k_samples_file))
     # distance matrix
-    totMatrix = np.load(largedata + "10k_bray_curtis_adaptive.npy")
+    totMatrix = np.load(ten_k_distances_file)
     totsample_dict = dict(zip(totsample, range(len(totsample))))
     mMatrix = []
     Msample = []
-    selected_sample = []
 
     if len(totMatrix) != 0 and len(totsample) != 0:
         conn = MySQLdb.connect(**server_db)
