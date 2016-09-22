@@ -150,4 +150,4 @@ There are three possible deployment settings (indicated in this document with a
 called
 - Development or production server:
 
-      $ uwsgi --stop /tmp/vzb-master.pid
+        $ uwsgi --stop /tmp/vzb-master.pid
