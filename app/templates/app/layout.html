@@ -24,7 +24,9 @@
     <body>
       <nav class="navbar navbar-inverse navbar-default navbar-static-top" role="navigation">
         <div class="container">
-          <a class="navbar-brand" href="{% url 'app:index' %}">Visibiome</a>
+          <a class="navbar-brand" href="{% url 'app:index' %}">
+            <img id="brand-image" alt="Visibiome logo" src="{% static 'img/visibiome.svg' %}" class="img-responsive">
+          </a>
           <ul class="nav navbar-nav">
             {% if user.is_authenticated %}
               <li>
@@ -37,7 +39,7 @@
             <li>
               <a href="{% url 'app:index' %}">
                 <span class="glyphicon glyphicon-search"></span>
-                Search
+                Query
               </a>
             </li>
             <li>
