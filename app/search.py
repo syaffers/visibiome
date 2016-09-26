@@ -7,12 +7,8 @@ from .tasks import validate_biom, save_text
 
 
 def guest_search(request):
-    """
-    Handler when user performs a search from the homepage without signing in.
+    """Handler when user performs a search from the homepage without signing in.
     This handler creates a user when an unsigned-in user performs a search.
-
-    :param request:
-    :return:
     """
     msg_storage = messages.get_messages(request)
     if request.method == "POST":
@@ -24,7 +20,7 @@ def guest_search(request):
             u = User.objects.create_user(
                 "Guest", "email@example.com", "guest123"
             )
-            u.username += " _{}".format(str(u.pk))
+            u.username += "_{}".format(str(u.pk))
             u.save()
 
             guest = Guest(status=True, user_id=u.id)
@@ -64,15 +60,10 @@ def guest_search(request):
 
 @login_required
 def user_search(request):
-    """
-    Handler when user performs a search from the homepage while signed in.
+    """Handler when user performs a search from the homepage while signed in.
     This handler DOES NOT create a user when a form is submitted. That's really
     the only difference between this function and the previous one. Otherwise
     it should perform the same thing.
-
-
-    :param request:
-    :return:
     """
     msg_storage = messages.get_messages(request)
     if request.method == "POST":
