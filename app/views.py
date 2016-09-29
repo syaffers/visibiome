@@ -67,12 +67,12 @@ def ex_details(request):
     """
     msg_storage = messages.get_messages(request)
 
-    context["file_path"] = example_data_path + "example_input.biom"
+    context["file_path"] = os.path.join(example_data_path, "example_input.biom")
     context["job"] = example_job
     # I had to do the line below: you can't get a relational criteria list since
-    # the job technically doesn't exist. Another to andle making a "fake" job is
-    # to create a user which is publicly accessible and jobs which are publicly
-    # accessible which might be possible in future iterations
+    # the job technically doesn't exist in the DB. Another way to handle making
+    # a "fake" job is to create a user which is publicly accessible and jobs
+    # which are publicly accessible which might be possible in future iterations
     context["criteria"] = ", ".join(["Animal/Human", "Plant", "Soil"])
     context["flash"] = msg_storage
 

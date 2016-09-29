@@ -1,5 +1,5 @@
 #brand-image {
-  max-height: 17px;
+  max-height: 25px;
 }
 
 #id_otu_text {
@@ -12,6 +12,11 @@
     overflow-x: scroll;
 }
 
+.btn-job-remove {
+    border-radius: 30px;
+    font-size: 12px;
+    padding: 4px 6px 2px;
+}
 .container-page {
     padding-bottom: 60px;
 }

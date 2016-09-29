@@ -16,7 +16,31 @@
         <div class="panel-body">
           <p>
             User data is not available to any other user and confidentiality is
-            maintained
+            maintained (with the exception of jobs run on unsecured guest
+            accounts, see Guest Accounts)
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="headingGuest">
+        <h4 class="panel-title">
+          <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseGuest" aria-expanded="true" aria-controls="collapseGuest">
+            Guest Accounts
+          </a>
+        </h4>
+      </div>
+      <div id="collapseGuest" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+        <div class="panel-body">
+          <p>
+            Users are not required to register to use the services. However,
+            upon submitting an anonymous job, a guest account will be created
+            for the user and will only be temporarily available. The password
+            for any guest account is <code>guest123</code>. All guest accounts
+            will be deleted within 24 hours of creation (along with any running
+            or completed jobs). To prevent this from happening, simply update
+            the details of the guest account. Please update the password since
+            all guest accounts have identical passwords.
           </p>
         </div>
       </div>
@@ -115,7 +139,7 @@ O11   2.0
       </div>
       <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
         <div class="panel-body">
-          DARP has several ways to put the user in an environmental context:
+          Visibiome has several ways to put the user in an environmental context:
           <ol>
             <li>Ranking</li>
             <li>Heat map</li>
