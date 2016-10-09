@@ -73,17 +73,17 @@ function adjacency(dataPath) {
   function createAdjacencyMatrix(nodes, edges) {
     var svgSize = $.unique(nodes).length * 9;
     var edgeHash = {};
-    for (x in edges) {
+    edges.forEach(function(x) {
       var id = edges[x].source + "-" + edges[x].target;
       var id1 = edges[x].target + "-" + edges[x].source;
       edgeHash[id] = edges[x];
       edgeHash[id1] = edges[x];
+    });
 
-    }
-    matrix = [];
+    var matrix = [];
     //create all possible edges
-    for (a in nodes) {
-      for (b in nodes) {
+    nodes.forEach(function(a) {
+      nodes.forEach(function(b) {
         var grid = {
           id: nodes[a].id + "-" + nodes[b].id,
           x: b,
@@ -94,8 +94,8 @@ function adjacency(dataPath) {
           grid.weight = edgeHash[grid.id].weight;
         }
         matrix.push(grid);
-      }
-    }
+      });
+    });
 
     var svg = d3.select("#plot").append("svg")
     .attr("width", svgSize)
@@ -154,7 +154,7 @@ function adjacency(dataPath) {
       // })
       var plotScrollLeft = $("#plot").scrollLeft();
       var details = "Sample ID: " + d.id.replace("-", "\nSample ID: ") +
-      "\nDistance:  " + d.weight
+        "\nDistance:  " + d.weight;
       div
       .text(details)
       .style("left", Number(d.x) * 8 + 190 - plotScrollLeft + "px")

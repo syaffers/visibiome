@@ -71,7 +71,7 @@ function adjacency(dataPath, sampleId) {
 
   dendrogram(dataPath);
 
-  var re = RegExp("[^A-Za-z0-9]");
+  var re = new RegExp("[^A-Za-z0-9]");
   var normalizedSampleId = sampleId.split(re).join("_");
   var usersamplejson = dataPath + normalizedSampleId + ".json";
 
@@ -90,17 +90,17 @@ function adjacency(dataPath, sampleId) {
     .style("border", 0);
 
     var edgeHash = {};
-    for (x in edges) {
+    edges.forEach(function(x) {
       var id = edges[x].source + "-" + edges[x].target;
       var id1 = edges[x].target + "-" + edges[x].source;
       edgeHash[id] = edges[x];
       edgeHash[id1] = edges[x];
-    }
+    });
 
     //create all possible edges
-    matrix = [];
-    for (a in nodes) {
-      for (b in nodes) {
+    var matrix = [];
+    nodes.forEach(function(a) {
+      nodes.forEach(function (b) {
         var grid = {
           id: nodes[a].id + "-" + nodes[b].id,
           x: b,
@@ -111,8 +111,8 @@ function adjacency(dataPath, sampleId) {
           grid.weight = edgeHash[grid.id].weight;
         }
         matrix.push(grid);
-      }
-    }
+      });
+    });
 
     var svg = d3.select("#heatmap").append("svg")
     .attr("width", 600)
@@ -341,16 +341,16 @@ function adjacency(dataPath, sampleId) {
     function scaleBranchLengths(nodes, w) {
       // Visit all nodes and adjust y pos width distance metric
       var visitPreOrder = function(root, callback) {
-        callback(root)
+        callback(root);
         if (root.children) {
           for (var i = root.children.length - 1; i >= 0; i--) {
             visitPreOrder(root.children[i], callback)
-          };
+          }
         }
-      }
+      };
       visitPreOrder(nodes[0], function(node) {
         node.rootDist = (node.parent ? node.parent.rootDist : 0) + (node.length || 0)
-      })
+      });
       var rootDists = nodes.map(function(n) {
         return n.rootDist;
       });
@@ -359,7 +359,7 @@ function adjacency(dataPath, sampleId) {
       .range([0, w]);
       visitPreOrder(nodes[0], function(node) {
         node.y = yscale(node.rootDist)
-      })
+      });
       return yscale
     }
 
@@ -412,7 +412,7 @@ function adjacency(dataPath, sampleId) {
       "\n\nEnvironment Ontology:\n" + ontologyTermClean.join("\n") +
       "\n\nEcosystem: " + d.ecosystem.join("\n") +
       "\n\nStudy: " + d.title +
-      "\n\nStudy Source: " + d.study_source
+      "\n\nStudy Source: " + d.study_source;
       div1
       .text(nodeText)
       .style("left", 450 + "px")

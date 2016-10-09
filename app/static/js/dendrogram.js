@@ -48,13 +48,13 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
    * drawing the actual dendrogram
    * is there a way to dynamically set the height?
    */
-  var width = 960,
+  width = 960;
   height = 5000;
 
   var cluster = d3.layout.cluster()
   .size([height - 200, width - 550]);
 
-  var svg = d3.select("#dendrogram").append("svg")
+  svg = d3.select("#dendrogram").append("svg")
     .attr("width", width)
     .attr("height", height)
     .append("g")
@@ -208,16 +208,16 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
   function scaleBranchLengths(nodes, w) {
     // Visit all nodes and adjust y pos width distance metric
     var visitPreOrder = function(root, callback) {
-      callback(root)
+      callback(root);
       if (root.children) {
         for (var i = root.children.length - 1; i >= 0; i--) {
           visitPreOrder(root.children[i], callback)
-        };
+        }
       }
-    }
+    };
     visitPreOrder(nodes[0], function(node) {
       node.rootDist = (node.parent ? node.parent.rootDist : 0) + (node.length || 0)
-    })
+    });
     var rootDists = nodes.map(function(n) {
       return n.rootDist;
     });
@@ -226,7 +226,7 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
     .range([0, w]);
     visitPreOrder(nodes[0], function(node) {
       node.y = yscale(node.rootDist)
-    })
+    });
     return yscale
   }
 
@@ -253,7 +253,7 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
       "\n\nEnvironment Ontology:\n" + ontologyTermClean.join("\n") +
       "\n\nEcosystem: " + d.ecosystem.join("\n") +
       "\n\nStudy: " + d.title +
-      "\n\nStudy Source: " + d.study_source
+      "\n\nStudy Source: " + d.study_source;
 
     div
       .text(nodeText)

@@ -9,8 +9,8 @@ function drawPcoa(dataPath, csvFile, sampleId) {
   height = 500 - margin.top - margin.bottom;
 
   $("#view-by-eco").click(function () {
-    $(this).addClass('active')
-    $("#view-by-envo").removeClass('active')
+    $(this).addClass('active');
+    $("#view-by-envo").removeClass('active');
     // reset when replotting pcoa
     d3.select("svg")
     .remove();
@@ -34,8 +34,8 @@ function drawPcoa(dataPath, csvFile, sampleId) {
   });
 
   $("#view-by-envo").click(function () {
-    $(this).addClass('active')
-    $("#view-by-eco").removeClass('active')
+    $(this).addClass('active');
+    $("#view-by-eco").removeClass('active');
     // reset when replotting pcoa
     d3.select("svg")
     .remove();
@@ -229,7 +229,7 @@ function drawPcXVsPcYByType(pcx, pcy, type, colorMap, width, height, margin,
     .attr("y", 6)
     .attr("dy", ".35em")
     .style("text-anchor", "start")
-    .text(function(d) { return d;})
+    .text(function(d) { return d;});
   }
 
 }
