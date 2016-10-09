@@ -51,7 +51,7 @@ gleg.selectAll("rect")
 gleg.call(xAxis_g).append("text")
 .attr("class", "caption")
 .attr("x", 10).attr("y", -10).attr("font-size", "10px")
-.text("Beta Diveristy (Bray Curtis)");
+.text("Beta Diversity (Bray Curtis)");
 
 function adjacency(dataPath) {
   queue()
@@ -74,20 +74,20 @@ function adjacency(dataPath) {
     var svgSize = $.unique(nodes).length * 9;
     var edgeHash = {};
     edges.forEach(function(x) {
-      var id = edges[x].source + "-" + edges[x].target;
-      var id1 = edges[x].target + "-" + edges[x].source;
-      edgeHash[id] = edges[x];
-      edgeHash[id1] = edges[x];
+      var id = x.source + "-" + x.target;
+      var id1 = x.target + "-" + x.source;
+      edgeHash[id] = x;
+      edgeHash[id1] = x;
     });
-
+    
     var matrix = [];
     //create all possible edges
-    nodes.forEach(function(a) {
-      nodes.forEach(function(b) {
+    nodes.forEach(function(a, i) {
+      nodes.forEach(function(b, j) {
         var grid = {
-          id: nodes[a].id + "-" + nodes[b].id,
-          x: b,
-          y: a,
+          id: a.id + "-" + b.id,
+          x: i,
+          y: j,
           weight: 0
         };
         if (edgeHash[grid.id]) {
