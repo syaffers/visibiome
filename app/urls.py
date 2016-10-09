@@ -2,6 +2,8 @@ from django.conf import settings
 from django.conf.urls import url
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.views.generic.base import RedirectView
 from . import auth, jobs, views, search
 
 app_name = 'app'
@@ -46,6 +48,12 @@ urlpatterns = [
     url(r'^job/(?P<job_id>[0-9]+)/dend-250$', jobs.dend_similar,
         name='job_dend_similar'),
     url(r'^job/(?P<job_id>[0-9]+)/remove$', jobs.remove, name='job_remove'),
+    url(r'^favicon.ico$',
+        RedirectView.as_view(
+            url=staticfiles_storage.url('favicon.ico'),
+            permanent=False),
+        name="favicon"
+    ),
 ]
 
 urlpatterns += staticfiles_urlpatterns()
