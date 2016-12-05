@@ -216,7 +216,8 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
       }
     };
     visitPreOrder(nodes[0], function(node) {
-      node.rootDist = (node.parent ? node.parent.rootDist : 0) + (node.length || 0)
+      node.rootDist = (node.parent ? node.parent.rootDist : 0) +
+                      (node.length || 0);
     });
     var rootDists = nodes.map(function(n) {
       return n.rootDist;
@@ -227,7 +228,7 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
     visitPreOrder(nodes[0], function(node) {
       node.y = yscale(node.rootDist)
     });
-    return yscale
+    return yscale;
   }
 
   function elbow(d, i) {
@@ -284,8 +285,7 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
     .style("top", (d3.event.pageY) + "px");
   }
 
-  // replace comma with comma space for cleaner viewing and add index
-  // number
+  // replace comma with comma space for cleaner viewing and add index number
   function cleanOntologyTerm(term, index) {
     var t = term.replace(",", ", ");
     t = ++index + ". " + t;

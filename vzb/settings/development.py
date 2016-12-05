@@ -15,7 +15,8 @@ SECRET_KEY = 'k&9nph7dp%1v1_e0t@()=fbs*vl2*i0=r2hdt-m)c#&nt2^yh*'
 # server
 DEBUG = False
 
-# Allowed hosts can be empty since debug is True
+# Allowed hosts can be empty if debug is True. Otherwise you must include the
+# host IP or domain name in the list below
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 DATABASES = {
