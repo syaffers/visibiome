@@ -71,7 +71,9 @@ function adjacency(dataPath) {
   .style("left", 0);
 
   function createAdjacencyMatrix(nodes, edges) {
-    var svgSize = $.unique(nodes).length * 9;
+    var svgSize = $.unique(nodes).length * 8 +
+      Math.max.apply(
+        Math, nodes.map(function (i) { return i.id.length })) * 8;
     var edgeHash = {};
     edges.forEach(function(x) {
       var id = x.source + "-" + x.target;
@@ -140,12 +142,16 @@ function adjacency(dataPath) {
     .selectAll("text")
     .style("text-anchor", "end")
     .attr("transform", "translate(-10,-3) rotate(90)")
-    .attr("font-size", "9px");
+    .attr("font-size", "10px");
 
     d3.select("#adjacencyG")
     .append("g")
     .call(yAxis)
     .attr("font-size", "10px");
+
+    function invertDistance(v) {
+      return (v == 0 ? 0 : 1 - v);
+    }
 
     function gridOver(d, i) {
       /* really slow code: WARNING! */
@@ -153,7 +159,8 @@ function adjacency(dataPath) {
       //     return p.x == d.x || p.y == d.y ? "2px" : "1px"
       // })
       var plotScrollLeft = $("#plot").scrollLeft();
-      var details = "Sample ID: " + d.id.replace("-", "\nSample ID: ") +
+      var details = "Sample ID (x-axis): " +
+        d.id.replace("-", "\nSample ID (y-axis): ") +
         "\nDistance:  " + d.weight;
       div
       .text(details)
