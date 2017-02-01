@@ -78,7 +78,8 @@ There are three possible deployment settings (indicated in this document with a
         }
         ...
 
-11. Copy the 10k files into the `staticfiles/data` directory
+11. Copy the 10k files into the `staticfiles/data` directory (for local
+  deployment, put into `app/static/data/` folder)
 
 ### Additional Settings for production
 1. Edit the `prjroot` variable in `uwsgi.ini` file to configure paths correctly.

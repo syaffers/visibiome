@@ -73,7 +73,7 @@ function adjacency(dataPath) {
   function createAdjacencyMatrix(nodes, edges) {
     var svgSize = $.unique(nodes).length * 8 +
       Math.max.apply(
-        Math, nodes.map(function (i) { return i.id.length })) * 6;
+        Math, nodes.map(function (i) { return i.id.length })) * 8;
     var edgeHash = {};
     edges.forEach(function(x) {
       var id = x.source + "-" + x.target;
