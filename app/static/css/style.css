@@ -63,6 +63,14 @@
   border: 1px solid #E0E0E0;
 }
 
+.axis path,
+.axis line,
+.line {
+  fill: none;
+  stroke: black;
+  shape-rendering: crispEdges;
+}
+
 .tick line {
   shape-rendering: crispEdges;
   stroke: #000;

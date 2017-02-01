@@ -5,9 +5,10 @@ function drawPcoa(dataPath, csvFile, sampleId) {
     bottom: 30,
     left: 80
   },
-  width = 860 - margin.left - margin.right,
-  height = 500 - margin.top - margin.bottom;
+    width = 720 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
 
+  // when user clicks the view by ecosystem button
   $("#view-by-eco").click(function () {
     $(this).addClass('active');
     $("#view-by-envo").removeClass('active');
@@ -33,21 +34,31 @@ function drawPcoa(dataPath, csvFile, sampleId) {
                 csvFile, sampleId, true);
   });
 
+  // when user clicks the view by envo button
   $("#view-by-envo").click(function () {
     $(this).addClass('active');
     $("#view-by-eco").removeClass('active');
     // reset when replotting pcoa
-    d3.select("svg")
-    .remove();
-    d3.select("svg")
-    .remove();
-    d3.select("svg")
-    .remove();
+    d3.select("svg").remove();
+    d3.select("svg").remove();
+    d3.select("svg").remove();
 
     var colorMap = d3.scale.category20();
 
     drawAllPcoa('OntologyTerm1', colorMap, margin, width, height, dataPath,
                 csvFile, sampleId, false);
+  });
+
+  // when user clicks toggle query label
+  $("#toggle-user-sample").click(function (e) {
+     // hide/unhide label
+    $("svg .query-sample").toggle();
+    e.preventDefault();
+  });
+
+  $("#hide-user-sample").click(function (e) {
+    $("svg .query-sample").toggle();
+    e.preventDefault();
   });
 
   $(document).ready(function() {
@@ -95,7 +106,8 @@ function drawPcXVsPcYByType(pcx, pcy, type, colorMap, width, height, margin,
   var legendHeight = color.domain().length * legendLabelHeight;
 
   // add the graph canvas to the body of the webpage
-  var svg = d3.select("#pcoa-pc" + pcx + "-pc" + pcy).append("svg")
+  var svg = d3.select("#pcoa-pc" + pcx + "-pc" + pcy)
+  .append("svg")
   .attr("width", width + 100 + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom)
   .append("g")
@@ -147,28 +159,33 @@ function drawPcXVsPcYByType(pcx, pcy, type, colorMap, width, height, margin,
     .style("text-anchor", "end")
     .text("PC" + pcy);
 
-    // draw text label
-    svg.selectAll("text")
-    .data(data).enter()
-    .append("text")
-    .attr("dx", xMap)
-    .attr("dy", yMap)
-    .attr("text-anchor", "start")
-    .attr("font-weight", "bold")
-    .attr('font-size', "10px")
-    .attr('fill', "red")
-    .text(function(d) {
-      if (d["Sample Name"] == sampleId)
-        return "..................." + d["Sample Name"];
-      return "";
-    });
+    // draw x lines at 0
+    svg.append("line")
+    .attr("class", "x line")
+    .attr("x1", xScale(0))
+    .attr("y1", 0)
+    .attr("x2", xScale(0))
+    .attr("y2", height)
+    .style('stroke', 'black')
+    .style('stroke-width', 1)
+    .style('stroke-dasharray', "5, 5");
 
-    // draw dots
+    svg.append("line")
+    .attr("class", "y line")
+    .attr("x1", 0)
+    .attr("y1", yScale(0))
+    .attr("x2", width)
+    .attr("y2", yScale(0))
+    .style('stroke', 'black')
+    .style('stroke-width', 1)
+    .style('stroke-dasharray', "5, 5");
+
+    // draw all points from data
     svg.selectAll(".dot")
     .data(data)
     .enter().append("circle")
     .attr("class", "dot")
-    .attr("r", 3.5)
+    .attr("r", 2.75)
     .attr("cx", xMap)
     .attr("cy", yMap)
     .style("fill", function(d) {
@@ -201,6 +218,23 @@ function drawPcXVsPcYByType(pcx, pcy, type, colorMap, width, height, margin,
       tooltip.transition()
       .duration(10)
       .style("opacity", 0);
+    });
+
+    // draw text label for the user queried sample point
+    svg.selectAll("text")
+    .data(data).enter()
+    .append("text")
+    .attr("class", "query-sample")
+    .attr("dx", xMap)
+    .attr("dy", yMap)
+    .attr("text-anchor", "start")
+    .attr("font-weight", "bold")
+    .attr('font-size', "10px")
+    .attr('fill', "red")
+    .text(function(d) {
+      if (d["Sample Name"] == sampleId)
+        return "..................." + d["Sample Name"];
+      return "";
     });
 
   });
