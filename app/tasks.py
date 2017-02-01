@@ -200,7 +200,7 @@ def m_n_betadiversity(job_id):
                               indent=4)
 
                 # for closest 250 samples
-                print("Making 250 PCOA...")
+                print("Making 250 PCOA and heatmap...")
                 pcoa(mnMatrix, Msample + n_sam, userdir + "250_")
                 submnMatrix, submn_sample_id = heatmap_files(
                     mnMatrix, Msample, n_sample_id, userdir, 21
