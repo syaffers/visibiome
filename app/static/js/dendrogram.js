@@ -7,8 +7,10 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
   var legendSpacing = 5;
 
   var colr = d3.scale.ordinal()
-  .range(['blue', 'Darkgreen', 'Gold', 'DarkViolet', 'SaddleBrown', 'Cyan', 'DarkOrange', 'SlateGray'])
-  .domain(['Freshwater', 'Plant', 'Soil', 'Animal_Human', 'Geothermal', 'Marine', 'Anthropogenic', 'Biofilm']);
+  .range(['blue', 'Darkgreen', 'Gold', 'DarkViolet', 'SaddleBrown', 'Cyan',
+    'DarkOrange', 'SlateGray', 'black'])
+  .domain(['Freshwater', 'Plant', 'Soil', 'Animal_Human', 'Geothermal',
+    'Marine', 'Anthropogenic', 'Biofilm', 'Unknown/User']);
 
   var svg = d3.select('#legend')
   .append('svg')
@@ -148,7 +150,8 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
       .attr("width", 30)
       .attr("height", 10)
       .attr('fill', function(d) {
-        return d.ecocolor[0];
+        if (d.name == sampleId) return "black";
+        else return d.ecocolor[0];
       });
 
     // colored leaf node second eco rect
@@ -164,7 +167,8 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
       .attr("width", 30)
       .attr("height", 10)
       .attr('fill', function(d) {
-        return d.ecocolor[1];
+        if (d.name == sampleId) return "black";
+        else return d.ecocolor[1];
       });
 
     // colored leaf node third eco rect
@@ -180,7 +184,8 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
       .attr("width", 30)
       .attr("height", 10)
       .attr('fill', function(d) {
-        return d.ecocolor[2];
+        if (d.name == sampleId) return "black";
+        else return d.ecocolor[2];
       });
 
     // colored leaf node text
@@ -190,7 +195,7 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
       .attr("text-anchor", "start")
       .attr("font-weight", "bold")
       .attr('font-size', function(d) {
-        if (d.name == sampleId) return "20px";
+        if (d.name == sampleId) return "14px";
         else return "7px";
       })
       .attr('fill', function(d) {
