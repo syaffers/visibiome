@@ -56,8 +56,10 @@ function drawPcoa(dataPath, csvFile, sampleId) {
     e.preventDefault();
   });
 
-  $("#hide-user-sample").click(function (e) {
-    $("svg .query-sample").toggle();
+  // when user clicks any of the download links
+  $("#plots .download-link").click(function (e) {
+    var plot = $(this).data("plot");
+    writeDownloadLink(plot);
     e.preventDefault();
   });
 
@@ -66,7 +68,24 @@ function drawPcoa(dataPath, csvFile, sampleId) {
   });
 }
 
+/**
+ * Function that generates an SVG of the provided plot and opens a new window
+ * showing the respective plot
+ */
+function writeDownloadLink(plotId) {
+  var html = d3.select("#" + plotId + " svg")
+      .attr("title", plotId.toUpperCase().split("-").join(" "))
+      .attr("version", 1.1)
+      .attr("xmlns", "http://www.w3.org/2000/svg")
+      .node().parentNode.innerHTML;
 
+  window.open("data:image/svg+xml;base64,"+ btoa(html), '_blank');
+};
+
+
+/**
+* Function to draw all PCoA plots onto the page
+*/
 function drawAllPcoa(plotType, colorMap, margin, width, height, dataPath,
                      csvFile, sampleId, showLegend) {
   drawPcXVsPcYByType(1, 2, plotType, colorMap, width, height,
@@ -108,11 +127,11 @@ function drawPcXVsPcYByType(pcx, pcy, type, colorMap, width, height, margin,
   // add the graph canvas to the body of the webpage
   var svg = d3.select("#pcoa-pc" + pcx + "-pc" + pcy)
   .append("svg")
+  .attr("font-family", "Helvetica, Arial, sans-serif")
   .attr("width", width + 100 + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom)
   .append("g")
   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
 
   // Add tooltip div
   var tooltip = d3.select("#pcoa-pc" + pcx + "-pc" + pcy + "-tooltip")
@@ -159,7 +178,7 @@ function drawPcXVsPcYByType(pcx, pcy, type, colorMap, width, height, margin,
     .style("text-anchor", "end")
     .text("PC" + pcy);
 
-    // draw x lines at 0
+    // draw dotted line at x = 0
     svg.append("line")
     .attr("class", "x line")
     .attr("x1", xScale(0))
@@ -170,6 +189,7 @@ function drawPcXVsPcYByType(pcx, pcy, type, colorMap, width, height, margin,
     .style('stroke-width', 1)
     .style('stroke-dasharray', "5, 5");
 
+    // draw dotted line at y = 0
     svg.append("line")
     .attr("class", "y line")
     .attr("x1", 0)
@@ -189,6 +209,7 @@ function drawPcXVsPcYByType(pcx, pcy, type, colorMap, width, height, margin,
     .attr("cx", xMap)
     .attr("cy", yMap)
     .style("fill", function(d) {
+      // set user queried point to black
       if (d["Sample Name"] == sampleId)
         return 'black';
       return color(cValue(d));
