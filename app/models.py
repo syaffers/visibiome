@@ -235,6 +235,9 @@ class UserForm(forms.ModelForm):
         }
         widgets = {
             "password": forms.PasswordInput,
+            "username": forms.TextInput(attrs={'placeholder': 'Username'}),
+            "email": forms.EmailInput(
+                attrs={'placeholder': 'example@email.com'}),
         }
 
     confirm = forms.CharField(
