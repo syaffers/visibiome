@@ -1,5 +1,5 @@
 #brand-image {
-  max-height: 25px;
+  max-height: 20px;
 }
 
 #id_otu_text {
@@ -10,6 +10,11 @@
 
 #plot {
   overflow-x: scroll;
+}
+
+#table-dashboard thead {
+  background-color: #666666;
+  color: #FFFFFF;
 }
 
 .btn-job-remove {
@@ -27,7 +32,6 @@
 }
 
 .errorlist {
-  font-size: 13px;
   color: #e74c3c;
   list-style-type: none;
   padding-left: 0;
@@ -50,10 +54,6 @@
 
 .criterion:last-child::after {
   content: "";
-}
-
-.download-link {
-  font-size: 0.5em;
 }
 
 .plot-container {

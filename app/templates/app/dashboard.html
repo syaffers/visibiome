@@ -4,23 +4,23 @@
 {% block content %}
   <h2>Dashboard</h2>
   <h3>Jobs list</h3>
-  <table class="table table-striped table-hover">
+  <table id="table-dashboard" class="table table-striped table-hover">
   	<thead>
   		<tr>
-  			<th>Sample Name</th>
-  			<th>Criteria</th>
-  			<th>Status</th>
-        <th>Start time</th>
-        <th>Completion time</th>
-        <th>Error messages</th>
-        <th>Remove</th>
+  			<th width="12.5%">Sample Name</th>
+  			<th width="12.5%">Criteria</th>
+  			<th width="10%">Status</th>
+        <th width="16%">Start time</th>
+        <th width="16%">Completion time</th>
+        <th width="30%">Error messages</th>
+        <th width="3%">Remove</th>
   		</tr>
   	</thead>
   	<tbody>
     {% for job in jobs %}
       <tr>
         <td>
-          <a href="{% url 'app:job_details' job.id %}">
+          <a class="btn btn-primary btn-xs" href="{% url 'app:job_details' job.id %}">
             {{ job.sample_name }}
           </a>
         </td>

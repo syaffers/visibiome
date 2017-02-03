@@ -9,7 +9,12 @@ function drawPcoa(dataPath, csvFile, sampleId) {
     height = 500 - margin.top - margin.bottom;
 
   // when user clicks the view by ecosystem button
-  $("#view-by-eco").click(function () {
+  $("#view-by-eco").click(function (e) {
+    // don't scroll back up
+    e.preventDefault();
+    // auto toggle
+    $("#toggle-user-sample").addClass("active");
+
     $(this).addClass('active');
     $("#view-by-envo").removeClass('active');
     // reset when replotting pcoa
@@ -35,7 +40,12 @@ function drawPcoa(dataPath, csvFile, sampleId) {
   });
 
   // when user clicks the view by envo button
-  $("#view-by-envo").click(function () {
+  $("#view-by-envo").click(function (e) {
+    // don't scroll back up
+    e.preventDefault();
+    // auto toggle
+    $("#toggle-user-sample").addClass("active");
+
     $(this).addClass('active');
     $("#view-by-eco").removeClass('active');
     // reset when replotting pcoa
@@ -52,6 +62,7 @@ function drawPcoa(dataPath, csvFile, sampleId) {
   // when user clicks toggle query label
   $("#toggle-user-sample").click(function (e) {
      // hide/unhide label
+    $(this).toggleClass("active");
     $("svg .query-sample").toggle();
     e.preventDefault();
   });
