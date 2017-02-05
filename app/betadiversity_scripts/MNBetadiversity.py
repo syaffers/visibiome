@@ -21,7 +21,7 @@ def calculate_MNmatrix(mMatrix, Msample, n_sample_otu_matrix, n_otu_id):
     m_otu_id = otutableL.ids(axis="observation")
     m_sample_id = otutableL.ids(axis="sample")
 
-    # caulculate adaptive Bray-Curtis distances
+    # calculate adaptive Bray-Curtis distances
     nMatrix = adaptivebray_curtis(n_sample_otu_matrix, list(n_otu_id))
     m_nMatrix = adaptive_bray_curtis(m_sample_otu_matrix, list(m_otu_id),
                                      n_sample_otu_matrix, list(n_otu_id))
