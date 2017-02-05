@@ -102,7 +102,6 @@ def return_represent_sample(largedata, user_choice):
 
     # if files are not empty
     if len(totMatrix) != 0 and len(totsample) != 0:
-        print("\nQuerying database... ({})".format(__file__))
         # get samples from database
         conn = MySQLdb.connect(**server_db)
         curs = conn.cursor(DictCursor)

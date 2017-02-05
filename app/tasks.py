@@ -27,10 +27,9 @@ import sys
 
 @app.task
 def validate_biom(job, file_path):
-    """
-    Async task to perform validation of input files/text. This function checks
-    whether the input is a valid BIOM file by parsing the input file. If it
-    fails then chances are it is not a valid BIOM file. If it succeeds, the
+    """Async task to perform validation of input files/text. This function
+    checks whether the input is a valid BIOM file by parsing the input file. If
+    it fails then chances are it is not a valid BIOM file. If it succeeds, the
     function then checks if there is exactly one sample in the valid OTU table
     of BIOM file.
 

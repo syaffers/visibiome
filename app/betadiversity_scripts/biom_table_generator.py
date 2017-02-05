@@ -46,7 +46,6 @@ def biom_from_sample(sample_list, count_type="normalized_count"):
     samplesDict = dict([(sample, idx) for idx, sample in enumerate(samples)])
 
     # get OTU IDs of each sample item from database
-    print("\nQuerying database... ({})".format(__file__))
     get_otu_ids_query = """
         SELECT DISTINCT otu_id
         FROM OTUS_samples_unified
