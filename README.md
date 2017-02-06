@@ -99,6 +99,30 @@ There are three possible deployment settings (indicated in this document with a
         include          /home/ubuntu/visibiome/uwsgi_params;
         ...
 
+#### Automating guest job deletions (optional)
+1. Commands have been configured for guest job deletions. By default, jobs
+  expire daily although this can be changed by editing the `k` value in
+  `app/management/commands/deleteguestjobs.py`. `k = 1` denotes that jobs expire
+  daily, `k = 2` denotes that jobs expire every 2 days and so on
+
+        ...
+        def handle(self, *args, **options):
+              k = 1 # <== change as you see fit
+        ...
+
+2. Setup a cron job to run the `delete_jobs.sh` shell command which runs the
+  delete guest jobs every hour:
+
+        $ crontab -e
+
+3. Add the following line to the end of the file (changing the visibiome path
+  as required):
+
+        0 * * * * bash /home/ubuntu/visibiome/delete_jobs.sh
+
+4. Delete logs can be viewed in `logs/delete.log` (if path is not changed in
+  `delete_jobs.sh`)
+
 #### Using `nginx`
 1. Install nginx
 
