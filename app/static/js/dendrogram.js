@@ -9,7 +9,7 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
   var colr = d3.scale.ordinal()
   .range(['blue', 'Darkgreen', 'Gold', 'DarkViolet', 'SaddleBrown', 'Cyan',
     'DarkOrange', 'SlateGray', 'black'])
-  .domain(['Freshwater', 'Plant', 'Soil', 'Animal_Human', 'Geothermal',
+  .domain(['Freshwater', 'Plant', 'Soil', 'Animal/Human', 'Geothermal',
     'Marine', 'Anthropogenic', 'Biofilm', 'Unknown/User']);
 
   var svg = d3.select('#legend')

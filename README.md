@@ -3,7 +3,9 @@
 ## Setup ##
 There are three possible deployment settings (indicated in this document with a
   placeholder `<SETTING>`). The settings are `local`, `deployment`, `production`
-  which is stored under `vzb/settings`.
+  which is stored under `vzb/settings`. Any lines showing the `$` sign at the
+  start are terminal commands while lines that begin with `...` are parts of
+  a file.
 
 1. Start a VM or EC2 server with QIIME pre-installed.
 
@@ -21,8 +23,9 @@ There are three possible deployment settings (indicated in this document with a
 
         $ python manage.py collectstatic --settings=vzb.settings.development
 
-5. Edit `vzb/settings/<SETTING>.py` to update the webserver database
-  configuration
+5. Visibiome handles many relational database systems but we use MySQL. Edit
+  `vzb/settings/<SETTING>.py` to update the webserver database configuration. Be
+  sure to create the database before doing the following steps
 
         ...
         DATABASES = {
@@ -78,15 +81,22 @@ There are three possible deployment settings (indicated in this document with a
         }
         ...
 
-11. Copy the 10k files into the `staticfiles/data` directory (for local
-  deployment, put into `app/static/data/` folder)
+11. Download distance matrix files into the `staticfiles/data` directory (for
+  local deployment, put into `app/static/data/` folder)
+
+        $ cd staticfiles/ (or app/static/ for local)
+        $ mkdir data/
+        $ cd data/
+        $ wget https://s3.amazonaws.com/visibiome-data-files/10k_bray_curtis_adaptive.npy.gz
+        $ wget https://s3.amazonaws.com/visibiome-data-files/10k_samples.pcl
+        $ gunzip 10k_bray_curtis_adaptive.npy.gz
 
 ### Additional Settings for production
 1. Edit the `prjroot` variable in `uwsgi.ini` file to configure paths correctly.
   The `prjroot` value should point to the visibiome folder:
 
         ...
-        prjroot        = /home/qiime/visibiome/
+        prjroot        = /home/ubuntu/visibiome/
         ...
 
 2. Edit the `vzb_nginx.conf` to configure paths correctly in the same manner:
@@ -98,30 +108,6 @@ There are three possible deployment settings (indicated in this document with a
         ...
         include          /home/ubuntu/visibiome/uwsgi_params;
         ...
-
-#### Automating guest job deletions (optional)
-1. Commands have been configured for guest job deletions. By default, jobs
-  expire daily although this can be changed by editing the `k` value in
-  `app/management/commands/deleteguestjobs.py`. `k = 1` denotes that jobs expire
-  daily, `k = 2` denotes that jobs expire every 2 days and so on
-
-        ...
-        def handle(self, *args, **options):
-              k = 1 # <== change as you see fit
-        ...
-
-2. Setup a cron job to run the `delete_jobs.sh` shell command which runs the
-  delete guest jobs every hour:
-
-        $ crontab -e
-
-3. Add the following line to the end of the file (changing the visibiome path
-  as required):
-
-        0 * * * * bash /home/ubuntu/visibiome/delete_jobs.sh
-
-4. Delete logs can be viewed in `logs/delete.log` (if path is not changed in
-  `delete_jobs.sh`)
 
 #### Using `nginx`
 1. Install nginx
@@ -152,6 +138,34 @@ There are three possible deployment settings (indicated in this document with a
         ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '<SERVER_IP_ADDRESS>']
         ...
 
+#### Automating guest job deletions (optional)
+1. Commands have been configured for guest job deletions. By default, jobs
+  expire daily although this can be changed by editing the `k` value in
+  `app/management/commands/deleteguestjobs.py`. `k = 1` denotes that jobs expire
+  daily, `k = 2` denotes that jobs expire every 2 days and so on
+
+        ...
+        def handle(self, *args, **options):
+              k = 1 # <== change as you see fit
+        ...
+
+2. Setup a cron job to run the `delete_jobs.sh` shell command which runs the
+  delete guest jobs every hour:
+
+        $ crontab -e
+
+3. Add the following line to the end of the file (changing the visibiome path
+  as required):
+
+        0 * * * * bash /home/ubuntu/visibiome/delete_jobs.sh
+
+4. Delete logs can be viewed in `logs/delete.log` (if path is not changed in
+  `delete_jobs.sh`).
+
+5. Alternatively, you can manually run the shell script without the need to
+  setup a cron job although this is not repeated automatically.
+
+
 ## Running a local server
 1. Start worker
 
@@ -161,14 +175,14 @@ There are three possible deployment settings (indicated in this document with a
 
         $ python manage.py runserver 0.0.0.0:8000
 
-3. Hope for the best 😎
+3. Check your webserver IP at port 8000 and hope for the best 😎
 
 ## Running a development or production server
 14. Start `development` or `production` server
 
         $ uwsgi --ini uwsgi.ini
 
-14. Hope for the best 😎
+14. Check your webserver IP at port 8000 and hope for the best 😎
 
 ## Stopping servers
 - Local servers: `Ctrl-C` in the window where `python manage.py runserver` was
