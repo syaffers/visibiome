@@ -190,6 +190,3 @@ called
 - Development or production server:
 
         $ uwsgi --stop /tmp/vzb-master.pid
-
-
-Hello, world
