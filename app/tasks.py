@@ -115,6 +115,7 @@ def m_n_betadiversity(job_id):
             return
 
         # preparing SQL query to get 16s copy number of each observation IDs
+        # necessary query to check for non-existence of OTUs
         query_str = """
             SELECT 16s_copy_number
             FROM OTUS_unified
@@ -142,7 +143,13 @@ def m_n_betadiversity(job_id):
 
         # otherwise if all observation IDs are in the DB
         else:
-            n_sample_otu_matrix = n_sample_otu_matrix / otu_copy_number
+            # normalize OTU copy numbers if not already
+            if job.is_normalized_otu:
+                print("OTUs are pre-normalized...")
+            else:
+                print("OTUs are not normalized...")
+                n_sample_otu_matrix = n_sample_otu_matrix / otu_copy_number
+
             print("Making sample array...")
             # retrieve the samples need to compute diversity against using
             # representatives

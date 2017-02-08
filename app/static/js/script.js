@@ -9,12 +9,12 @@ var biom_search_form_id = "#biom-search-form",
 
 function handleBiomCheckbox() {
   var checkedBoxes = $(biom_search_form_id)
-    .find("input[type=checkbox]")
+    .find(".checkbox-criteria input[type=checkbox]")
     .map(isChecked).toArray();
 
   if (all_eco_value == $(this).val()) {
     $(biom_search_form_id)
-      .find("input[type=checkbox]")
+      .find(".checkbox-criteria input[type=checkbox]")
       .each(uncheck);
   }
   else {
@@ -23,12 +23,12 @@ function handleBiomCheckbox() {
 
   if (checkedBoxes.reduce(add, 0) >= 3) {
     $(biom_search_form_id)
-      .find("input[type=checkbox]:not(:checked)")
+      .find(".checkbox-criteria input[type=checkbox]:not(:checked)")
       .prop('disabled', true);
   }
   else {
     $(biom_search_form_id)
-      .find("input[type=checkbox]:not(:checked)")
+      .find(".checkbox-criteria input[type=checkbox]:not(:checked)")
       .prop('disabled', false);
   }
 }
@@ -64,7 +64,7 @@ function add(a, b) {
 
 $(document).ready(function() {
   $(biom_search_form_id)
-    .find("input[type=checkbox]")
+    .find(".checkbox-criteria input[type=checkbox]")
     .click(handleBiomCheckbox);
   $(otu_textarea).val(otu_textarea_placeholder);
   $(otu_textarea).click(handleClearTextfield);

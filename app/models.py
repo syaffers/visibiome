@@ -103,6 +103,7 @@ class BiomSearchJob(models.Model):
     )
     status = models.IntegerField(choices=STATUSES, default=VALIDATING)
     error_code = models.IntegerField(choices=ERRORS, default=NO_ERRORS)
+    is_normalized_otu = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -130,9 +131,12 @@ class BiomSearchForm(forms.ModelForm):
         fields = {
             "biom_file": forms.FileField,
             "criteria": forms.MultipleChoiceField(required=True),
+            "is_normalized_otu": forms.BooleanField(required=False),
         }
         labels = {
             "criteria": "Select the ecosystem(s)",
+            "is_normalized_otu": "I have normalized the 16s OTU copy numbers "\
+                                 "for this BIOM table"
         }
         widgets = {
             "criteria": forms.CheckboxSelectMultiple,
