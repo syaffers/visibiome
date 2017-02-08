@@ -39,11 +39,11 @@ DATABASES = {
     'microbiome': {
         'NAME': 'ServerMicroBiome',
         # Currently it's pointing to the old microbiome sevrer in an EC2
-        'HOST': '52.33.150.116',
-        'USER': 'syafiq',
+        'HOST': '127.0.0.1',
+        'USER': 'root',
         # Consider placing the password in an environment variable for
         # production
-        'PASSWORD': 'syafiq123',
+        'PASSWORD': 'qiime',
     }
 }
 
@@ -77,6 +77,20 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles/')
 # permissions. This reduces dependencies and configuration
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles/')
+
+# INSTALLED_APPS = ("storages",) + INSTALLED_APPS
+#
+# STATIC_URL = "https://%s/" % AWS_S3_CUSTOM_DOMAIN
+# AWS_ACCESS_KEY_ID = "AKIAJ6BXCUDNSRLNSQAA"
+# AWS_HEADERS = {
+#     "Expires": "Thu, 31 Dec 2099 20:00:00 GMT",
+#     "Cache-Control": "max-age=94608000"
+# }
+# AWS_SECRET_ACCESS_KEY = "nVmmJKszvmexM+mlpLg+ZVQnU8pDJmliDSEI88N9"
+# AWS_STORAGE_BUCKET_NAME = os.environ['AWS_STORAGE_BUCKET_NAME']
+# AWS_S3_BASE_URL = "https://s3.amazonaws.com/{}/".format(AWS_STORAGE_BUCKET_NAME)
+# AWS_S3_CUSTOM_DOMAIN = '{}.s3.amazonaws.com'.format(AWS_STORAGE_BUCKET_NAME)
+# STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 
 # The 10K matrix path. This is placed wherever you want as long as it is
 # readable by the user deploying the webserver. Assuming you are using an EC2
