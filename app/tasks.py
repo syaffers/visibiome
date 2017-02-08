@@ -142,7 +142,6 @@ def m_n_betadiversity(job_id):
 
         # otherwise if all observation IDs are in the DB
         else:
-            # TODO: possiblity to opt out
             n_sample_otu_matrix = n_sample_otu_matrix / otu_copy_number
             print("Making sample array...")
             # retrieve the samples need to compute diversity against using
