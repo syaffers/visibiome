@@ -27,10 +27,9 @@ import sys
 
 @app.task
 def validate_biom(job, file_path):
-    """
-    Async task to perform validation of input files/text. This function checks
-    whether the input is a valid BIOM file by parsing the input file. If it
-    fails then chances are it is not a valid BIOM file. If it succeeds, the
+    """Async task to perform validation of input files/text. This function
+    checks whether the input is a valid BIOM file by parsing the input file. If
+    it fails then chances are it is not a valid BIOM file. If it succeeds, the
     function then checks if there is exactly one sample in the valid OTU table
     of BIOM file.
 
@@ -116,6 +115,7 @@ def m_n_betadiversity(job_id):
             return
 
         # preparing SQL query to get 16s copy number of each observation IDs
+        # necessary query to check for non-existence of OTUs
         query_str = """
             SELECT 16s_copy_number
             FROM OTUS_unified
@@ -143,7 +143,13 @@ def m_n_betadiversity(job_id):
 
         # otherwise if all observation IDs are in the DB
         else:
-            n_sample_otu_matrix = n_sample_otu_matrix / otu_copy_number
+            # normalize OTU copy numbers if not already
+            if job.is_normalized_otu:
+                print("OTUs are pre-normalized...")
+            else:
+                print("OTUs are not normalized...")
+                n_sample_otu_matrix = n_sample_otu_matrix / otu_copy_number
+
             print("Making sample array...")
             # retrieve the samples need to compute diversity against using
             # representatives

@@ -1,5 +1,4 @@
 import cogent.cluster.metric_scaling as ms
-import numpy
 import sys
 import os.path
 import cPickle
@@ -7,6 +6,7 @@ import MySQLdb
 from MySQLdb.cursors import DictCursor
 from dendrogam_d3_json import retrieve_source
 from config import server_db
+from numpy import abs
 
 
 def meta_data(msampleid):
@@ -14,7 +14,7 @@ def meta_data(msampleid):
     conn = MySQLdb.connect(**server_db)
     curs = conn.cursor(DictCursor)
     curs.execute("SELECT sample_event_ID,REPLACE(title,'\\'','') title,REPLACE(OntologyTerm,'\\'','') OntologyTerm,OntologyID,sample_size,study,ecosystem FROM `samples_unified` natural join samples_sizes_unified natural join samples_EnvO_annotation_unified natural join envoColors where `sample_event_ID` ='"+msampleid+"'")
-    
+
     # prepare variables
     title = ""
     otcnt = oicnt = ecnt = sample_size = 0
@@ -55,19 +55,26 @@ def meta_data(msampleid):
 
 
 def pcoa(distmtx, samples, userdir):
-    with open(userdir + "pcoa_1000.csv", "w") as f1:
+    """Make PCoA-related file for D3.js drawings. Generates CSV file.
+
+    :param distmtx: Numpy array matrix of distances
+    :param samples: List of strings containing sample IDs
+    :param userdir: User directory path to which the file will be written
+    """
+    with open(userdir + "pcoa_1000.csv", "w") as f_pcoa:
         coords, eigvals = ms.principal_coordinates_analysis(distmtx)
-        pcnts = (numpy.abs(eigvals) / sum(numpy.abs(eigvals))) * 100
+        pcnts = (abs(eigvals) / sum(abs(eigvals))) * 100
         idxs_descending = pcnts.argsort()[::-1]
         coords = coords[idxs_descending]
-        eigvals = eigvals[idxs_descending]
-        pcnts = pcnts[idxs_descending]
+        # eigvals = eigvals[idxs_descending]
+        # pcnts = pcnts[idxs_descending]
 
         header = "Sample Name,PC1,PC2,PC3,Title,OntologyID1,OntologyTerm1,"
         header += "OntologyID2,OntologyTerm2,OntologyID3,OntologyTerm3,"
         header += "Sample Size,Study Source,Ecosystem1,Ecosystem2,Ecosystem3\n"
-        f1.write(header)
+
+        f_pcoa.write(header)
         for i in zip(samples, coords.T[:,0], coords.T[:,1], coords.T[:,2]):
             res = str(i + meta_data(i[0])).replace("u\'","").replace("\'","")\
                       .replace("(","").replace(")","")
-            f1.write(res + "\n")
+            f_pcoa.write(res + "\n")
