@@ -77,21 +77,8 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Prototype"
 
-class Sample:
-    def __init__(self,otu_pclfile,seqCounts,sampleID='Sabkha'):
-        self.sampleID = sampleID
-        f=open(otu_pclfile)
-        self.otus=cPickle.load(f)
-        f.close()
-        self.seqCounts = seqCounts
-        self.size = self.seqCounts.sum()
-        self.seqP = self.seqCounts/float(self.seqCounts.sum())
 
-    def subsample(self, size):
-            return Counter(numpy.random.choice(self.otus, size, replace=True, p=self.seqP))
-
-
-def adaptivebray_curtis(datamtx, otu_id, strict=True):
+def n_adaptive_bray_curtis(datamtx, otu_id, strict=True):
     if strict:
         if not all(isfinite(datamtx)):
             raise ValueError("non finite number in input matrix")
@@ -166,7 +153,8 @@ def union_id_order(a, b):
     return list(results_union)
 
 
-def adaptive_bray_curtis(M_datamtx, M_otu_id, N_datamtx, N_otu_id, strict=True):
+def m_n_adaptive_bray_curtis(M_datamtx, M_otu_id, N_datamtx, N_otu_id,
+                           strict=True):
     if strict:
         if not all(isfinite(M_datamtx)) or not all(isfinite(N_datamtx)):
             raise ValueError("non finite number in input matrix")
@@ -337,69 +325,6 @@ def trans_hellinger(m):
     result = sqrt(m / row_sums)
     return result
 
-def adaptive_sample_bray_curtis(datamtx,otu_pclfile,strict=True):
-    if strict:
-        if not all(isfinite(datamtx)):
-            raise ValueError("non finite number in input matrix")
-        if any(datamtx < 0.0):
-            raise ValueError("negative value in input matrix")
-        if ndim(datamtx) != 2:
-            raise ValueError("input matrix not 2D")
-        numrows, numcols = shape(datamtx)
-    else:
-        try:
-            numrows, numcols = shape(datamtx)
-        except ValueError:
-            return zeros((0, 0), 'd')
-
-    if numrows == 0 or numcols == 0:
-        return zeros((0, 0), 'd')
-
-    dists = zeros((numrows, numrows), 'd')
-
-    for i in range(numrows):
-        r1 = datamtx[i,:]
-        sample1 = Sample(otu_pclfile,r1,i)
-        #print sample1.otus
-        #print sample1.seqCounts
-
-        for j in range(i):
-            r2 = datamtx[j,:]
-            sample2 = Sample(otu_pclfile,r2,j)
-            #print sample2.otus
-            #print sample2.seqCounts
-            #print sample1.size, sample2.size
-            subsampleSize = min([sample1.size, sample2.size])
-            if sample2.size != sample1.size:
-
-                if subsampleSize == sample1.size:
-                    s2 = sample2.subsample(subsampleSize)
-                    #print "\n"+str(s2)
-                    r2 = np.zeros(len(sample2.otus))
-                    for sid in s2:
-                        r2[sample2.otus.index(sid)] = s2[sid]
-                    #print r2
-
-                else:
-                    s1 = sample1.subsample(subsampleSize)
-                    #print "\n"+str(s1)
-                    r1 = np.zeros(len(sample1.otus))
-                    for sid in s1:
-                        r1[sample1.otus.index(sid)] = s1[sid]
-                    #print r1
-
-            abs_v = float(sum(abs(r1 - r2)))
-            v = sum(r1 + r2)
-            cur_d = 0.0
-            if v > 0:
-                cur_d = abs_v/v
-
-            dists[i][j] = dists[j][i] = cur_d
-    return dists
-
-
-
-
 def bray_curtis(datamtx, strict=True):
     """ returns bray curtis distance (normalized manhattan distance) btw rows
 
@@ -454,8 +379,6 @@ def bray_curtis(datamtx, strict=True):
     return dists
 
 dist_bray_curtis_faith = bray_curtis
-
-
 
 def dist_bray_curtis_magurran(datamtx, strict=True):
     """ returns bray curtis distance (quantitative sorensen) btw rows

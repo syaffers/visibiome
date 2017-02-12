@@ -1,20 +1,15 @@
 from MySQLdb.cursors import DictCursor
 from config import server_db
 from django.conf import settings
-from string import strip
 import MySQLdb
 import cPickle
 import numpy as np
 import os
-import random
 import re
 import sys
 
-# filter function to extract items in list y if they exist list x
-dictfilt = lambda x, y: dict([(i, x[i]) for i in y if i in x])
-
-def prepare_sql(criteria):
-    """Prepares SQL query when running return_represent_sample.
+def prepare_sql_representatives(criteria):
+    """Prepares SQL query to get representative sample IDs.
 
     :param criteria: List of strings containing user search criteria
     :return: String of SQL query to get rows to get data from db based on user
@@ -34,11 +29,11 @@ def prepare_sql(criteria):
     # complete query string
     sql += " ORDER BY RAND() LIMIT 1000"
     # remove unnecessary spaces
-    return re.sub("\n\s+", " ", strip(sql))
+    return re.sub("\n\s+", " ", sql.strip())
 
 
-def prepare_sql_original(criteria, rep_sample_ids, sample_count, limit):
-    """Prepares SQL query when running return_rep_original_sample.
+def prepare_sql_actual(criteria, rep_sample_ids, limit):
+    """Prepares SQL query to get actual sample IDs.
 
     :param criteria: List of strings containing user search criteria
     :param rep_sample_ids: List of strings containing representative sample IDs
@@ -47,9 +42,7 @@ def prepare_sql_original(criteria, rep_sample_ids, sample_count, limit):
     :param limit: Integer max number of rows to be called from database
     :return: String of SQL query to get rows to get data from DB
     """
-    # qs_sample_ids = str(tuple(rep_sample_ids[:sample_count]))
-    qs_sample_ids = '\',\''.join(rep_sample_ids[:sample_count])
-
+    qs_sample_ids = '\',\''.join(rep_sample_ids)
     # form initial query string
     sql = """
         SELECT sample_event_ID
@@ -68,18 +61,20 @@ def prepare_sql_original(criteria, rep_sample_ids, sample_count, limit):
         ORDER BY FIELD({first_criterion}_rep, '{sample_ids}')
         LIMIT {limit}
     """.format(
-        first_criterion=criteria[0], sample_ids=qs_sample_ids, limit=limit
+        first_criterion=criteria[0], sample_ids=qs_sample_ids, limit=limit * 2
     )
     # remove unnecessary spaces
-    return re.sub("\n\s+", " ", strip(sql))
+    return re.sub("\n\s+", " ", sql.strip())
 
 
-def return_represent_sample(largedata, user_choice):
-    """Get representative samples from the database based on user search
-    criteria.
+def query_samples(largedata, user_choice, sel_count, m_repsampleid=None):
+    """Get samples of based on user ecosystem query and optional representative
+    sample ID list.
 
     :param largedata: String filename of 10k file
     :param user_choice: List of strings containing user search criteria
+    :param sel_count: Integer of number of items
+    :param m_repsampleid: (optional) List of representative sample IDs
     :return: Tuple of submatrix of representative samples and list of sample IDs
     """
     print("\nLoading 10k files... ({})".format(__file__))
@@ -95,98 +90,37 @@ def return_represent_sample(largedata, user_choice):
     totsample_dict = dict(zip(totsample, range(len(totsample))))
     mMatrix = []
     Msample = []
+    sql_query = ""
 
-    # prepare query get data from database which matches the selection
-    # criterion of the user
-    sql_query = prepare_sql(user_choice)
+    # if there are representative sample IDs, we need to get the actual samples
+    if m_repsampleid:
+        sql_query = prepare_sql_actual(user_choice, m_repsampleid, sel_count)
+    else:
+        sql_query = prepare_sql_representatives(user_choice)
 
     # if files are not empty
     if len(totMatrix) != 0 and len(totsample) != 0:
         # get samples from database
+        print("\nQuerying database (modified)... ({})".format(__file__))
         conn = MySQLdb.connect(**server_db)
         curs = conn.cursor(DictCursor)
         curs.execute(sql_query)
 
         # get sample ids
-        selected_sample = [rec["sample_event_ID"] for rec in curs.fetchall()]
+        selected_samples = [row["sample_event_ID"] for row in curs.fetchall()]
         conn.close()
-
-        # enumerate samples into dictionary
-        # selected_sample_dict = {<queried_sample_id>: <queried_index>, ...}
-        selected_sample_dict = dict(
-            zip(selected_sample, range(len(selected_sample)))
-        )
 
         # filter out database samples to match items loaded from file
         # result -> {<queried_sample_id>: <index_based_on_10k_file>, ...}
-        idx_dict = dictfilt(totsample_dict, selected_sample_dict)
-        Msample = idx_dict.keys()
-
-        # get submatrix of Bray-Curtis distances for queried samples
-        mMatrix = totMatrix[idx_dict.values(),:][:,idx_dict.values()]
-        del totMatrix
-        del totsample
-
-    return mMatrix, Msample
-
-
-def return_rep_original_samples(m_repsampleid,
-                                largedata, user_choice, sel_count):
-    """Get representative samples of original data from the database based on
-    user search criteria limited by a selection count.
-
-    :param m_repsampleid: List of representative sample IDs
-    :param largedata: String filename of 10k file
-    :param user_choice: List of strings containing user search criteria
-    :param sel_count: Integer of number of items
-    :return: Tuple of submatrix of representative samples and list of sample IDs
-    """
-    print("\nLoading 10k files... ({})".format(__file__))
-    # set path for each file
-    ten_k_samples_file = os.path.join(largedata, "10k_samples.pcl")
-    ten_k_distances_file = os.path.join(largedata,
-                                        "10k_bray_curtis_adaptive.npy")
-    # load files from binary
-    print("\n    from  ({})".format(ten_k_samples_file))
-    totsample = cPickle.load(open(ten_k_samples_file))
-    # distance matrix
-    totMatrix = np.load(ten_k_distances_file)
-    totsample_dict = dict(zip(totsample, range(len(totsample))))
-    mMatrix = []
-    Msample = []
-
-    if len(totMatrix) != 0 and len(totsample) != 0:
-        conn = MySQLdb.connect(**server_db)
-        # iterative query to get top 250 representatives
-        for val in range(1, sel_count + 1):
-            # prepare query get data from database which matches the selection
-            # criterion of the user
-            print("\nQuerying database... ({})".format(__file__))
-            sql_query = prepare_sql_original(
-                user_choice, m_repsampleid, val, sel_count
-            )
-            curs = conn.cursor(DictCursor)
-            curs.execute(sql_query)
-            selected_sample = [
-                rec["sample_event_ID"] for rec in curs.fetchall()
-            ]
-
-            if len(selected_sample) == sel_count:
+        filtered_samples = []
+        for sample in selected_samples:
+            if sample in totsample_dict:
+                filtered_samples.append((sample, totsample_dict[sample]))
+            if len(filtered_samples) >= sel_count:
                 break
-
-        # close connection after for loop
-        conn.close()
-
-        # enumerate samples into dictionary
-        # selected_sample_dict = {<queried_sample_id>: <queried_index>, ...}
-        selected_sample_dict = dict(
-            zip(selected_sample, range(0, len(selected_sample)))
-        )
-
-        # filter out database samples to match items loaded from file
-        # result -> {<queried_sample_id>: <index_based_on_10k_file>, ...}
-        idx_dict = dictfilt(totsample_dict, selected_sample_dict)
+        idx_dict = dict(filtered_samples)
         Msample = idx_dict.keys()
+
 
         # get submatrix of Bray-Curtis distances for queried samples
         mMatrix = totMatrix[idx_dict.values(),:][:,idx_dict.values()]

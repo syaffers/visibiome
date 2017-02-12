@@ -8,8 +8,7 @@ from betadiversity_scripts.config import server_db
 from betadiversity_scripts.dendrogam_d3_json import json_for_dendrogam
 from betadiversity_scripts.heatmap import (heatmap_files,
     get_sorted_representative_id)
-from betadiversity_scripts.select_samples import (return_represent_sample,
-    return_rep_original_samples)
+from betadiversity_scripts.select_samples import query_samples
 from biom.parse import parse_biom_table
 from biom import parse_table, load_table
 from biom.exception import TableException
@@ -153,15 +152,13 @@ def m_n_betadiversity(job_id):
             print("Making sample array...")
             # retrieve the samples need to compute diversity against using
             # representatives
-            mMatrix, Msample = return_represent_sample(largedata, user_choice)
+            mMatrix, Msample = query_samples(largedata, user_choice, 1000)
 
             # if submatrix of 10k matrix and queried sample is returned
             # properly
             if len(mMatrix) != 0 and len(Msample) != 0:
                 print("Performing M-N Betadiversity calculations...")
                 mnMatrix = calculate_MNmatrix(
-                    # legacy code
-                    # mMatrix, Msample, n_sample_otu_matrix, n_otuid
                     mMatrix, Msample, n_sample_otu_matrix, n_otu_id
                 )
                 n_sam = [str(n_sample_id[0])]
@@ -183,20 +180,18 @@ def m_n_betadiversity(job_id):
                 pcoa(mnMatrix, Msample + n_sam, userdir)
 
                 # get top ranking representative OTU IDs
-                # legacy code
-                # m_repsampleid = get_sortedrepresentativeid(
                 m_repsampleid = get_sorted_representative_id(
                     mnMatrix, Msample + n_sample_id, 251
                 )
-                # MN calculation for representative samples
-                mMatrix, Msample = return_rep_original_samples(
-                    list(m_repsampleid), largedata, user_choice, 250
+                # MN calculation for actual samples
+                mMatrix, Msample = query_samples(
+                    largedata, user_choice, 250, list(m_repsampleid)
                 )
                 mnMatrix = calculate_MNmatrix(
                     mMatrix, Msample, n_sample_otu_matrix, n_otu_id
                 )
 
-                # for top 251 dendogram
+                # for top 250 dendogram
                 print("Making 250 dendrogram...")
                 d3Dendro = json_for_dendrogam(mnMatrix, Msample + n_sample_id)
                 filename = userdir + "d3dendrogram_sub.json"
@@ -212,7 +207,7 @@ def m_n_betadiversity(job_id):
                     mnMatrix, Msample, n_sample_id, userdir, 21
                 )
 
-                # for 21 dendogram
+                # for 20 dendogram
                 print("Making 20 dendrogram...")
                 d3Dendro = json_for_dendrogam(submnMatrix, submn_sample_id)
                 filename = userdir + "d3dendrogram_sub_sub.json"
