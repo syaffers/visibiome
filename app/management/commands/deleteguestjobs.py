@@ -21,7 +21,7 @@ class Command(BaseCommand):
             for job in jobs:
                 threshold = k * 24 * 60 * 60
                 time_diff = now - job.created_at
-                data_tuple = (job.id, job.user_id, time_diff.total_seconds())
+                data_tuple = (job.pk, job.user_id, time_diff.total_seconds())
 
                 if time_diff.total_seconds() > threshold:
                     self.stdout.write(self.style.SUCCESS(

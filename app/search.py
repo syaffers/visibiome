@@ -23,7 +23,7 @@ def guest_search(request):
             u.username += "_{}".format(str(u.pk))
             u.save()
 
-            guest = Guest(status=True, user_id=u.id)
+            guest = Guest(status=True, user_id=u.pk)
             guest.save()
 
             # log 'em in
