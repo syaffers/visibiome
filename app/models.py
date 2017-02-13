@@ -7,8 +7,7 @@ from django.contrib.auth.models import User
 
 
 def upload_path_handler(instance, filename):
-    """
-    Upload path handler for dynamic naming of folders for user uploads
+    """Upload path handler for dynamic naming of folders for user uploads
     :param instance: BiomSearchJob instance of job
     :param filename: String filename
     :return: String the path to file upload for current user
@@ -29,18 +28,18 @@ class Guest(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     status = models.BooleanField(default=False)
 
-    def __str__(self):
+    def __unicode__(self):
         if self.status:
-            return "{uname} is a guest".format(uname=self.user.username)
+            return u"{uname} is a guest".format(uname=self.user.username)
         else:
-            return "{uname} is not a guest".format(uname=self.user.username)
+            return u"{uname} is not a guest".format(uname=self.user.username)
 
 
 class EcosystemChoice(models.Model):
     ecosystem = models.CharField(verbose_name="Ecosystem Type", max_length=60)
     ecosystem_proper_name = models.CharField(max_length=60)
 
-    def __str__(self):
+    def __unicode__(self):
         return self.ecosystem_proper_name
 
 
@@ -91,7 +90,9 @@ class BiomSearchJob(models.Model):
          "Try again or contact site admin."),
     )
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="jobs"
+    )
     biom_file = models.FileField(
         upload_to=upload_path_handler, null=True, blank=True
     )
@@ -107,6 +108,10 @@ class BiomSearchJob(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __unicode__(self):
+        return u"Job by {} created at {}".format(self.user.username,
+                                                 self.created_at)
+
     def save(self, *args, **kwargs):
         if self.pk is None and self.biom_file.name is not None:
             saved_file = self.biom_file
@@ -116,14 +121,9 @@ class BiomSearchJob(models.Model):
 
         super(BiomSearchJob, self).save(*args, **kwargs)
 
-    def __str__(self):
-        return "Job by {} created at {}".format(self.user.username,
-                                                self.created_at)
-
 
 class BiomSearchForm(forms.ModelForm):
-    """
-    The homepage form structure which has a text area, file upload and a set
+    """The homepage form structure which has a text area, file upload and a set
     of checkboxes for the selection criteria
     """
     class Meta:
@@ -169,8 +169,7 @@ class BiomSearchForm(forms.ModelForm):
         return False
 
     def clean(self):
-        """
-        Microbiome search form validation. Checks for chosen criteria and if
+        """Microbiome search form validation. Checks for chosen criteria and if
         both BIOM and OTU texts are uploaded properly
 
         :return: Boolean truth value of the check
@@ -223,9 +222,7 @@ class BiomSearchForm(forms.ModelForm):
 
 
 class UserForm(forms.ModelForm):
-    """
-    General User form for registration and update details
-    """
+    """General User form for registration and update details"""
     class Meta:
         model = User
         fields = [
