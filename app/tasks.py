@@ -1,13 +1,11 @@
 from MySQLdb.cursors import DictCursor
 from StringIO import StringIO
 from app.models import BiomSearchJob
-from betadiversity_scripts.JSon_metadata import create_json_samples_metadata
 from betadiversity_scripts.MNBetadiversity import calculate_MNmatrix
-from betadiversity_scripts.PCOA import pcoa
 from betadiversity_scripts.config import server_db
-from betadiversity_scripts.dendrogam_d3_json import json_for_dendrogam
-from betadiversity_scripts.heatmap import (heatmap_files,
-    get_sorted_representative_id)
+from betadiversity_scripts.visualizations import (generate_heatmap_files,
+    get_sorted_representative_id, generate_samples_metadata,
+    generate_pcoa_file, generate_dendrogram_file)
 from betadiversity_scripts.select_samples import query_samples
 from biom.parse import parse_biom_table
 from biom import parse_table, load_table
@@ -40,7 +38,7 @@ def validate_biom(job, file_path):
 
         if len(otu_table.ids()) == 1:
             job.status = BiomSearchJob.QUEUED
-            # HACK: HARDCODE! Bad practice!
+            # HACK: HARDCODE! Bad practice! Consider job naming
             job.sample_name = otu_table.ids()[0]
             job.save()
             m_n_betadiversity.delay(job.id)
@@ -157,33 +155,29 @@ def m_n_betadiversity(job_id):
             # if submatrix of 10k matrix and queried sample is returned
             # properly
             if len(mMatrix) != 0 and len(Msample) != 0:
-                print("Performing M-N Betadiversity calculations...")
+                print("Performing M-N Betadiversity calculations (reps)...")
                 mnMatrix = calculate_MNmatrix(
                     mMatrix, Msample, n_sample_otu_matrix, n_otu_id
                 )
                 n_sam = [str(n_sample_id[0])]
 
-
-                #================== END OF MAIN COMPUTATION ==================#
-
                 # 1000 dendogram
                 print("Making 1000 dendrogram...")
-                d3Dendro = json_for_dendrogam(mnMatrix, Msample + n_sam)
-                filename = userdir + "d3dendrogram.json"
-                with open(filename, "w") as json_output_file:
-                    print("Writing to file {}...".format(filename))
-                    json.dump(d3Dendro, json_output_file, sort_keys=True,
-                              indent=4)
+                filepath = os.path.join(userdir, "d3dendrogram.json")
+                generate_dendrogram_file(mnMatrix, Msample + n_sam, filepath)
 
                 # pcoa for 1000 samples
                 print("Making 1000 PCOA...")
-                pcoa(mnMatrix, Msample + n_sam, userdir)
+                filepath = os.path.join(userdir, "pcoa_1000.csv")
+                generate_pcoa_file(mnMatrix, Msample + n_sam, filepath)
 
                 # get top ranking representative OTU IDs
                 m_repsampleid = get_sorted_representative_id(
                     mnMatrix, Msample + n_sample_id, 251
                 )
+
                 # MN calculation for actual samples
+                print("Performing M-N Betadiversity calculations (actual)...")
                 mMatrix, Msample = query_samples(
                     largedata, user_choice, 250, list(m_repsampleid)
                 )
@@ -193,40 +187,35 @@ def m_n_betadiversity(job_id):
 
                 # for top 250 dendogram
                 print("Making 250 dendrogram...")
-                d3Dendro = json_for_dendrogam(mnMatrix, Msample + n_sample_id)
-                filename = userdir + "d3dendrogram_sub.json"
-                with open(filename, "w") as json_output_file:
-                    print("Writing to file {}...".format(filename))
-                    json.dump(d3Dendro, json_output_file, sort_keys=True,
-                              indent=4)
+                filepath = os.path.join(userdir, "d3dendrogram_sub.json")
+                generate_dendrogram_file(mnMatrix, Msample + n_sample_id,
+                                         filepath)
 
                 # for closest 250 samples
-                print("Making 250 PCOA and heatmap...")
-                pcoa(mnMatrix, Msample + n_sam, userdir + "250_")
-                submnMatrix, submn_sample_id = heatmap_files(
+                print("Making 250 PCOA...")
+                filepath = os.path.join(userdir, "pcoa_250.csv")
+                generate_pcoa_file(mnMatrix, Msample + n_sam, filepath)
+
+                # for closest 250 heatmap
+                print("Making 250 heatmap...")
+                submnMatrix, submn_sample_id = generate_heatmap_files(
                     mnMatrix, Msample, n_sample_id, userdir, 21
                 )
 
                 # for 20 dendogram
                 print("Making 20 dendrogram...")
-                d3Dendro = json_for_dendrogam(submnMatrix, submn_sample_id)
-                filename = userdir + "d3dendrogram_sub_sub.json"
-                with open(filename, "w") as json_output_file:
-                    print("Writing to file {}...".format(filename))
-                    json.dump(d3Dendro, json_output_file, sort_keys=True,
-                              indent=4)
+                filepath = os.path.join(userdir, "d3dendrogram_sub_sub.json")
+                generate_dendrogram_file(submnMatrix, submn_sample_id,
+                                         filepath)
 
-                samplejson = create_json_samples_metadata(
-                    submnMatrix[0, :], submn_sample_id, submn_sample_id[1:],
-                    userdir
-                )
+                print("Making sample metadata file...")
+                # TODO: Possibility of people naming their jobs?
+                sample_filename = job.sample_name + ".json"
+                filepath = os.path.join(userdir, sample_filename)
+                generate_samples_metadata(submnMatrix[0, :], submn_sample_id,
+                                          submn_sample_id[1:], filepath)
 
-                sample_filename = "_".join(regexp.split(n_sample_id[0]))
-                filename = userdir + sample_filename + ".json"
-                with open(filename, "w") as json_output_file:
-                    json.dump(samplejson, json_output_file, sort_keys=True,
-                              indent=4)
-
+                print("Done!")
                 job.status = BiomSearchJob.COMPLETED
                 job.save()
 

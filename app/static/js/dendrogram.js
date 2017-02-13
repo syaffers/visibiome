@@ -51,7 +51,7 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
    * is there a way to dynamically set the height?
    */
   width = 960;
-  height = 5000;
+  height = 6000;
 
   var cluster = d3.layout.cluster()
   .size([height - 200, width - 550]);
