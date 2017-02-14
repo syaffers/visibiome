@@ -9,16 +9,16 @@
       {% if is_example %}
         {% url 'app:example_job_details' as details_url %}
       {% else %}
-        {% url 'app:job_details' job.id as details_url  %}
+        {% url 'app:job_details' job.pk as details_url  %}
       {% endif %}
       <li class="{% active details_url %}"><a href="{{ details_url }}">Details</a></li>
       <li><span class="nav-divider-custom">Visualization</span></li>
       {% if is_example %}
         {% url 'app:example_job_ranking' as ranking_url %}
       {% else %}
-        {% url 'app:job_ranking' job.id as ranking_url %}
+        {% url 'app:job_ranking' job.pk as ranking_url %}
       {% endif %}
-      <li class="{% active ranking_url %}">
+      <li class="{% active ranking_url %} {% if job.status < 10 %} disabled {% endif %}">
         <a href="{% if job.status < 10 %} # {% else %}{{ ranking_url }}{% endif %}">
           Ranking
         </a>
@@ -26,9 +26,9 @@
       {% if is_example %}
         {% url 'app:example_job_heatmap' as heatmap_url %}
       {% else %}
-        {% url 'app:job_heatmap' job.id as heatmap_url %}
+        {% url 'app:job_heatmap' job.pk as heatmap_url %}
       {% endif %}
-      <li class="{% active heatmap_url %}">
+      <li class="{% active heatmap_url %} {% if job.status < 10 %} disabled {% endif %}">
         <a href="{% if job.status < 10 %} # {% else %}{{ heatmap_url }}{% endif %}">
           Heatmap
         </a>
@@ -36,10 +36,10 @@
       {% if is_example %}
         {% url 'app:example_job_pcoa_reps' as pcoa_url %}
       {% else %}
-        {% url 'app:job_pcoa_reps' job.id as pcoa_url %}
+        {% url 'app:job_pcoa_reps' job.pk as pcoa_url %}
       {% endif %}
       <li><span class="nav-divider-custom">PCoA</span></li>
-      <li class="{% active pcoa_url %}">
+      <li class="{% active pcoa_url %} {% if job.status < 10 %} disabled {% endif %}">
         <a href="{% if job.status < 10 %} # {% else %}{{ pcoa_url }}{% endif %}">
           Representatives
         </a>
@@ -47,9 +47,9 @@
       {% if is_example %}
         {% url 'app:example_job_pcoa_similar' as pcoa_250_url %}
       {% else %}
-        {% url 'app:job_pcoa_similar' job.id as pcoa_250_url %}
+        {% url 'app:job_pcoa_similar' job.pk as pcoa_250_url %}
       {% endif %}
-      <li class="{% active pcoa_250_url %}">
+      <li class="{% active pcoa_250_url %} {% if job.status < 10 %} disabled {% endif %}">
         <a href="{% if job.status < 10 %} # {% else %}{{ pcoa_250_url }}{% endif %}">
           250 Most Similar
         </a>
@@ -57,10 +57,10 @@
       {% if is_example %}
         {% url 'app:example_job_dend_reps' as dend_url %}
       {% else %}
-        {% url 'app:job_dend_reps' job.id as dend_url %}
+        {% url 'app:job_dend_reps' job.pk as dend_url %}
       {% endif %}
       <li><span class="nav-divider-custom">Dendrogram</span></li>
-      <li class="{% active dend_url %}">
+      <li class="{% active dend_url %} {% if job.status < 10 %} disabled {% endif %}">
         <a href="{% if job.status < 10 %} # {% else %}{{ dend_url }}{% endif %}">
           Representatives
         </a>
@@ -68,9 +68,9 @@
       {% if is_example %}
         {% url 'app:example_job_dend_similar' as dend_250_url %}
       {% else %}
-        {% url 'app:job_dend_similar' job.id as dend_250_url %}
+        {% url 'app:job_dend_similar' job.pk as dend_250_url %}
       {% endif %}
-      <li class="{% active dend_250_url %}">
+      <li class="{% active dend_250_url %} {% if job.status < 10 %} disabled {% endif %}">
         <a href="{% if job.status < 10 %} # {% else %}{{ dend_250_url }}{% endif %}">
           250 Most Similar
         </a>

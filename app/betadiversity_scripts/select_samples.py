@@ -67,39 +67,40 @@ def prepare_sql_actual(criteria, rep_sample_ids, limit):
     return re.sub("\n\s+", " ", sql.strip())
 
 
-def query_samples(largedata, user_choice, sel_count, m_repsampleid=None):
+def query_samples(l_data_path, criteria, query_count, m_rep_sample_ids=None):
     """Get samples of based on user ecosystem query and optional representative
-    sample ID list.
+    sample IDs list.
 
-    :param largedata: String filename of 10k file
-    :param user_choice: List of strings containing user search criteria
-    :param sel_count: Integer of number of items
-    :param m_repsampleid: (optional) List of representative sample IDs
-    :return: Tuple of submatrix of representative samples and list of sample IDs
+    :param l_data_path: String filename of 10k file
+    :param criteria: List of strings containing user search criteria
+    :param query_count: Integer of number of items to return from query
+    :param m_rep_sample_ids: (optional) List of representative sample IDs
+    :return: Tuple of submatrix of representative samples and list of sample
+    IDs
     """
     print("\nLoading 10k files... ({})".format(__file__))
     # set path for each file
-    ten_k_samples_file = os.path.join(largedata, "10k_samples.pcl")
-    ten_k_distances_file = os.path.join(largedata,
-                                        "10k_bray_curtis_adaptive.npy")
+    l_sample_ids_file = os.path.join(l_data_path, "10k_samples.pcl")
+    l_distmtx_file = os.path.join(l_data_path, "10k_bray_curtis_adaptive.npy")
     # load files from binary
-    print("\n    from  ({})".format(ten_k_samples_file))
-    totsample = cPickle.load(open(ten_k_samples_file))
-    # distance matrix
-    totMatrix = np.load(ten_k_distances_file)
-    totsample_dict = dict(zip(totsample, range(len(totsample))))
-    mMatrix = []
-    Msample = []
+    print("\n    from  ({})".format(l_sample_ids_file))
+    l_sample_ids = cPickle.load(open(l_sample_ids_file))
+
+    # load distance matrix from file
+    l_distmtx = np.load(l_distmtx_file)
+    l_sample_ids_dict = dict(zip(l_sample_ids, range(len(l_sample_ids))))
+    m_distmtx = []
+    m_sample_ids = []
     sql_query = ""
 
     # if there are representative sample IDs, we need to get the actual samples
-    if m_repsampleid:
-        sql_query = prepare_sql_actual(user_choice, m_repsampleid, sel_count)
+    if m_rep_sample_ids:
+        sql_query = prepare_sql_actual(criteria, m_rep_sample_ids, query_count)
     else:
-        sql_query = prepare_sql_representatives(user_choice)
+        sql_query = prepare_sql_representatives(criteria)
 
     # if files are not empty
-    if len(totMatrix) != 0 and len(totsample) != 0:
+    if len(l_distmtx) != 0 and len(l_sample_ids) != 0:
         # get samples from database
         print("\nQuerying database (modified)... ({})".format(__file__))
         conn = MySQLdb.connect(**server_db)
@@ -113,18 +114,20 @@ def query_samples(largedata, user_choice, sel_count, m_repsampleid=None):
         # filter out database samples to match items loaded from file
         # result -> {<queried_sample_id>: <index_based_on_10k_file>, ...}
         filtered_samples = []
-        for sample in selected_samples:
-            if sample in totsample_dict:
-                filtered_samples.append((sample, totsample_dict[sample]))
-            if len(filtered_samples) >= sel_count:
+        for sample_id in selected_samples:
+            if sample_id in l_sample_ids_dict:
+                filtered_samples.append(
+                    (sample_id, l_sample_ids_dict[sample_id])
+                )
+            if len(filtered_samples) >= query_count:
                 break
         idx_dict = dict(filtered_samples)
-        Msample = idx_dict.keys()
+        m_sample_ids = idx_dict.keys()
 
 
         # get submatrix of Bray-Curtis distances for queried samples
-        mMatrix = totMatrix[idx_dict.values(),:][:,idx_dict.values()]
-        del totMatrix
-        del totsample
+        m_distmtx = l_distmtx[idx_dict.values(),:][:,idx_dict.values()]
+        del l_distmtx
+        del l_sample_ids
 
-    return mMatrix, Msample
+    return m_distmtx, m_sample_ids

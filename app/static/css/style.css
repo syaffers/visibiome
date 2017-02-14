@@ -17,6 +17,15 @@
   color: #FFFFFF;
 }
 
+.jumbo {
+  font-size: 3em;
+  font-weight: bold;
+  text-align: center;
+  display: block;
+  padding: 120px;
+  background: #EEEEEE;
+}
+
 .btn-job-remove {
   border-radius: 30px;
   font-size: 12px;
@@ -58,6 +67,10 @@
 
 .plot-container {
   position: relative;
+}
+
+.btn-control {
+  margin-top: 15px;
 }
 
 .card {

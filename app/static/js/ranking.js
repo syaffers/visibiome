@@ -1,5 +1,6 @@
-var width = 900,
-height = 50;
+var width = 720,
+height = 50,
+blockSize = 16;
 
 /**
  * Drawing the heatmap legend
@@ -44,7 +45,7 @@ gleg.selectAll("rect")
   return x_scale(d[0]);
 })
 .attr("width", function(d) {
-  return 25;
+  return 24;
 })
 .style("fill", function(d) {
   return threshold(d[0]);
@@ -53,35 +54,31 @@ gleg.selectAll("rect")
 
 gleg.call(xAxis_g).append("text")
 .attr("class", "caption")
-.attr("x", 10).attr("y", -10).attr("font-size", "10px")
-.text("Beta Diveristy (Bray Curtis)");
+.attr("x", 8).attr("y", -14).attr("font-size", "11px")
+.text("β-Diversity (Bray Curtis)");
 
 
 /**
  * Drawing the actual heatmap
  */
-function adjacency(dataPath, sampleId) {
+function adjacency(dataPath, sampleIds, jobSamplesSummaryFile) {
 
   queue()
-  .defer(d3.csv, dataPath + "top_nodelist.csv")
-  .defer(d3.csv, dataPath + "top_edgelist.csv")
+  .defer(d3.csv, dataPath + "/top_nodelist.csv")
+  .defer(d3.csv, dataPath + "/top_edgelist.csv")
   .await(function(error, nodeList, edgeList) {
     createAdjacencyMatrix(nodeList, edgeList);
   });
 
   dendrogram(dataPath);
 
-  var re = new RegExp("[^A-Za-z0-9]");
-  var normalizedSampleId = sampleId.split(re).join("_");
-  var usersamplejson = dataPath + normalizedSampleId + ".json";
-
-  $.ajax(usersamplejson).done(function(data, status) {
+  $.ajax(jobSamplesSummaryFile).done(function(data, status) {
     createRankingCards(data.sample);
   });
 
   /* function to draw adjacency matrix on the ranking page */
   function createAdjacencyMatrix(nodes, edges) {
-    var blockSize = 18;
+    var offset = 220;
     var div = d3.select("#tooltip-heatmap").append("div")
     .attr("class", "tooltip")
     .style("opacity", 1e-6)
@@ -115,12 +112,12 @@ function adjacency(dataPath, sampleId) {
     });
 
     var svg = d3.select("#heatmap").append("svg")
-    .attr("width", 600)
-    .attr("height", 600);
+    .attr("width", width)
+    .attr("height", width);
 
 
     var g = svg.append("g")
-    .attr("transform", "translate(200,200)")
+    .attr("transform", "translate(" + offset + "," + offset + ")")
     .attr("id", "adjacencyG")
     .selectAll("rect")
     .data(matrix)
@@ -172,8 +169,8 @@ function adjacency(dataPath, sampleId) {
       // })
       div
       .text("Sample ID:  " + d.id.replace("-", "\nSample ID:  ") + "\nDistance:  " + d.weight)
-      .style("left", Number(d.x) * blockSize + 200 + (blockSize / 1.5) + "px")
-      .style("top", Number(d.y) * blockSize + 200 + (blockSize / 1.5) + "px");
+      .style("left", Number(d.x) * blockSize + offset + (blockSize / 1.5) + "px")
+      .style("top", Number(d.y) * blockSize + offset + (blockSize / 1.5) + "px");
     }
 
     function mouseover() {
@@ -254,7 +251,7 @@ function adjacency(dataPath, sampleId) {
     .append("g")
     .attr("transform", "translate(50,50)");
 
-    d3.json(dataPath + "d3dendrogram_sub_sub.json", function(json) {
+    d3.json(dataPath + "/d3dendrogram_sub_sub.json", function(json) {
       var nodes = cluster.nodes(json);
 
       var yscale = scaleBranchLengths(nodes, width - 350);
@@ -324,11 +321,11 @@ function adjacency(dataPath, sampleId) {
       .attr("text-anchor", "start")
       .attr("font-weight", "bold")
       .attr('font-size', function(d) {
-        if (d.name == sampleId) return "15px";
+        if (sampleIds.indexOf(d.name) >= 0) return "15px";
         else return "9px";
       })
       .attr('fill', function(d) {
-        if (d.name == sampleId) return "red";
+        if (sampleIds.indexOf(d.name) >= 0) return "red";
         else return "black";
       })
       .text(function(d) {

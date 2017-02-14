@@ -9,19 +9,19 @@ There are three possible deployment settings (indicated in this document with a
 
 1. Start a VM or EC2 server with QIIME pre-installed.
 
-2. Clone this repository
+2. Setup a Redis cache. For distributed task queueing try RedisLabs, AWS
+  ElastiCache is a little difficult to configure. For local redis deployment:
+
+        $ sudo apt-get install redis-server
+
+3. Clone this repository
 
         $ git clone https://syaffers@bitbucket.org/syaffers/visibiome.git
         $ cd visibiome
 
-3. Install app dependencies (you may need superuser credentials)
+4. Install app dependencies (you may need superuser credentials)
 
         $ pip install -r requirements.txt
-
-4. Move the static files for live deployment (for `development` and `production`
-  settings only, do not perform for `local` setting!)
-
-        $ python manage.py collectstatic --settings=vzb.settings.development
 
 5. Visibiome handles many relational database systems but we use MySQL. Edit
   `vzb/settings/<SETTING>.py` to update the webserver database configuration. Be
@@ -42,30 +42,7 @@ There are three possible deployment settings (indicated in this document with a
           },
         ...
 
-6. Migrate and populate database. Clear (or delete) the current database to
-  start with a fresh installation.
-
-        $ python manage.py migrate --settings=vzb.settings.<SETTING>
-        $ python manage.py loaddata data/ecosystem_choices.json --settings=vzb.settings.<SETTING>
-
-7. Create an admin account (optional, but useful!). Change `<SETTING>` to your
-  current deployment settings
-
-        $ python manage.py createsuperuser --settings=vzb.settings.<SETTING>
-
-8. Setup a Redis cache. For distributed task queueing try RedisLabs, AWS
-  ElastiCache is a little difficult to configure. For local redis deployment:
-
-        $ sudo apt-get install redis-server
-
-9. Edit `vzb/settings/<SETTING>.py` to include Redis server URL by editing the
-  following line. Set `<REDIS_IP_ADDRESS>` to `127.0.0.1` for local redis.
-
-        ...
-        BROKER_URL = "redis://<REDIS_IP_ADDRESS>//"
-        ...
-
-10. Update `vzb/settings/<SETTING>.py` to match current Microbiome DB service
+6. Update `vzb/settings/<SETTING>.py` to match current Microbiome DB service
 
         ...
         # Microbiome Database configuration. This database is not handled by
@@ -80,6 +57,29 @@ There are three possible deployment settings (indicated in this document with a
             'PASSWORD': 'syafiq123',
         }
         ...
+
+7. Edit `vzb/settings/<SETTING>.py` to include Redis server URL by editing the
+  following line. Set `<REDIS_IP_ADDRESS>` to `127.0.0.1` for local redis.
+
+        ...
+        BROKER_URL = "redis://<REDIS_IP_ADDRESS>//"
+        ...
+
+8. Move the static files for live deployment (for `development` and `production`
+  settings only, do not perform for `local` setting!)
+
+        $ python manage.py collectstatic --settings=vzb.settings.development
+
+9. Migrate and populate database. Clear (or delete) the current database to
+  start with a fresh installation.
+
+        $ python manage.py migrate --settings=vzb.settings.<SETTING>
+        $ python manage.py loaddata initial.json --settings=vzb.settings.<SETTING>
+
+10. Create an admin account (optional, but useful!). Change `<SETTING>` to your
+  current deployment settings
+
+        $ python manage.py createsuperuser --settings=vzb.settings.<SETTING>
 
 11. Download distance matrix files into the `staticfiles/data` directory (for
   local deployment, put into `app/static/data/` folder)

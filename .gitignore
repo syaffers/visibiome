@@ -15,3 +15,5 @@ mediafiles/*/
 
 logs/*/
 !logs/delete.me
+
+local/

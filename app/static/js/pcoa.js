@@ -1,4 +1,4 @@
-function drawPcoa(dataPath, csvFile, sampleId) {
+function drawPcoa(dataPath, sampleIds) {
   var margin = {
     top: 20,
     right: 20,
@@ -36,7 +36,7 @@ function drawPcoa(dataPath, csvFile, sampleId) {
        );
 
     drawAllPcoa('Ecosystem1', colorMap, margin, width, height, dataPath,
-                csvFile, sampleId, true);
+                sampleIds, true);
   });
 
   // when user clicks the view by envo button
@@ -56,7 +56,7 @@ function drawPcoa(dataPath, csvFile, sampleId) {
     var colorMap = d3.scale.category20();
 
     drawAllPcoa('OntologyTerm1', colorMap, margin, width, height, dataPath,
-                csvFile, sampleId, false);
+                sampleIds, false);
   });
 
   // when user clicks toggle query label
@@ -98,13 +98,13 @@ function writeDownloadLink(plotId) {
 * Function to draw all PCoA plots onto the page
 */
 function drawAllPcoa(plotType, colorMap, margin, width, height, dataPath,
-                     csvFile, sampleId, showLegend) {
-  drawPcXVsPcYByType(1, 2, plotType, colorMap, width, height,
-                     margin, dataPath, csvFile, sampleId, showLegend);
-  drawPcXVsPcYByType(1, 3, plotType, colorMap, width, height,
-                     margin, dataPath, csvFile, sampleId, showLegend);
-  drawPcXVsPcYByType(2, 3, plotType, colorMap, width, height,
-                     margin, dataPath, csvFile, sampleId, showLegend);
+                     sampleIds, showLegend) {
+  drawPcXVsPcYByType(1, 2, plotType, colorMap, width, height, margin, dataPath,
+                     sampleIds, showLegend);
+  drawPcXVsPcYByType(1, 3, plotType, colorMap, width, height, margin, dataPath,
+                     sampleIds, showLegend);
+  drawPcXVsPcYByType(2, 3, plotType, colorMap, width, height, margin, dataPath,
+                     sampleIds, showLegend);
 }
 
 
@@ -113,7 +113,7 @@ function drawAllPcoa(plotType, colorMap, margin, width, height, dataPath,
 * by ecosystem
 */
 function drawPcXVsPcYByType(pcx, pcy, type, colorMap, width, height, margin,
-                            dataPath, csvFile, sampleId, showLegend) {
+                            dataPath, sampleIds, showLegend) {
   // setup x axis
   var xValue = function(d) { return d["PC" + pcx]; }, // data -> value
     xScale = d3.scale.linear().range([0, width]), // value -> display
@@ -153,7 +153,7 @@ function drawPcXVsPcYByType(pcx, pcy, type, colorMap, width, height, margin,
   .style("background", "#FFFF66")
   .style("border", 0);
 
-  d3.csv(dataPath + csvFile, function(error, data) {
+  d3.csv(dataPath, function(error, data) {
 
     // change string (from CSV) into number format
     data.forEach(function(d) {
@@ -196,7 +196,7 @@ function drawPcXVsPcYByType(pcx, pcy, type, colorMap, width, height, margin,
     .attr("y1", 0)
     .attr("x2", xScale(0))
     .attr("y2", height)
-    .style('stroke', 'black')
+    .style('stroke', '#999999')
     .style('stroke-width', 1)
     .style('stroke-dasharray', "5, 5");
 
@@ -207,7 +207,7 @@ function drawPcXVsPcYByType(pcx, pcy, type, colorMap, width, height, margin,
     .attr("y1", yScale(0))
     .attr("x2", width)
     .attr("y2", yScale(0))
-    .style('stroke', 'black')
+    .style('stroke', '#999999')
     .style('stroke-width', 1)
     .style('stroke-dasharray', "5, 5");
 
@@ -221,7 +221,7 @@ function drawPcXVsPcYByType(pcx, pcy, type, colorMap, width, height, margin,
     .attr("cy", yMap)
     .style("fill", function(d) {
       // set user queried point to black
-      if (d["Sample Name"] == sampleId)
+      if (sampleIds.indexOf(d["Sample Name"]) >= 0)
         return 'black';
       return color(cValue(d));
     })
@@ -264,7 +264,7 @@ function drawPcXVsPcYByType(pcx, pcy, type, colorMap, width, height, margin,
     .attr('font-size', "10px")
     .attr('fill', "red")
     .text(function(d) {
-      if (d["Sample Name"] == sampleId)
+      if (sampleIds.indexOf(d["Sample Name"]) >= 0)
         return "..................." + d["Sample Name"];
       return "";
     });

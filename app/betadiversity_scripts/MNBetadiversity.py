@@ -90,40 +90,39 @@ def biom_from_sample(sample_list, count_type="normalized_count"):
     return table
 
 
-def calculate_MNmatrix(mMatrix, Msample, n_sample_otu_matrix, n_otu_id):
+def make_m_n_distmtx(m_distmtx, m_sample_ids, n_otu_matrix, n_otu_ids):
     """Wrapper function to calculate the adaptive Bray-Curtis distance for
     the input sample and queried samples.
 
-    :param mMatrix: numpy array of database queried samples
-    :param Msample: list of database queried sample IDs
-    :param n_sample_otu_matrix: numpy array of user provided samples
-    :param n_sample_otu_matrix: list of user provided sample IDs
+    :param m_distmtx: numpy array of database queried samples
+    :param m_sample_ids: list of database queried sample IDs
+    :param n_otu_matrix: numpy array of user provided samples
+    :param n_otu_ids: list of user provided sample IDs
     """
     # generate biom table object based on queried samples
-    otutableL = parse_biom_table(json.dumps(biom_from_sample(Msample)))
+    m_otu_table = parse_biom_table(json.dumps(biom_from_sample(m_sample_ids)))
 
     m_sample_otu_matrix = np.asarray(
-        [v for v in otutableL.iter_data(axis="sample")]
+        [v for v in m_otu_table.iter_data(axis="sample")]
     )
 
-    m_otu_id = otutableL.ids(axis="observation")
+    m_otu_ids = m_otu_table.ids(axis="observation")
 
     # calculate adaptive Bray-Curtis distances between all submitted samples
     # if users submits a file with 4 samples, this will return a 4 by 4
     # distance matrix
-    nMatrix = n_adaptive_bray_curtis(n_sample_otu_matrix, list(n_otu_id))
+    n_distmtx = n_adaptive_bray_curtis(n_otu_matrix, list(n_otu_ids))
 
     # calculate adaptive Bray-Curtis distances for all submitted samples
     # against queried samples
-    m_nMatrix = m_n_adaptive_bray_curtis(
-        m_sample_otu_matrix, list(m_otu_id), n_sample_otu_matrix,
-        list(n_otu_id)
+    m_n_distrows = m_n_adaptive_bray_curtis(
+        m_sample_otu_matrix, list(m_otu_ids), n_otu_matrix, list(n_otu_ids)
     )
 
     # stack matrices to make the m + n distance matrix
-    mnMatrix = np.vstack(
-        (np.hstack((mMatrix, m_nMatrix)),
-         np.hstack((m_nMatrix.T, nMatrix)))
+    m_n_distmtx = np.vstack(
+        (np.hstack((m_distmtx, m_n_distrows)),
+         np.hstack((m_n_distrows.T, n_distmtx)))
     )
 
-    return mnMatrix
+    return m_n_distmtx

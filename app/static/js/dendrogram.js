@@ -1,4 +1,4 @@
-function drawDendrogram(dataPath, jsonFile, sampleId) {
+function drawDendrogram(dataPath, sampleIds) {
   var width = 200;
   var height = 200;
   var radius = Math.min(width, height) / 2;
@@ -82,7 +82,7 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
 
   /********************************* DRAWING *********************************/
 
-  d3.json(dataPath + jsonFile, function(json) {
+  d3.json(dataPath, function(json) {
     var nodes = cluster.nodes(json);
     var yscale = scaleBranchLengths(nodes, width - 550);
 
@@ -150,7 +150,7 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
       .attr("width", 30)
       .attr("height", 10)
       .attr('fill', function(d) {
-        if (d.name == sampleId) return "black";
+        if (sampleIds.indexOf(d.name) >= 0) return "black";
         else return d.ecocolor[0];
       });
 
@@ -167,7 +167,7 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
       .attr("width", 30)
       .attr("height", 10)
       .attr('fill', function(d) {
-        if (d.name == sampleId) return "black";
+        if (sampleIds.indexOf(d.name) >= 0) return "black";
         else return d.ecocolor[1];
       });
 
@@ -184,7 +184,7 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
       .attr("width", 30)
       .attr("height", 10)
       .attr('fill', function(d) {
-        if (d.name == sampleId) return "black";
+        if (sampleIds.indexOf(d.name) >= 0) return "black";
         else return d.ecocolor[2];
       });
 
@@ -195,11 +195,11 @@ function drawDendrogram(dataPath, jsonFile, sampleId) {
       .attr("text-anchor", "start")
       .attr("font-weight", "bold")
       .attr('font-size', function(d) {
-        if (d.name == sampleId) return "14px";
+        if (sampleIds.indexOf(d.name) >= 0) return "14px";
         else return "7px";
       })
       .attr('fill', function(d) {
-        if (d.name == sampleId) return "red";
+        if (sampleIds.indexOf(d.name) >= 0) return "red";
         else return "black";
       })
       .text(function(d) {

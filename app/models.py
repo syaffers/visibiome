@@ -1,27 +1,30 @@
 from django import forms
 from django.conf import settings
+from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import User
+from shutil import rmtree
+import posixpath
 
-
-def upload_path_handler(instance, filename):
+def upload_path_handler(instance, old_filename):
     """Upload path handler for dynamic naming of folders for user uploads
     :param instance: BiomSearchJob instance of job
-    :param filename: String filename
+    :param old_filename: String old_filename
     :return: String the path to file upload for current user
     """
-    filename = filename.split('.')
-    name, ext = filename[0:-1], filename[-1]
-    file_path = \
-        settings.MEDIA_ROOT + '{user_id}/{job_id}/{job_id_h}.{ext}'.format(
-            user_id=instance.user_id,
-            job_id=instance.id,
-            job_id_h="{uid}-{id}".format(uid=instance.user_id, id=instance.id),
-            ext=ext
-        )
-    return file_path
+    old_filename = old_filename.split('.')
+    name, ext = old_filename[0:-1], old_filename[-1]
+
+    new_filename = "{uid}-{id}.{ext}".format(
+        uid=instance.user_id, id=instance.pk, ext=ext
+    )
+    new_file_path = posixpath.join(
+        str(instance.user_id),
+        posixpath.join(str(instance.pk), new_filename)
+    )
+    return new_file_path
 
 
 class Guest(models.Model):
@@ -72,7 +75,7 @@ class BiomSearchJob(models.Model):
         (FILE_VALIDATION_ERROR,
          "File/text content has errors. Check JSON/TSV content."),
         (SAMPLE_COUNT_ERROR,
-         "Too many samples, only 1 sample allowed."),
+         "Too many samples, only up to 10 samples allowed."),
         (DUPLICATE_ID_ERROR,
          "Duplicate observation IDs."),
         (FILE_IO_ERROR,
@@ -90,6 +93,10 @@ class BiomSearchJob(models.Model):
          "Try again or contact site admin."),
     )
 
+    alphanumeric_spaces = RegexValidator(
+        r"^[0-9a-zA-Z\s]*$", "Only alphanumeric characters and spaces allowed"
+    )
+
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="jobs"
     )
@@ -99,8 +106,9 @@ class BiomSearchJob(models.Model):
     criteria = models.ManyToManyField(
         'EcosystemChoice', blank=False, max_length=3
     )
-    sample_name = models.CharField(
-        null=False, max_length=100, default="(no name)"
+    name = models.CharField(
+        null=False, blank=False, max_length=100, default="Unnamed Job",
+        validators=[alphanumeric_spaces]
     )
     status = models.IntegerField(choices=STATUSES, default=VALIDATING)
     error_code = models.IntegerField(choices=ERRORS, default=NO_ERRORS)
@@ -109,8 +117,24 @@ class BiomSearchJob(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
-        return u"Job by {} created at {}".format(self.user.username,
-                                                 self.created_at)
+        return u"({}) by {} created at {}".format(
+            self.name, self.user.username, self.created_at
+        )
+
+    def file_safe_name(self):
+        return self.name.replace(" ", "_")
+
+    def delete(self, *args, **kwargs):
+        """Overridden delete function to delete uploaded and processed
+        files when jobs are deleted. Comment this function out to keep
+        user uploaded files and other processed files when jobs are
+        deleted.
+        """
+        job_folder = posixpath.join(
+            str(self.user_id), str(self.pk)
+        )
+        rmtree(posixpath.join(settings.MEDIA_ROOT, job_folder))
+        super(BiomSearchJob, self).delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):
         if self.pk is None and self.biom_file.name is not None:
@@ -122,6 +146,16 @@ class BiomSearchJob(models.Model):
         super(BiomSearchJob, self).save(*args, **kwargs)
 
 
+class BiomSample(models.Model):
+    name = models.CharField(max_length=100)
+    job = models.ForeignKey(
+        BiomSearchJob, on_delete=models.CASCADE, related_name="samples"
+    )
+
+    def __unicode__(self):
+        return self.name
+
+
 class BiomSearchForm(forms.ModelForm):
     """The homepage form structure which has a text area, file upload and a set
     of checkboxes for the selection criteria
@@ -129,6 +163,7 @@ class BiomSearchForm(forms.ModelForm):
     class Meta:
         model = BiomSearchJob
         fields = {
+            "name": forms.CharField,
             "biom_file": forms.FileField,
             "criteria": forms.MultipleChoiceField(required=True),
             "is_normalized_otu": forms.BooleanField(required=False),
@@ -140,6 +175,12 @@ class BiomSearchForm(forms.ModelForm):
         }
         widgets = {
             "criteria": forms.CheckboxSelectMultiple,
+            "name": forms.TextInput(
+                attrs={
+                    "placeholder": "Name this job",
+                    "class": "form-control"
+                }
+            )
         }
 
     biom_file = forms.FileField(

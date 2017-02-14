@@ -22,6 +22,22 @@
       {% endif %}
         {% csrf_token %}
         <div class="form-group">
+          <label for="{{ form.name.name }}" class="col-xs-12 col-sm-3 control-label">
+            {{ form.name.label }}<br>
+          </label>
+          <div class="col-xs-12 col-sm-9">
+            {{ form.name.as_widget }}
+
+            {% if form.name.errors %}
+              <ul class="errorlist">
+                {% for e in form.name.errors %}
+                  <li>{{ e }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        </div>
+        <div class="form-group">
           <label for="{{ form.otu_text.name }}" class="col-xs-12 col-sm-3 control-label">{{ form.otu_text.label }}<br>
             <em>Maximum 1 sample (TSV/JSON format)</em>
           </label>

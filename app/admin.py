@@ -1,9 +1,13 @@
 from django.contrib import admin
-from app.models import BiomSearchJob, EcosystemChoice, Guest
+from app.models import BiomSample, BiomSearchJob, EcosystemChoice, Guest
 
 
 class BiomSearchJobAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'created_at', 'status')
+
+
+class BiomSampleAdmin(admin.ModelAdmin):
+    list_display = ('name', 'job')
 
 
 class GuestAdmin(admin.ModelAdmin):
@@ -17,5 +21,6 @@ class GuestAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Guest, GuestAdmin)
+admin.site.register(BiomSample, BiomSampleAdmin)
 admin.site.register(BiomSearchJob, BiomSearchJobAdmin)
 admin.site.register(EcosystemChoice)
