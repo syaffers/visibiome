@@ -60,6 +60,15 @@ class BiomSearchJob(models.Model):
         (PROCESSING, "Processing"),
         (COMPLETED, "Completed"),
     )
+    BRAYCURTIS = 1
+    GNATUNIFRAC = 2
+    HIEREPUNIFRAC = 3
+
+    ANALYSISTYPES = (
+        (BRAYCURTIS, "Bray Curtis"),
+        (GNATUNIFRAC, "GNAT/UniFrac"),
+        (HIEREPUNIFRAC, "Hierarchical Representatives/UniFrac")
+    )
 
     FILE_IO_ERROR = -1
     NO_ERRORS = 0
@@ -109,6 +118,9 @@ class BiomSearchJob(models.Model):
     name = models.CharField(
         null=False, blank=False, max_length=100, default="Unnamed Job",
         validators=[alphanumeric_spaces]
+    )
+    analysis_type = models.IntegerField(
+        choices=ANALYSISTYPES, default=GNATUNIFRAC
     )
     status = models.IntegerField(choices=STATUSES, default=VALIDATING)
     error_code = models.IntegerField(choices=ERRORS, default=NO_ERRORS)

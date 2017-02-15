@@ -22,6 +22,84 @@ import os
 import re
 import sys
 
+def bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job):
+    print("Making sample array...")
+    # query the representatives
+    m_distmtx, m_sample_ids = query_samples(l_data_path, criteria, 1000)
+
+    # if representatives matrix and sample IDs are not empty
+    if len(m_distmtx) != 0 and len(m_sample_ids) != 0:
+        print("Performing M-N Betadiversity calculations (reps)...")
+        m_n_distmtx = make_m_n_distmtx(m_distmtx, m_sample_ids,
+                                       n_otu_matrix, n_otu_ids)
+
+        # 1000 dendogram
+        print("Making 1000 dendrogram...")
+        filepath = os.path.join(job_dir_path, "d3dendrogram.json")
+        generate_dendrogram_file(m_n_distmtx,
+                                 m_sample_ids + n_sample_ids,
+                                 filepath)
+
+        # pcoa for 1000 samples
+        print("Making 1000 PCOA...")
+        filepath = os.path.join(job_dir_path, "pcoa_1000.csv")
+        generate_pcoa_file(m_n_distmtx, m_sample_ids + n_sample_ids,
+                           filepath)
+
+        # get top ranking representative OTU IDs
+        m_repsampleid = get_sorted_representative_id(
+            m_n_distmtx, m_sample_ids + n_sample_ids, 251
+        )
+
+        # MN calculation for actual samples
+        print("Performing M-N Betadiversity calculations (actual)...")
+        m_distmtx, m_sample_ids = query_samples(
+            l_data_path, criteria, 250, list(m_repsampleid)
+        )
+        m_n_distmtx = make_m_n_distmtx(m_distmtx, m_sample_ids,
+                                       n_otu_matrix, n_otu_ids)
+
+        # for top 250 dendogram
+        print("Making 250 dendrogram...")
+        filepath = os.path.join(job_dir_path, "d3dendrogram_sub.json")
+        generate_dendrogram_file(m_n_distmtx,
+                                 m_sample_ids + n_sample_ids, filepath)
+
+        # for closest 250 samples
+        print("Making 250 PCOA...")
+        filepath = os.path.join(job_dir_path, "pcoa_250.csv")
+        generate_pcoa_file(m_n_distmtx,
+                           m_sample_ids + n_sample_ids, filepath)
+
+        # for closest 250 heatmap
+        print("Making 250 heatmap...")
+        submnMatrix, submn_sample_id = generate_heatmap_files(
+            m_n_distmtx, m_sample_ids, n_sample_ids, job_dir_path,
+            20 + len(n_sample_ids)
+        )
+
+        # for 20 dendogram
+        print("Making 20 dendrogram...")
+        filepath = os.path.join(job_dir_path,
+                                "d3dendrogram_sub_sub.json")
+        generate_dendrogram_file(submnMatrix, submn_sample_id,
+                                 filepath)
+
+        print("Making sample metadata file...")
+        # TODO: Possibility of people naming their jobs?
+        sample_filename = job.file_safe_name() + ".json"
+        filepath = os.path.join(job_dir_path, sample_filename)
+        generate_samples_metadata(submnMatrix[0, :], submn_sample_id,
+                                  submn_sample_id[1:], filepath)
+        print("Done!")
+        job.status = BiomSearchJob.COMPLETED
+        job.save()
+
+    else:
+        job.status = BiomSearchJob.STOPPED
+        job.error_code = BiomSearchJob.UNKNOWN_ERROR
+        job.save()
+
 
 @app.task
 def validate_biom(job, file_path):
@@ -149,83 +227,12 @@ def m_n_betadiversity(job_id):
                 print("OTUs are not normalized...")
                 n_otu_matrix = n_otu_matrix / otu_copy_numbers
 
-            print("Making sample array...")
-            # query the representatives
-            m_distmtx, m_sample_ids = query_samples(l_data_path, criteria, 1000)
-
-            # if representatives matrix and sample IDs are not empty
-            if len(m_distmtx) != 0 and len(m_sample_ids) != 0:
-                print("Performing M-N Betadiversity calculations (reps)...")
-                m_n_distmtx = make_m_n_distmtx(m_distmtx, m_sample_ids,
-                                               n_otu_matrix, n_otu_ids)
-
-                # 1000 dendogram
-                print("Making 1000 dendrogram...")
-                filepath = os.path.join(job_dir_path, "d3dendrogram.json")
-                generate_dendrogram_file(m_n_distmtx,
-                                         m_sample_ids + n_sample_ids,
-                                         filepath)
-
-                # pcoa for 1000 samples
-                print("Making 1000 PCOA...")
-                filepath = os.path.join(job_dir_path, "pcoa_1000.csv")
-                generate_pcoa_file(m_n_distmtx, m_sample_ids + n_sample_ids,
-                                   filepath)
-
-                # get top ranking representative OTU IDs
-                m_repsampleid = get_sorted_representative_id(
-                    m_n_distmtx, m_sample_ids + n_sample_ids, 251
-                )
-
-                # MN calculation for actual samples
-                print("Performing M-N Betadiversity calculations (actual)...")
-                m_distmtx, m_sample_ids = query_samples(
-                    l_data_path, criteria, 250, list(m_repsampleid)
-                )
-                m_n_distmtx = make_m_n_distmtx(m_distmtx, m_sample_ids,
-                                               n_otu_matrix, n_otu_ids)
-
-                # for top 250 dendogram
-                print("Making 250 dendrogram...")
-                filepath = os.path.join(job_dir_path, "d3dendrogram_sub.json")
-                generate_dendrogram_file(m_n_distmtx,
-                                         m_sample_ids + n_sample_ids, filepath)
-
-                # for closest 250 samples
-                print("Making 250 PCOA...")
-                filepath = os.path.join(job_dir_path, "pcoa_250.csv")
-                generate_pcoa_file(m_n_distmtx,
-                                   m_sample_ids + n_sample_ids, filepath)
-
-                # for closest 250 heatmap
-                print("Making 250 heatmap...")
-                submnMatrix, submn_sample_id = generate_heatmap_files(
-                    m_n_distmtx, m_sample_ids, n_sample_ids, job_dir_path,
-                    20 + len(n_sample_ids)
-                )
-
-                # for 20 dendogram
-                print("Making 20 dendrogram...")
-                filepath = os.path.join(job_dir_path,
-                                        "d3dendrogram_sub_sub.json")
-                generate_dendrogram_file(submnMatrix, submn_sample_id,
-                                         filepath)
-
-                print("Making sample metadata file...")
-                # TODO: Possibility of people naming their jobs?
-                sample_filename = job.file_safe_name() + ".json"
-                filepath = os.path.join(job_dir_path, sample_filename)
-                generate_samples_metadata(submnMatrix[0, :], submn_sample_id,
-                                          submn_sample_id[1:], filepath)
-
-                print("Done!")
-                job.status = BiomSearchJob.COMPLETED
-                job.save()
-
-            else:
-                job.status = BiomSearchJob.STOPPED
-                job.error_code = BiomSearchForm.UNKNOWN_ERROR
-                job.save()
+                if job.analysis_type == BiomSearchJob.BRAYCURTIS:
+                    bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job)
+                elif job.analysis_type == BiomSearchJob.GNATUNIFRAC:
+                    pass
+                else:
+                    pass
 
     except:
         print "Unexpected error:", sys.exc_info()
