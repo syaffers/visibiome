@@ -86,7 +86,6 @@ def bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_
                                  filepath)
 
         print("Making sample metadata file...")
-        # TODO: Possibility of people naming their jobs?
         sample_filename = job.file_safe_name() + ".json"
         filepath = os.path.join(job_dir_path, sample_filename)
         generate_samples_metadata(submnMatrix[0, :], submn_sample_id,
@@ -169,13 +168,11 @@ def m_n_betadiversity(job_id):
     l_data_path = settings.TEN_K_DATA_PATH
 
     try:
-        # load submitted biom file/text into otu_table
+        # load submitted biom file/text into otu_table and extract sample IDs
+        # and OTU IDs
         print("Getting file {}...".format(userbiom))
         n_otu_table = load_table(userbiom)
         n_otu_matrix = n_otu_table.matrix_data.toarray().T
-
-        # get observation IDs and sample IDs from submitted biom file
-        print("Loading data from file...")
         n_otu_ids = n_otu_table.ids(axis="observation")
         n_sample_ids = list(map(str, n_otu_table.ids(axis="sample")))
 

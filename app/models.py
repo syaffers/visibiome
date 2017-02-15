@@ -60,6 +60,7 @@ class BiomSearchJob(models.Model):
         (PROCESSING, "Processing"),
         (COMPLETED, "Completed"),
     )
+
     BRAYCURTIS = 1
     GNATUNIFRAC = 2
     HIEREPUNIFRAC = 3
@@ -179,6 +180,7 @@ class BiomSearchForm(forms.ModelForm):
             "biom_file": forms.FileField,
             "criteria": forms.MultipleChoiceField(required=True),
             "is_normalized_otu": forms.BooleanField(required=False),
+            "analysis_type": forms.ChoiceField(required=True)
         }
         labels = {
             "criteria": "Select the ecosystem(s)",

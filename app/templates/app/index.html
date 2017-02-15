@@ -39,7 +39,7 @@
         </div>
         <div class="form-group">
           <label for="{{ form.otu_text.name }}" class="col-xs-12 col-sm-3 control-label">{{ form.otu_text.label }}<br>
-            <em>Maximum 1 sample (TSV/JSON format)</em>
+            <em>Maximum 10 samples (TSV/JSON format)</em>
           </label>
           <div class="col-xs-12 col-sm-9">
             {{ form.otu_text.as_widget }}
@@ -57,7 +57,7 @@
         <div class="form-group">
           <label for="{{ form.biom_file.name }}" class="col-xs-12 col-sm-3 control-label">
             {{ form.biom_file.label }}<br>
-            <em>Maximum 1 sample (TSV/JSON format)</em>
+            <em>Maximum 10 samples (TSV/JSON format)</em>
           </label>
           <div class="col-xs-12 col-sm-9">
             {{ form.biom_file.as_widget }}
@@ -98,6 +98,20 @@
                   {% endfor %}
                 </ul>
               {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <hr>
+        <div class="form-group">
+          <label for="{{ form.analysis_type.name }}" class="col-xs-12 col-sm-3 control-label">
+            {{ form.analysis_type.label }}<br>
+          </label>
+          <div class="col-xs-12 col-sm-9">
+            <div class="row">
+              <div class="col-xs-12">
+                {{ form.analysis_type.as_widget }}
+              </div>
             </div>
           </div>
         </div>
