@@ -61,7 +61,7 @@ DATABASES = {
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'local/mediafiles/')
 # Static files are handled by whitenoise and hence doesn't need Apache's
 # permissions. This reduces dependencies and configuration
 STATIC_URL = '/static/'
