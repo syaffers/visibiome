@@ -62,6 +62,26 @@ def ex_ranking(request):
     msg_storage = messages.get_messages(request)
     example_job = BiomSearchJob.objects.filter(pk=1)[0]
 
+    job_samples = map(
+        lambda sample: sample.name, example_job.samples.all()
+    )
+
+    context["ranking_file_path"] = \
+        staticfiles_storage.url("example_data/LD_ptepar_single.json")
+    context["samples"] = json_encoder.encode(job_samples)
+    context["job"] = example_job
+    context["flash"] = msg_storage
+    return render(request, 'job/ranking.html', context)
+
+
+def ex_plot_summary(request):
+    """Example job plot summary page route. HTML can be found in
+    templates/job/plot_summary.html. This HTML file is shared by the job views
+    of actual processed jobs, be careful when editing.
+    """
+    msg_storage = messages.get_messages(request)
+    example_job = BiomSearchJob.objects.filter(pk=1)[0]
+
     job_dir = staticfiles_storage.url("example_data")
     job_samples = map(
         lambda sample: sample.name, example_job.samples.all()
@@ -71,7 +91,7 @@ def ex_ranking(request):
     context["samples"] = json_encoder.encode(job_samples)
     context["job"] = example_job
     context["flash"] = msg_storage
-    return render(request, 'job/ranking.html', context)
+    return render(request, 'job/plot_summary.html', context)
 
 
 def ex_heatmap(request):

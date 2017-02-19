@@ -12,16 +12,22 @@
         {% url 'app:job_details' job.pk as details_url  %}
       {% endif %}
       <li class="{% active details_url %}"><a href="{{ details_url }}">Details</a></li>
-      <li><span class="nav-divider-custom">Visualization</span></li>
       {% if is_example %}
         {% url 'app:example_job_ranking' as ranking_url %}
       {% else %}
         {% url 'app:job_ranking' job.pk as ranking_url %}
       {% endif %}
       <li class="{% active ranking_url %} {% if job.status < 10 %} disabled {% endif %}">
-        <a href="{% if job.status < 10 %} # {% else %}{{ ranking_url }}{% endif %}">
-          Ranking
-        </a>
+        <a href="{% if job.status < 10 %} # {% else %}{{ ranking_url }}{% endif %}">Ranking</a>
+      </li>
+      <li><span class="nav-divider-custom">Visualization</span></li>
+      {% if is_example %}
+        {% url 'app:example_job_plot_summary' as plot_summary_url %}
+      {% else %}
+        {% url 'app:job_plot_summary' job.pk as plot_summary_url %}
+      {% endif %}
+      <li class="{% active plot_summary_url %} {% if job.status < 10 %} disabled {% endif %}">
+        <a href="{% if job.status < 10 %} # {% else %}{{ plot_summary_url }}{% endif %}">Plot Summary</a>
       </li>
       {% if is_example %}
         {% url 'app:example_job_heatmap' as heatmap_url %}

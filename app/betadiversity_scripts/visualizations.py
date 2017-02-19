@@ -7,6 +7,7 @@ import itertools
 import json
 import numpy as np
 import os
+import pandas as pd
 import scipy.cluster.hierarchy as sch
 
 
@@ -54,95 +55,109 @@ def retrieve_source(sample_study):
         return "Unknown"
 
 
-def generate_samples_metadata(mnMatrix, mnsampleid, m_sampleid, filepath):
-    MNsample_dict = dict(zip(mnsampleid, range(0, len(mnsampleid))))
-
-    sample_json = dict(sample=[])
-    sample_metadata = []
-
-    msampleids='\',\''.join(m_sampleid)
-    json_metadata_query = """
-        SELECT DISTINCT sample_event_ID, title, OntologyTerm, OntologyID,
-            sample_size, study
-        FROM `samples_unified`
-        NATURAL JOIN samples_sizes_unified
-        NATURAL JOIN samples_EnvO_annotation_unified
-        NATURAL JOIN envoColors
-        WHERE `sample_event_ID`
-        IN ('{m_sample_ids}')
-        ORDER BY FIELD(sample_event_ID, '{m_sample_ids}')
-    """.format(m_sample_ids=msampleids)
-
+def generate_samples_metadata(top_m_n_distmtx, top_m_n_sample_ids,
+                              n_sample_ids, filepath):
+    m_n_df = pd.DataFrame(top_m_n_distmtx, columns=top_m_n_sample_ids,
+                          index=top_m_n_sample_ids)
+    # connect to microbiome database
     conn = MySQLdb.connect(**server_db)
-    curs = conn.cursor(DictCursor)
-    curs.execute(json_metadata_query)
+    all_samples_dict = dict()
 
-    authors_list = title = study = ""
-    ontology_terms = ["", "", ""]
-    ontology_ids = ["", "", ""]
-    cnt = distance = rank = sample_size = 0
-    sample_event_id = None
+    # for each user-submitted sample
+    for sample_id_j in n_sample_ids:
+        sample_metadata = []
+        # rearrange distance matrix for the jth sample and get sample IDs
+        top_m_j_sample_ids = list(m_n_df.sort(sample_id_j).index)
+        # get the top m sample IDs without losing order
+        top_m_sample_ids = [m_sample_id for m_sample_id in top_m_j_sample_ids
+                            if m_sample_id not in n_sample_ids]
 
-    for row in curs.fetchall():
-        curr_sample_event_id = row["sample_event_ID"]
-        curr_sample_size = row["sample_size"]
-        curr_study = row["study"]
-        curr_title = row["title"]
-        ontology_term = row["OntologyTerm"]
-        ontology_id = row["OntologyID"]
+        json_metadata_query = """
+            SELECT DISTINCT sample_event_ID, title, OntologyTerm, OntologyID,
+                sample_size, study
+            FROM `samples_unified`
+            NATURAL JOIN samples_sizes_unified
+            NATURAL JOIN samples_EnvO_annotation_unified
+            NATURAL JOIN envoColors
+            WHERE `sample_event_ID`
+            IN ('{m_sample_ids}')
+            ORDER BY FIELD(sample_event_ID, '{m_sample_ids}')
+        """.format(m_sample_ids='\',\''.join(top_m_sample_ids))
 
-        if sample_event_id is None:
-            sample_event_id = curr_sample_event_id
-            title = curr_title
-            ontology_terms[cnt] = ontology_term
-            ontology_ids[cnt] = ontology_id
-            sample_size = float(curr_sample_size)
-            distance = "%.4f" %mnMatrix[MNsample_dict[sample_event_id]]
-            study = retrieve_source(curr_study)
+        curs = conn.cursor(DictCursor)
+        curs.execute(json_metadata_query)
 
-        elif sample_event_id != curr_sample_event_id:
-            rank = rank + 1
-            sample_metadata.append(vars(
-                Sample(rank, sample_event_id, title,
-                       ontology_ids[0], ontology_terms[0],
-                       ontology_ids[1], ontology_terms[1],
-                       ontology_ids[2], ontology_terms[2],
-                       sample_size, distance, study
-                )
-            ))
-            sample_event_id = curr_sample_event_id
-            title = curr_title
-            ontology_terms = ["", "", ""]
-            ontology_ids = ["", "", ""]
-            cnt = 0
-            ontology_terms[cnt] = ontology_term
-            ontology_ids[cnt] = ontology_id
-            sample_size = float(curr_sample_size)
-            distance = "%.4f" % mnMatrix[MNsample_dict[sample_event_id]]
-            study = retrieve_source(curr_study)
+        authors_list = title = study = ""
+        ontology_terms = ["", "", ""]
+        ontology_ids = ["", "", ""]
+        cnt = distance = rank = sample_size = 0
+        sample_event_id = None
 
-        else:
-            ontology_terms[cnt] = ontology_term
-            ontology_ids[cnt] = ontology_id
+        for row in curs.fetchall():
+            sample_id_i = row["sample_event_ID"]
+            sample_size_i = row["sample_size"]
+            study_i = row["study"]
+            title_i = row["title"]
+            ontology_term = row["OntologyTerm"]
+            ontology_id = row["OntologyID"]
 
-        cnt = cnt + 1
+            # first run
+            if sample_event_id is None:
+                sample_event_id = sample_id_i
+                title = title_i
+                ontology_terms[cnt] = ontology_term
+                ontology_ids[cnt] = ontology_id
+                sample_size = float(sample_size_i)
+                distance = "%.4f" % m_n_df[sample_id_i][sample_id_j]
+                study = retrieve_source(study_i)
 
-    rank = rank + 1
-    sample_metadata.append(vars(
-        Sample(rank, sample_event_id, title,
-               ontology_ids[0], ontology_terms[0],
-               ontology_ids[1], ontology_terms[1],
-               ontology_ids[2], ontology_terms[2],
-               sample_size, distance, study
-        )
-    ))
+            # when we encounter a new sample from database
+            elif sample_event_id != sample_id_i:
+                rank = rank + 1
+                sample_metadata.append(vars(
+                    Sample(rank, sample_event_id, title,
+                           ontology_ids[0], ontology_terms[0],
+                           ontology_ids[1], ontology_terms[1],
+                           ontology_ids[2], ontology_terms[2],
+                           sample_size, distance, study
+                    )
+                ))
+                # create new sample
+                sample_event_id = sample_id_i
+                title = title_i
+                ontology_terms = ["", "", ""]
+                ontology_ids = ["", "", ""]
+                cnt = 0
+                ontology_terms[cnt] = ontology_term
+                ontology_ids[cnt] = ontology_id
+                sample_size = float(sample_size_i)
+                distance = "%.4f" % m_n_df[sample_id_j][sample_id_i]
+                study = retrieve_source(study_i)
 
-    sample_json['sample'] = sample_metadata
+            # if its the same sample
+            else:
+                ontology_terms[cnt] = ontology_term
+                ontology_ids[cnt] = ontology_id
+
+            cnt = cnt + 1
+
+        rank = rank + 1
+        sample_metadata.append(vars(
+            Sample(rank, sample_event_id, title,
+                   ontology_ids[0], ontology_terms[0],
+                   ontology_ids[1], ontology_terms[1],
+                   ontology_ids[2], ontology_terms[2],
+                   sample_size, distance, study
+            )
+        ))
+
+        all_samples_dict[sample_id_j] = sample_metadata
+
+    # close connection once everything is done
     conn.close()
 
     with open(filepath, "w") as json_output_file:
-        json.dump(sample_json, json_output_file, sort_keys=True,
-                  indent=4)
+        json.dump(all_samples_dict, json_output_file, sort_keys=True, indent=4)
 
 
 def get_sorted_representative_id(distmn, mn_sample_id, rankingcount):
@@ -163,14 +178,12 @@ def get_sorted_representative_id(distmn, mn_sample_id, rankingcount):
     return samples_20
 
 
-def generate_heatmap_files(distmtx, sample_id, sample_id_2, userdir,
-                           rankingcount):
+def generate_heatmap_files(m_n_distmtx, m_n_sample_ids, userdir, rankingcount):
     """Make all heatmap-related files for D3.js drawings: large heatmap and
     small heatmap. Generates CSV files.
 
-    :param distmtx: Numpy array matrix of distances
-    :param sample_id: List of strings containing first sample IDs
-    :param sample_id_2: List of strings containing second sample IDs
+    :param m_n_distmtx: Numpy array matrix of distances
+    :param m_n_sample_ids: List of strings containing sample IDs from M and N
     :param userdir: User directory path to which the file will be written
     :param rankingcount: Integer number of OTUs to be returned
     :return: Numpy array small distance matrix to be used for dendrogram
@@ -182,58 +195,53 @@ def generate_heatmap_files(distmtx, sample_id, sample_id_2, userdir,
         "All_heatmap_edgelist.csv"), "w")
     f_heatmap_top_nodes = open(os.path.join(userdir, "top_nodelist.csv"), "w")
     f_heatmap_top_edges = open(os.path.join(userdir, "top_edgelist.csv"), "w")
-    samples_mn = sample_id + sample_id_2
 
-    sample_dict = dict(enumerate(samples_mn))
-    idx = np.argsort(distmtx[len(distmtx)-1])
-    distmtx = distmtx[:,idx]
-    idx = np.argsort(distmtx[:,0])
-    distmtx = distmtx[idx,:]
+    sample_dict = dict(enumerate(m_n_sample_ids))
+    # sort last row
+    idx = np.argsort(m_n_distmtx[-1])
+    sorted_m_n_distmtx = m_n_distmtx[:,idx]
+    # sort first column
+    idx = np.argsort(sorted_m_n_distmtx[:,0])
+    sorted_m_n_distmtx = sorted_m_n_distmtx[idx,:]
 
-    samples = [str(sample_dict[i]) for i in idx]
-    samples_10 = []
+    sorted_m_n_sample_ids = [str(sample_dict[i]) for i in idx]
+    top_sorted_m_n_distmtx = sorted_m_n_distmtx[:rankingcount, :rankingcount]
+    top_sorted_m_n_sample_ids = sorted_m_n_sample_ids[:rankingcount]
 
-    samples_10 = samples[:rankingcount]
-    samples_list_10 = samples[:rankingcount]
-    f_heatmap_all_nodes.write("id"+'\n')
-    for items in samples:
-        f_heatmap_all_nodes.write(str(items)+ "\n")
-    f_heatmap_top_nodes.write("id"+'\n')
-    for items in samples_10:
-        f_heatmap_top_nodes.write(str(items)+ "\n")
+    f_heatmap_all_nodes.write("id" + '\n')
+    for sample_id in sorted_m_n_sample_ids:
+        f_heatmap_all_nodes.write(str(sample_id) + "\n")
+    f_heatmap_top_nodes.write("id" + '\n')
+    for sample_id in top_sorted_m_n_sample_ids:
+        f_heatmap_top_nodes.write(str(sample_id) + "\n")
 
-    distmtx_top_10 = distmtx[:rankingcount, :rankingcount]
-    samples = list(itertools.combinations(samples, 2))
-    samples_10 = list(itertools.combinations(samples_10, 2))
-    distmtx_square_all = squareform(distmtx, 'tovector')
-    distmtx_square_top_10 = squareform(distmtx_top_10, 'tovector')
-    combine = zip(samples, distmtx_square_all)
-    combine_top_10 = zip(samples_10, distmtx_square_top_10)
+    m_n_sample_id_pairs = list(
+        itertools.combinations(sorted_m_n_sample_ids, 2)
+    )
+    top_m_n_sample_id_pairs = list(
+        itertools.combinations(top_sorted_m_n_sample_ids, 2)
+    )
+    pairwise_distvec = squareform(sorted_m_n_distmtx, 'tovector')
+    top_pairwise_distvec = squareform(top_sorted_m_n_distmtx, 'tovector')
+    edge_tuples = zip(m_n_sample_id_pairs, pairwise_distvec)
+    top_edge_tuples = zip(top_m_n_sample_id_pairs, top_pairwise_distvec)
 
-    f_heatmap_all_edges.write("source,target,weight"+'\n')
-    for items in combine:
-        temp = str(items)
-        temp = temp.replace(")", "")
-        temp = temp.replace("(", "")
-        temp = temp.replace("'", "")
-        temp = temp.replace(" ", "")
-        f_heatmap_all_edges.write(temp + "\n")
+    f_heatmap_all_edges.write("source,target,weight\n")
+    for sample_ids, distance in edge_tuples:
+        f_heatmap_all_edges.write("%s,%s,%s\n" %
+                                  (sample_ids[0], sample_ids[1], distance))
 
-    f_heatmap_top_edges.write("source,target,weight"+'\n')
-    for items in combine_top_10:
-        temp = str(items)
-        temp = temp.replace(")", "")
-        temp = temp.replace("(", "")
-        temp = temp.replace("'", "")
-        temp = temp.replace(" ", "")
-        f_heatmap_top_edges.write(temp + "\n")
+    f_heatmap_top_edges.write("source,target,weight\n")
+    for sample_ids, distance in top_edge_tuples:
+        f_heatmap_top_edges.write("%s,%s,%s\n" %
+                                  (sample_ids[0], sample_ids[1], distance))
 
     f_heatmap_all_nodes.close()
     f_heatmap_all_edges.close()
     f_heatmap_top_nodes.close()
     f_heatmap_top_edges.close()
 
-    return distmtx_top_10, samples_list_10
+    return top_sorted_m_n_distmtx, top_sorted_m_n_sample_ids
 
 
 def query_pcoa_metadata(msampleid):

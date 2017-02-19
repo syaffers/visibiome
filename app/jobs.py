@@ -80,11 +80,37 @@ def ranking(request, job_id):
             lambda sample: sample.name, job.samples.all()
         )
 
-        context["job_dir"] = job_dir
+        context["ranking_file_path"] = join(
+            job_dir, job.file_safe_name() + ".json"
+        )
         context["samples"] = json_encoder.encode(job_samples)
         context["job"] = job
         context["flash"] = msg_storage
         return render(request, 'job/ranking.html', context)
+    else:
+        messages.add_message(request, messages.ERROR, "Unauthorized access.")
+        return redirect('app:dashboard')
+
+
+@login_required
+def plot_summary(request, job_id):
+    """Plot summary page route. Static HTML can be found in
+    templates/job/plot_summary.html
+    """
+    msg_storage = messages.get_messages(request)
+    job = get_object_or_404(BiomSearchJob, id=job_id)
+
+    if job.user_id == request.user.pk:
+        job_dir = dirname(job.biom_file.url)
+        job_samples = map(
+            lambda sample: sample.name, job.samples.all()
+        )
+
+        context["job_dir"] = job_dir
+        context["samples"] = json_encoder.encode(job_samples)
+        context["job"] = job
+        context["flash"] = msg_storage
+        return render(request, 'job/plot_summary.html', context)
     else:
         messages.add_message(request, messages.ERROR, "Unauthorized access.")
         return redirect('app:dashboard')

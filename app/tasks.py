@@ -23,9 +23,12 @@ import re
 import sys
 
 def bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job):
-    print("Making sample array...")
     # query the representatives
+    print("Getting representatives...")
     m_distmtx, m_sample_ids = query_samples(l_data_path, criteria, 1000)
+
+    # combine both sample ids from user samples and representatives
+    m_n_sample_ids = m_sample_ids + n_sample_ids
 
     # if representatives matrix and sample IDs are not empty
     if len(m_distmtx) != 0 and len(m_sample_ids) != 0:
@@ -36,60 +39,58 @@ def bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_
         # 1000 dendogram
         print("Making 1000 dendrogram...")
         filepath = os.path.join(job_dir_path, "d3dendrogram.json")
-        generate_dendrogram_file(m_n_distmtx,
-                                 m_sample_ids + n_sample_ids,
-                                 filepath)
+        generate_dendrogram_file(m_n_distmtx, m_n_sample_ids, filepath)
 
         # pcoa for 1000 samples
         print("Making 1000 PCOA...")
         filepath = os.path.join(job_dir_path, "pcoa_1000.csv")
-        generate_pcoa_file(m_n_distmtx, m_sample_ids + n_sample_ids,
-                           filepath)
+        generate_pcoa_file(m_n_distmtx, m_n_sample_ids, filepath)
 
         # get top ranking representative OTU IDs
-        m_repsampleid = get_sorted_representative_id(
-            m_n_distmtx, m_sample_ids + n_sample_ids, 251
+        top_rep_sample_ids = get_sorted_representative_id(
+            m_n_distmtx, m_n_sample_ids, 251
+        )
+
+        # query actual samples
+        print("Getting actual samples from representatives...")
+        m_distmtx, m_sample_ids = query_samples(
+            l_data_path, criteria, 250, list(top_rep_sample_ids)
         )
 
         # MN calculation for actual samples
         print("Performing M-N Betadiversity calculations (actual)...")
-        m_distmtx, m_sample_ids = query_samples(
-            l_data_path, criteria, 250, list(m_repsampleid)
-        )
         m_n_distmtx = make_m_n_distmtx(m_distmtx, m_sample_ids,
                                        n_otu_matrix, n_otu_ids)
+
+        # combine both sample ids from user samples and actual samples
+        m_n_sample_ids = m_sample_ids + n_sample_ids
 
         # for top 250 dendogram
         print("Making 250 dendrogram...")
         filepath = os.path.join(job_dir_path, "d3dendrogram_sub.json")
-        generate_dendrogram_file(m_n_distmtx,
-                                 m_sample_ids + n_sample_ids, filepath)
+        generate_dendrogram_file(m_n_distmtx, m_n_sample_ids, filepath)
 
         # for closest 250 samples
         print("Making 250 PCOA...")
         filepath = os.path.join(job_dir_path, "pcoa_250.csv")
-        generate_pcoa_file(m_n_distmtx,
-                           m_sample_ids + n_sample_ids, filepath)
+        generate_pcoa_file(m_n_distmtx, m_n_sample_ids, filepath)
 
         # for closest 250 heatmap
         print("Making 250 heatmap...")
-        submnMatrix, submn_sample_id = generate_heatmap_files(
-            m_n_distmtx, m_sample_ids, n_sample_ids, job_dir_path,
-            20 + len(n_sample_ids)
+        top_m_n_distmtx, top_m_n_sample_ids = generate_heatmap_files(
+            m_n_distmtx, m_n_sample_ids, job_dir_path, 20 + len(n_sample_ids)
         )
 
         # for 20 dendogram
         print("Making 20 dendrogram...")
-        filepath = os.path.join(job_dir_path,
-                                "d3dendrogram_sub_sub.json")
-        generate_dendrogram_file(submnMatrix, submn_sample_id,
-                                 filepath)
+        filepath = os.path.join(job_dir_path, "d3dendrogram_sub_sub.json")
+        generate_dendrogram_file(top_m_n_distmtx, top_m_n_sample_ids, filepath)
 
         print("Making sample metadata file...")
         sample_filename = job.file_safe_name() + ".json"
         filepath = os.path.join(job_dir_path, sample_filename)
-        generate_samples_metadata(submnMatrix[0, :], submn_sample_id,
-                                  submn_sample_id[1:], filepath)
+        generate_samples_metadata(top_m_n_distmtx, top_m_n_sample_ids,
+                                  n_sample_ids, filepath)
         print("Done!")
         job.status = BiomSearchJob.COMPLETED
         job.save()
