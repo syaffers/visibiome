@@ -52,6 +52,7 @@ urlpatterns = [
     url(r'^job/(?P<job_id>[0-9]+)/dend-250$', jobs.dend_similar,
         name='job_dend_similar'),
     url(r'^job/(?P<job_id>[0-9]+)/remove$', jobs.remove, name='job_remove'),
+    url(r'^job/(?P<job_id>[0-9]+)/rerun$', jobs.rerun, name='job_rerun'),
     url(r'^favicon.ico$',
         RedirectView.as_view(
             url=staticfiles_storage.url('favicon.ico'),

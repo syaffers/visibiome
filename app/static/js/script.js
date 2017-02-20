@@ -1,7 +1,8 @@
 "use strict";
 
 var biom_search_form_id = "#biom-search-form",
-  remove_job_button = ".btn-job-remove",
+  remove_job_buttons = ".btn-job-remove",
+  rerun_job_buttons = ".btn-job-rerun",
   all_eco_checkbox = "#id_criteria_0",
   all_eco_value = "1",
   otu_textarea = "#id_otu_text",
@@ -43,10 +44,22 @@ function handleFillTextfield() {
     $(this).val("Paste OTU table here");
 }
 
-function handleRemoveJob() {
+function handleRemoveJob(e) {
+  e.preventDefault();
   var removeUrl = $(this).data("remove-url");
-  var remove = confirm("Are you sure you want to delete this job?");
+  var remove = confirm("This action cannot be undone. Are you sure you want to delete this job?");
   remove ? location.href = removeUrl : false
+}
+
+function handleRerunJob(e) {
+  e.preventDefault();
+  if ($(this).hasClass("disabled")) {
+    return false;
+  } else {
+    var rerunUrl = $(this).data("rerun-url");
+    var rerun = confirm("This action cannot be undone. Are you sure you want to rerun this job?");
+    rerun ? location.href = rerunUrl : false
+  }
 }
 
 function uncheck(index, elem) {
@@ -69,5 +82,6 @@ $(document).ready(function() {
   $(otu_textarea).val(otu_textarea_placeholder);
   $(otu_textarea).click(handleClearTextfield);
   $(otu_textarea).blur(handleFillTextfield);
-  $(remove_job_button).click(handleRemoveJob)
+  $(remove_job_buttons).click(handleRemoveJob);
+  $(rerun_job_buttons).click(handleRerunJob);
 });
