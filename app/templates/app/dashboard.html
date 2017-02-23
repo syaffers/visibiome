@@ -1,4 +1,5 @@
 {% extends "app/layout.html" %}
+{% load static from staticfiles  %}
 
 {% block title %}Jobs Dashboard{% endblock %}
 {% block content %}
@@ -20,7 +21,7 @@
   	</thead>
   	<tbody>
       {% for job in jobs %}
-        <tr>
+        <tr id="{{job.pk}}" class="job-row">
           <td>
             <a class="btn btn-primary btn-xs" href="{% url 'app:job_details' job.pk %}">
               {{ job.name }}
@@ -31,20 +32,23 @@
               <span class="criterion">{{ criterion }}</span>
             {% endfor %}
           </td>
-          <td>
-            {{ job.get_status_display }}
+          <td class="job-status" data-status-code="{{job.status}}">
+            {% if job.status >= job.VALIDATING and job.status < job.COMPLETED %}
+              <img class="loader" src="{% static 'img/loader.gif' %}" alt="Processing your job...">
+            {% endif %}
+            <span>{{ job.get_status_display }}</span>
           </td>
-          <td>
-            {{ job.created_at }}
+          <td class="job-created-at">
+            {{ job.created_at|date:"M. d, Y, f A" }}
           </td>
-          <td>
+          <td class="job-updated-at">
             {% if job.status < 10 %}
               -
             {% else %}
-              {{ job.updated_at }}
+              {{ job.updated_at|date:"M. d, Y, f A" }}
             {% endif %}
           </td>
-          <td>
+          <td class="job-error" data-status-code="{{job.error_code}}">
             {{ job.get_error_code_display }}
           </td>
           <td class="td-btn">
@@ -56,7 +60,7 @@
           <td class="td-btn">
             <button data-rerun-url="{% url 'app:job_rerun' job.pk %}"
                     class="btn btn-warning btn-job btn-job-rerun
-                           {% if job.status == job.QUEUED or job.status == job.PROCESSING %}
+                           {% if job.status >= job.VALIDATING and job.status < job.COMPLETED %}
                              disabled
                            {% endif %}" type="submit">
               <span class="glyphicon glyphicon-step-backward"></span>

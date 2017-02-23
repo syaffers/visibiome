@@ -26,6 +26,11 @@
   background: #EEEEEE;
 }
 
+.loader {
+  width: 15px;
+  height: 15px;
+}
+
 .td-btn {
   text-align: center;
 }

@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.serializers.json import DjangoJSONEncoder
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from posixpath import basename, dirname, join
 from .models import BiomSearchJob
@@ -74,6 +75,7 @@ def rerun(request, job_id):
         messages.add_message(request, messages.ERROR, unauthorized_access_message)
         return redirect('app:dashboard')
 
+
 @login_required
 def details(request, job_id):
     """Job details page route. Static HTML can be found in
@@ -90,6 +92,34 @@ def details(request, job_id):
     else:
         messages.add_message(request, messages.ERROR, unauthorized_access_message)
         return redirect('app:dashboard')
+
+
+@login_required
+def details_json(request, job_id):
+    """Job status json route. Called from app/static/script.js"""
+    job = get_object_or_404(BiomSearchJob, id=job_id)
+
+    if job.user_id == request.user.pk:
+        o = {
+            "status": 200,
+            "data": {
+                "id": job.pk,
+                "error": job.get_error_code_display(),
+                "errorCode": job.error_code,
+                "status": job.get_status_display(),
+                "statusCode": job.status,
+                "createdAt": job.created_at,
+                "updatedAt": job.updated_at,
+            }
+        }
+
+        return JsonResponse(o)
+    else:
+        o = {
+            "status": 401,
+            "data": unauthorized_access_message
+        }
+        return JsonResponse(o, status=401)
 
 
 @login_required
