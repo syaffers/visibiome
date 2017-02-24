@@ -24,7 +24,7 @@ def register(request):
         u.save()
 
         # set the user to not be a guest
-        g = Guest(status=False, user_id=u.id)
+        g = Guest(status=False, user_id=u.pk)
         g.save()
 
         user = auth.authenticate(

@@ -1,0 +1,224 @@
+{
+    "LD.Ptepar_usersample": [
+        {
+            "Name": "LD.DTS1218.710987", 
+            "Ranking": 1, 
+            "S_EnvO_1": "ENVO:00000879, Tropical and subtropical moist broadleaf forest biome", 
+            "S_EnvO_2": "ENVO:00002003, feces", 
+            "S_EnvO_3": "ENVO:00009002, mammalia-associated habitat", 
+            "Study": "Gut microbiota of phyllostomid bats that span a breadth of diets", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.5000", 
+            "Total_Sample_Size": 2.0
+        }, 
+        {
+            "Name": "BD.NBS1086.710943", 
+            "Ranking": 2, 
+            "S_EnvO_1": "ENVO:00000879, Tropical and subtropical moist broadleaf forest biome", 
+            "S_EnvO_2": "ENVO:00002003, feces", 
+            "S_EnvO_3": "ENVO:00009002, mammalia-associated habitat", 
+            "Study": "Gut microbiota of phyllostomid bats that span a breadth of diets", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.5543", 
+            "Total_Sample_Size": 128252.0
+        }, 
+        {
+            "Name": "LD.NBS1067E.710962", 
+            "Ranking": 3, 
+            "S_EnvO_1": "ENVO:00000879, Tropical and subtropical moist broadleaf forest biome", 
+            "S_EnvO_2": "ENVO:00002003, feces", 
+            "S_EnvO_3": "ENVO:00009002, mammalia-associated habitat", 
+            "Study": "Gut microbiota of phyllostomid bats that span a breadth of diets", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.6284", 
+            "Total_Sample_Size": 108191.0
+        }, 
+        {
+            "Name": "LD.QCAZ.M50993.710933", 
+            "Ranking": 4, 
+            "S_EnvO_1": "ENVO:00000879, Tropical and subtropical moist broadleaf forest biome", 
+            "S_EnvO_2": "ENVO:00002003, feces", 
+            "S_EnvO_3": "ENVO:00009002, mammalia-associated habitat", 
+            "Study": "Gut microbiota of phyllostomid bats that span a breadth of diets", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.7908", 
+            "Total_Sample_Size": 65052.0
+        }, 
+        {
+            "Name": "H62Dh.735881", 
+            "Ranking": 5, 
+            "S_EnvO_1": "ENVO:00000876, Temperate broadleaf and mixed forest biome", 
+            "S_EnvO_2": "ENVO:00000073, building", 
+            "S_EnvO_3": " ", 
+            "Study": "Home Life: Factors structuring the bacterial diversity found within and between homes", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.8352", 
+            "Total_Sample_Size": 10689.0
+        }, 
+        {
+            "Name": "H59Kc.735886", 
+            "Ranking": 6, 
+            "S_EnvO_1": "ENVO:00000876, Temperate broadleaf and mixed forest biome", 
+            "S_EnvO_2": "ENVO:00000073, building", 
+            "S_EnvO_3": " ", 
+            "Study": "Home Life: Factors structuring the bacterial diversity found within and between homes", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.8381", 
+            "Total_Sample_Size": 21867.0
+        }, 
+        {
+            "Name": "H62Cb.735970", 
+            "Ranking": 7, 
+            "S_EnvO_1": "ENVO:00000876, Temperate broadleaf and mixed forest biome", 
+            "S_EnvO_2": "ENVO:00000073, building", 
+            "S_EnvO_3": " ", 
+            "Study": "Home Life: Factors structuring the bacterial diversity found within and between homes", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.8481", 
+            "Total_Sample_Size": 9215.0
+        }, 
+        {
+            "Name": "H25Kc.735912", 
+            "Ranking": 8, 
+            "S_EnvO_1": "ENVO:00000876, Temperate broadleaf and mixed forest biome", 
+            "S_EnvO_2": "ENVO:00000073, building", 
+            "S_EnvO_3": " ", 
+            "Study": "Home Life: Factors structuring the bacterial diversity found within and between homes", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.8692", 
+            "Total_Sample_Size": 20025.0
+        }, 
+        {
+            "Name": "H18Cb.735992", 
+            "Ranking": 9, 
+            "S_EnvO_1": "ENVO:00000876, Temperate broadleaf and mixed forest biome", 
+            "S_EnvO_2": "ENVO:00000073, building", 
+            "S_EnvO_3": " ", 
+            "Study": "Home Life: Factors structuring the bacterial diversity found within and between homes", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.8716", 
+            "Total_Sample_Size": 21573.0
+        }, 
+        {
+            "Name": "LD.QCAZ.M50991.710938", 
+            "Ranking": 10, 
+            "S_EnvO_1": "ENVO:00000879, Tropical and subtropical moist broadleaf forest biome", 
+            "S_EnvO_2": "ENVO:00002003, feces", 
+            "S_EnvO_3": "ENVO:00009002, mammalia-associated habitat", 
+            "Study": "Gut microbiota of phyllostomid bats that span a breadth of diets", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.8932", 
+            "Total_Sample_Size": 62873.0
+        }, 
+        {
+            "Name": "7352.518512", 
+            "Ranking": 11, 
+            "S_EnvO_1": "ENVO:00009003, human-associated habitat", 
+            "S_EnvO_2": " ", 
+            "S_EnvO_3": " ", 
+            "Study": "Sokol_IBD_dysfunction", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.9027", 
+            "Total_Sample_Size": 106.0
+        }, 
+        {
+            "Name": "H35Fr.735894", 
+            "Ranking": 12, 
+            "S_EnvO_1": "ENVO:00000876, Temperate broadleaf and mixed forest biome", 
+            "S_EnvO_2": "ENVO:00000073, building", 
+            "S_EnvO_3": " ", 
+            "Study": "Home Life: Factors structuring the bacterial diversity found within and between homes", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.9040", 
+            "Total_Sample_Size": 18239.0
+        }, 
+        {
+            "Name": "LD.QCAZ.M51309.710974", 
+            "Ranking": 13, 
+            "S_EnvO_1": "ENVO:00000879, Tropical and subtropical moist broadleaf forest biome", 
+            "S_EnvO_2": "ENVO:00002003, feces", 
+            "S_EnvO_3": "ENVO:00009002, mammalia-associated habitat", 
+            "Study": "Gut microbiota of phyllostomid bats that span a breadth of diets", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.9111", 
+            "Total_Sample_Size": 76032.0
+        }, 
+        {
+            "Name": "H34Kc.735939", 
+            "Ranking": 14, 
+            "S_EnvO_1": "ENVO:00000876, Temperate broadleaf and mixed forest biome", 
+            "S_EnvO_2": "ENVO:00000073, building", 
+            "S_EnvO_3": " ", 
+            "Study": "Home Life: Factors structuring the bacterial diversity found within and between homes", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.9210", 
+            "Total_Sample_Size": 19619.0
+        }, 
+        {
+            "Name": "H60Tv.736007", 
+            "Ranking": 15, 
+            "S_EnvO_1": "ENVO:00000876, Temperate broadleaf and mixed forest biome", 
+            "S_EnvO_2": "ENVO:00000073, building", 
+            "S_EnvO_3": " ", 
+            "Study": "Home Life: Factors structuring the bacterial diversity found within and between homes", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.9268", 
+            "Total_Sample_Size": 5297.0
+        }, 
+        {
+            "Name": "H60Do.735986", 
+            "Ranking": 16, 
+            "S_EnvO_1": "ENVO:00000876, Temperate broadleaf and mixed forest biome", 
+            "S_EnvO_2": "ENVO:00000073, building", 
+            "S_EnvO_3": " ", 
+            "Study": "Home Life: Factors structuring the bacterial diversity found within and between homes", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.9273", 
+            "Total_Sample_Size": 2941.0
+        }, 
+        {
+            "Name": "egg.WY.2009.562.712099.739075", 
+            "Ranking": 17, 
+            "S_EnvO_1": "ENVO:02000057, hen's egg product", 
+            "S_EnvO_2": " ", 
+            "S_EnvO_3": " ", 
+            "Study": "Spatial and Temporal Variation in Nest and Egg Bacteria of Wild Birds", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.9276", 
+            "Total_Sample_Size": 44546.0
+        }, 
+        {
+            "Name": "H35Di.735927", 
+            "Ranking": 18, 
+            "S_EnvO_1": "ENVO:00000876, Temperate broadleaf and mixed forest biome", 
+            "S_EnvO_2": "ENVO:00000073, building", 
+            "S_EnvO_3": " ", 
+            "Study": "Home Life: Factors structuring the bacterial diversity found within and between homes", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.9282", 
+            "Total_Sample_Size": 18307.0
+        }, 
+        {
+            "Name": "H60Di.735930", 
+            "Ranking": 19, 
+            "S_EnvO_1": "ENVO:00000876, Temperate broadleaf and mixed forest biome", 
+            "S_EnvO_2": "ENVO:00000073, building", 
+            "S_EnvO_3": " ", 
+            "Study": "Home Life: Factors structuring the bacterial diversity found within and between homes", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.9397", 
+            "Total_Sample_Size": 19029.0
+        }, 
+        {
+            "Name": "H22Fr.735949", 
+            "Ranking": 20, 
+            "S_EnvO_1": "ENVO:00000876, Temperate broadleaf and mixed forest biome", 
+            "S_EnvO_2": "ENVO:00000073, building", 
+            "S_EnvO_3": " ", 
+            "Study": "Home Life: Factors structuring the bacterial diversity found within and between homes", 
+            "Study_Source": "Earth Microbiome Project", 
+            "Total_Distance": "0.9413", 
+            "Total_Sample_Size": 20709.0
+        }
+    ]
+}

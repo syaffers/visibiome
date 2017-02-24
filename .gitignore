@@ -6,6 +6,7 @@
 
 venv/
 staticfiles/*/
+staticfiles/*
 !staticfiles/delete.me
 
 app/static/data/
@@ -15,3 +16,5 @@ mediafiles/*/
 
 logs/*/
 !logs/delete.me
+
+local/

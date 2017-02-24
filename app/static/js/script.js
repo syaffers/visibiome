@@ -1,33 +1,39 @@
 "use strict";
 
-var biom_search_form_id = "#biom-search-form",
-  remove_job_button = ".btn-job-remove",
-  all_eco_checkbox = "#id_criteria_0",
-  all_eco_value = "1",
-  otu_textarea = "#id_otu_text",
-  otu_textarea_placeholder = "Paste OTU table here";
+var biomSearchFormId = "#biom-search-form",
+  removeJobButtons = ".btn-job-remove",
+  rerunJobButtons = ".btn-job-rerun",
+  allEcoCheckbox = "#id_criteria_0",
+  allEcoValue = "1",
+  otuTextarea = "#id_otu_text",
+  otuTextareaPlaceholder = "Paste OTU table here",
+  jobDashboardRow = ".job-row",
+  jobStatusTd = "td.job-status",
+  jobStatusTdSpan = "td.job-status span",
+  jobErrorTd = "td.job-error",
+  jobUpdatedAtTd = "td.job-updated-at";
 
 function handleBiomCheckbox() {
-  var checkedBoxes = $(biom_search_form_id)
+  var checkedBoxes = $(biomSearchFormId)
     .find(".checkbox-criteria input[type=checkbox]")
     .map(isChecked).toArray();
 
-  if (all_eco_value == $(this).val()) {
-    $(biom_search_form_id)
+  if (allEcoValue == $(this).val()) {
+    $(biomSearchFormId)
       .find(".checkbox-criteria input[type=checkbox]")
       .each(uncheck);
   }
   else {
-    $(all_eco_checkbox).prop("checked", false);
+    $(allEcoCheckbox).prop("checked", false);
   }
 
   if (checkedBoxes.reduce(add, 0) >= 3) {
-    $(biom_search_form_id)
+    $(biomSearchFormId)
       .find(".checkbox-criteria input[type=checkbox]:not(:checked)")
       .prop('disabled', true);
   }
   else {
-    $(biom_search_form_id)
+    $(biomSearchFormId)
       .find(".checkbox-criteria input[type=checkbox]:not(:checked)")
       .prop('disabled', false);
   }
@@ -43,14 +49,62 @@ function handleFillTextfield() {
     $(this).val("Paste OTU table here");
 }
 
-function handleRemoveJob() {
+function handleUpdateJobDetails() {
+  $(jobDashboardRow).each(function (index, row) {
+    var jobId = $(this).attr("id");
+    var detailsUrl = "/job/" + jobId + "/details.json";
+    var jobStatusCode = $(this).find(jobStatusTd)[0].dataset.statusCode;
+
+    if (jobStatusCode >= 0 && jobStatusCode < 10) {
+      $.ajax({"url": detailsUrl}).done(updateJobDetailsText);
+    }
+  });
+}
+
+function updateJobDetailsText(data) {
+  if (data.status == 200) {
+    var job = data.data;
+    var updatedDateString = fecha.format(new Date(job.updatedAt), "MMM. D, YYYY, h:mm A");
+
+    var statusTextSelector = "#" + job.id.toString() + jobDashboardRow + " " + jobStatusTdSpan;
+    var rerunButtonSelector = "#" + job.id.toString() + jobDashboardRow + " " + rerunJobButtons;
+    var statusTdSelector = "#" + job.id.toString() + jobDashboardRow + " " + jobStatusTd;
+    var loaderSelector = "#" + job.id.toString() + jobDashboardRow + " " + jobStatusTd + " .loader";
+    var errorTdSelector = "#" + job.id.toString() + jobDashboardRow + " " + jobErrorTd;
+    var updatedAtTdSelector = "#" + job.id.toString() + jobDashboardRow + " " + jobUpdatedAtTd;
+
+    $(statusTextSelector).text(job.status);
+    $(statusTdSelector).attr("data-status-code", job.statusCode);
+    $(errorTdSelector).text(job.error);
+    $(errorTdSelector).attr("data-status-code", job.errorCode);
+    if (Number(job.statusCode) >= 10 || Number(job.statusCode) < 0) {
+      $(loaderSelector).remove();
+      $(updatedAtTdSelector).text(updatedDateString);
+      $(rerunButtonSelector).removeClass("disabled");
+    }
+  }
+}
+
+function handleRemoveJob(e) {
+  e.preventDefault();
   var removeUrl = $(this).data("remove-url");
-  var remove = confirm("Are you sure you want to delete this job?");
+  var remove = confirm("This action cannot be undone. Are you sure you want to delete this job?");
   remove ? location.href = removeUrl : false
 }
 
+function handleRerunJob(e) {
+  e.preventDefault();
+  if ($(this).hasClass("disabled")) {
+    return false;
+  } else {
+    var rerunUrl = $(this).data("rerun-url");
+    var rerun = confirm("This action cannot be undone. Are you sure you want to rerun this job?");
+    rerun ? location.href = rerunUrl : false
+  }
+}
+
 function uncheck(index, elem) {
-  if ($(elem).val() != all_eco_value)
+  if ($(elem).val() != allEcoValue)
     $(elem).prop("checked", false);
 }
 
@@ -63,11 +117,13 @@ function add(a, b) {
 }
 
 $(document).ready(function() {
-  $(biom_search_form_id)
+  $(biomSearchFormId)
     .find(".checkbox-criteria input[type=checkbox]")
     .click(handleBiomCheckbox);
-  $(otu_textarea).val(otu_textarea_placeholder);
-  $(otu_textarea).click(handleClearTextfield);
-  $(otu_textarea).blur(handleFillTextfield);
-  $(remove_job_button).click(handleRemoveJob)
+  $(otuTextarea).val(otuTextareaPlaceholder);
+  $(otuTextarea).click(handleClearTextfield);
+  $(otuTextarea).blur(handleFillTextfield);
+  $(removeJobButtons).click(handleRemoveJob);
+  $(rerunJobButtons).click(handleRerunJob);
+  setInterval(handleUpdateJobDetails, 10000);
 });

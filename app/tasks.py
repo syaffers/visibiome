@@ -1,20 +1,18 @@
 from MySQLdb.cursors import DictCursor
 from StringIO import StringIO
-from app.models import BiomSearchJob
-from betadiversity_scripts.JSon_metadata import create_json_samples_metadata
-from betadiversity_scripts.MNBetadiversity import calculate_MNmatrix
-from betadiversity_scripts.PCOA import pcoa
+from app.models import BiomSearchJob, BiomSample
+from betadiversity_scripts.MNBetadiversity import make_m_n_distmtx
 from betadiversity_scripts.config import server_db
-from betadiversity_scripts.dendrogam_d3_json import json_for_dendrogam
-from betadiversity_scripts.heatmap import (heatmap_files,
-    get_sorted_representative_id)
-from betadiversity_scripts.select_samples import (return_represent_sample,
-    return_rep_original_samples)
+from betadiversity_scripts.visualizations import (generate_heatmap_files,
+    get_sorted_representative_id, generate_samples_metadata,
+    generate_pcoa_file, generate_dendrogram_file)
+from betadiversity_scripts.select_samples import query_samples
 from biom.parse import parse_biom_table
 from biom import parse_table, load_table
 from biom.exception import TableException
 from vzb.celery import app
 from django.conf import settings
+from django.db import transaction
 from qiime import __version__ as qiime_ver
 from time import sleep
 import MySQLdb
@@ -23,6 +21,84 @@ import numpy as np
 import os
 import re
 import sys
+
+def bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job):
+    # query the representatives
+    print("Getting representatives...")
+    m_distmtx, m_sample_ids = query_samples(l_data_path, criteria, 1000)
+
+    # combine both sample ids from user samples and representatives
+    m_n_sample_ids = m_sample_ids + n_sample_ids
+
+    # if representatives matrix and sample IDs are not empty
+    if len(m_distmtx) != 0 and len(m_sample_ids) != 0:
+        print("Performing M-N Betadiversity calculations (reps)...")
+        m_n_distmtx = make_m_n_distmtx(m_distmtx, m_sample_ids,
+                                       n_otu_matrix, n_otu_ids)
+
+        # 1000 dendogram
+        print("Making 1000 dendrogram...")
+        filepath = os.path.join(job_dir_path, "d3dendrogram.json")
+        generate_dendrogram_file(m_n_distmtx, m_n_sample_ids, filepath)
+
+        # pcoa for 1000 samples
+        print("Making 1000 PCOA...")
+        filepath = os.path.join(job_dir_path, "pcoa_1000.csv")
+        generate_pcoa_file(m_n_distmtx, m_n_sample_ids, filepath)
+
+        # get top ranking representative OTU IDs
+        top_rep_sample_ids = get_sorted_representative_id(
+            m_n_distmtx, m_n_sample_ids, 251
+        )
+
+        # query actual samples
+        print("Getting actual samples from representatives...")
+        m_distmtx, m_sample_ids = query_samples(
+            l_data_path, criteria, 250, list(top_rep_sample_ids)
+        )
+
+        # MN calculation for actual samples
+        print("Performing M-N Betadiversity calculations (actual)...")
+        m_n_distmtx = make_m_n_distmtx(m_distmtx, m_sample_ids,
+                                       n_otu_matrix, n_otu_ids)
+
+        # combine both sample ids from user samples and actual samples
+        m_n_sample_ids = m_sample_ids + n_sample_ids
+
+        # for top 250 dendogram
+        print("Making 250 dendrogram...")
+        filepath = os.path.join(job_dir_path, "d3dendrogram_sub.json")
+        generate_dendrogram_file(m_n_distmtx, m_n_sample_ids, filepath)
+
+        # for closest 250 samples
+        print("Making 250 PCOA...")
+        filepath = os.path.join(job_dir_path, "pcoa_250.csv")
+        generate_pcoa_file(m_n_distmtx, m_n_sample_ids, filepath)
+
+        # for closest 250 heatmap
+        print("Making 250 heatmap...")
+        top_m_n_distmtx, top_m_n_sample_ids = generate_heatmap_files(
+            m_n_distmtx, m_n_sample_ids, job_dir_path, 20 + len(n_sample_ids)
+        )
+
+        # for 20 dendogram
+        print("Making 20 dendrogram...")
+        filepath = os.path.join(job_dir_path, "d3dendrogram_sub_sub.json")
+        generate_dendrogram_file(top_m_n_distmtx, top_m_n_sample_ids, filepath)
+
+        print("Making sample metadata file...")
+        sample_filename = job.file_safe_name() + ".json"
+        filepath = os.path.join(job_dir_path, sample_filename)
+        generate_samples_metadata(top_m_n_distmtx, top_m_n_sample_ids,
+                                  n_sample_ids, filepath)
+        print("Done!")
+        job.status = BiomSearchJob.COMPLETED
+        job.save()
+
+    else:
+        job.status = BiomSearchJob.STOPPED
+        job.error_code = BiomSearchJob.UNKNOWN_ERROR
+        job.save()
 
 
 @app.task
@@ -39,12 +115,20 @@ def validate_biom(job, file_path):
     try:
         otu_table = load_table(file_path)
 
-        if len(otu_table.ids()) == 1:
+        if len(otu_table.ids("sample")) <= 10:
+            # if it's a rerun, remove any errors but don't add any samples to the DB
+            if job.status == BiomSearchJob.RERUN:
+                job.error_code = BiomSearchJob.NO_ERRORS
+            else:
+                # atomic transaction to speed up saving multiple samples
+                with transaction.atomic():
+                    for sample_name in otu_table.ids(axis="sample"):
+                        sample = BiomSample(name=sample_name, job=job)
+                        sample.save()
+
             job.status = BiomSearchJob.QUEUED
-            # HACK: HARDCODE! Bad practice!
-            job.sample_name = otu_table.ids()[0]
             job.save()
-            m_n_betadiversity.delay(job.id)
+            m_n_betadiversity.delay(job)
         else:
             job.status = BiomSearchJob.STOPPED
             job.error_code = BiomSearchJob.SAMPLE_COUNT_ERROR
@@ -67,46 +151,39 @@ def validate_biom(job, file_path):
 
 
 @app.task
-def m_n_betadiversity(job_id):
-    job = BiomSearchJob.objects.filter(id=job_id).first()
+def m_n_betadiversity(job):
     job.status = BiomSearchJob.PROCESSING
     job.save()
 
     regexp = re.compile("[^A-Za-z0-9]")
-    userdir = settings.MEDIA_ROOT + "{user_id}/{job_id}/".format(
-        user_id=job.user_id, job_id=job.id
-    )
+    job_dir_path = os.path.split(job.biom_file.path)[0]
     userbiom = job.biom_file.path
 
     # Changing Animal/Human to Animal_Human for database table processing
     # HACK: any way to do this cleaner?
-    user_choice = map(
+    criteria = map(
         lambda x: x.replace("/", "_"), map(str, job.criteria.all())
     )
     # Due to database table naming, this is necessary
-    if 'All' in user_choice:
-        user_choice[user_choice.index('All')] = 'All_eco'
+    if 'All' in criteria:
+        criteria[criteria.index('All')] = 'All_eco'
 
     # TODO: Still hack-y! Find a better way to include the 10k files
-    largedata = settings.TEN_K_DATA_PATH
+    l_data_path = settings.TEN_K_DATA_PATH
 
     try:
-        # load submitted biom file/text into otutableS
+        # load submitted biom file/text into otu_table and extract sample IDs
+        # and OTU IDs
         print("Getting file {}...".format(userbiom))
-        otutableS = load_table(userbiom)
-        n_sample_otu_matrix = np.asarray(
-            [v for v in otutableS.iter_data(axis="sample")]
-        )
-
-        # get observation IDs and sample IDs from submitted biom file
-        print("Loading data from file...")
-        n_otu_id = otutableS.ids(axis="observation")
-        n_sample_id = list(otutableS.ids(axis="sample"))
+        n_otu_table = load_table(userbiom)
+        n_otu_matrix = n_otu_table.matrix_data.toarray().T
+        n_otu_ids = n_otu_table.ids(axis="observation")
+        n_sample_ids = list(map(str, n_otu_table.ids(axis="sample")))
 
         # trying to parse GreenGenes IDs
         try:
             # stringify tuple of observation IDs
-            notuids = str(tuple(map(int, n_otu_id)))
+            n_otu_ids_formatted = str(tuple(map(int, n_otu_ids)))
         except ValueError:
             # stop the job if non integer strings were found
             job.status = BiomSearchJob.STOPPED
@@ -121,22 +198,23 @@ def m_n_betadiversity(job_id):
             FROM OTUS_unified
             WHERE otu_id IN {sample_list_tuple}
             ORDER BY FIELD(otu_id, {sample_list_string})
-        """.format(sample_list_tuple=notuids, sample_list_string=notuids[1:-1])
+        """.format(sample_list_tuple=n_otu_ids_formatted,
+                   sample_list_string=n_otu_ids_formatted[1:-1])
 
         # perform query
-        print("Querying...")
+        print("Querying for 16s copy numbers...")
         conn = MySQLdb.connect(**server_db)
         curs = conn.cursor(DictCursor)
         curs.execute(query_str)
 
         # convert 16s otu copy numbers into doubles for math manipulations
-        otu_copy_number = np.array(
+        otu_copy_numbers = np.array(
             [float(rec["16s_copy_number"]) for rec in curs.fetchall()]
         )
         conn.close()
 
         # if there are observation IDs which are not in DB, exit with message
-        if len(otu_copy_number) != len(n_otu_id):
+        if len(otu_copy_numbers) != len(n_otu_ids):
             job.status = BiomSearchJob.STOPPED
             job.error_code = BiomSearchJob.OTU_NOT_EXIST
             job.save()
@@ -148,97 +226,14 @@ def m_n_betadiversity(job_id):
                 print("OTUs are pre-normalized...")
             else:
                 print("OTUs are not normalized...")
-                n_sample_otu_matrix = n_sample_otu_matrix / otu_copy_number
+                n_otu_matrix = n_otu_matrix / otu_copy_numbers
 
-            print("Making sample array...")
-            # retrieve the samples need to compute diversity against using
-            # representatives
-            mMatrix, Msample = return_represent_sample(largedata, user_choice)
-
-            # if submatrix of 10k matrix and queried sample is returned
-            # properly
-            if len(mMatrix) != 0 and len(Msample) != 0:
-                print("Performing M-N Betadiversity calculations...")
-                mnMatrix = calculate_MNmatrix(
-                    # legacy code
-                    # mMatrix, Msample, n_sample_otu_matrix, n_otuid
-                    mMatrix, Msample, n_sample_otu_matrix, n_otu_id
-                )
-                n_sam = [str(n_sample_id[0])]
-
-
-                #================== END OF MAIN COMPUTATION ==================#
-
-                # 1000 dendogram
-                print("Making 1000 dendrogram...")
-                d3Dendro = json_for_dendrogam(mnMatrix, Msample + n_sam)
-                filename = userdir + "d3dendrogram.json"
-                with open(filename, "w") as json_output_file:
-                    print("Writing to file {}...".format(filename))
-                    json.dump(d3Dendro, json_output_file, sort_keys=True,
-                              indent=4)
-
-                # pcoa for 1000 samples
-                print("Making 1000 PCOA...")
-                pcoa(mnMatrix, Msample + n_sam, userdir)
-
-                # get top ranking representative OTU IDs
-                # legacy code
-                # m_repsampleid = get_sortedrepresentativeid(
-                m_repsampleid = get_sorted_representative_id(
-                    mnMatrix, Msample + n_sample_id, 251
-                )
-                # MN calculation for representative samples
-                mMatrix, Msample = return_rep_original_samples(
-                    list(m_repsampleid), largedata, user_choice, 250
-                )
-                mnMatrix = calculate_MNmatrix(
-                    mMatrix, Msample, n_sample_otu_matrix, n_otu_id
-                )
-
-                # for top 251 dendogram
-                print("Making 250 dendrogram...")
-                d3Dendro = json_for_dendrogam(mnMatrix, Msample + n_sample_id)
-                filename = userdir + "d3dendrogram_sub.json"
-                with open(filename, "w") as json_output_file:
-                    print("Writing to file {}...".format(filename))
-                    json.dump(d3Dendro, json_output_file, sort_keys=True,
-                              indent=4)
-
-                # for closest 250 samples
-                print("Making 250 PCOA and heatmap...")
-                pcoa(mnMatrix, Msample + n_sam, userdir + "250_")
-                submnMatrix, submn_sample_id = heatmap_files(
-                    mnMatrix, Msample, n_sample_id, userdir, 21
-                )
-
-                # for 21 dendogram
-                print("Making 20 dendrogram...")
-                d3Dendro = json_for_dendrogam(submnMatrix, submn_sample_id)
-                filename = userdir + "d3dendrogram_sub_sub.json"
-                with open(filename, "w") as json_output_file:
-                    print("Writing to file {}...".format(filename))
-                    json.dump(d3Dendro, json_output_file, sort_keys=True,
-                              indent=4)
-
-                samplejson = create_json_samples_metadata(
-                    submnMatrix[0, :], submn_sample_id, submn_sample_id[1:],
-                    userdir
-                )
-
-                sample_filename = "_".join(regexp.split(n_sample_id[0]))
-                filename = userdir + sample_filename + ".json"
-                with open(filename, "w") as json_output_file:
-                    json.dump(samplejson, json_output_file, sort_keys=True,
-                              indent=4)
-
-                job.status = BiomSearchJob.COMPLETED
-                job.save()
-
-            else:
-                job.status = BiomSearchJob.STOPPED
-                job.error_code = BiomSearchForm.UNKNOWN_ERROR
-                job.save()
+                if job.analysis_type == BiomSearchJob.BRAYCURTIS:
+                    bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job)
+                elif job.analysis_type == BiomSearchJob.GNATUNIFRAC:
+                    pass
+                else:
+                    pass
 
     except:
         print "Unexpected error:", sys.exc_info()
@@ -260,7 +255,7 @@ def save_text(job, input_str):
     file_path = \
         settings.MEDIA_ROOT + \
         '{user_id}/{job_id}/{user_id}-{job_id}.txt'.format(
-            user_id=job.user_id, job_id=job.id
+            user_id=job.user_id, job_id=job.pk
         )
 
     if not os.path.exists(os.path.dirname(file_path)):

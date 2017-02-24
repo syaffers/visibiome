@@ -1,7 +1,7 @@
 {% extends "job/job_base.html" %}
 {% load static from staticfiles %}
 
-{% block title %}PCoA Plot of 250 Most Similar Samples for Job #{{ job.id }}{% endblock %}
+{% block title %}PCoA Plot of 250 Most Similar Samples for {{ job.name }}{% endblock %}
 {% block job_page %}
   <h2>PCoA Plot of 250 Most Similar Samples</h2>
 
@@ -75,10 +75,10 @@
 <script src="http://d3js.org/d3.v3.min.js" type="text/javascript"></script>
 <script src="{% static 'js/pcoa.js'%}" type="text/javascript"></script>
 <script>
-  var dataPath = "{{data_path}}";
-  var sampleId = "{{job.sample_name}}";
+  var pcoaFilePath = "{{ pcoa_file_path }}";
+  var sampleIds = {{ samples|safe }};
   $(document).ready(function () {
-    drawPcoa(dataPath, "250_pcoa_1000.csv", sampleId);
+    drawPcoa(pcoaFilePath, sampleIds);
   });
 </script>
 {% endblock %}

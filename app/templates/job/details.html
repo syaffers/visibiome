@@ -1,31 +1,35 @@
 {% extends "job/job_base.html" %}
 {% load static from staticfiles %}
 
-{% block title %}Details for Job #{{ job.id }}{% endblock %}
+{% block title %}Details for {{ job.name }}{% endblock %}
 {% block job_page %}
-  <h2>Details for Job #{{ job.id }}</h2>
+  <h2>Details for {{ job.name }}</h2>
   <p>
     <strong>Input:</strong>
-    <a target="_blank" class="btn btn-primary btn-xs" href="{{ file_path }}">
+    <a target="_blank" class="btn btn-primary btn-xs"
+       href="{% if is_example %}
+               {{example_biom_file}}
+             {% else %}
+               {{job.biom_file.url}}
+             {% endif %}">
       Uploaded File
       <span class="glyphicon glyphicon-save" aria-hidden="true"></span>
     </a>
   </p>
   <p>
-    <strong>Sample Name:</strong> {{ job.sample_name }}
-  </p>
-  <p>
     <strong>OTUs pre-normalized:</strong> {{ job.is_normalized_otu }}
   </p>
-  <p>
-    <strong>Criteria:</strong> {{ criteria }}
-  </p>
-  <p>
-    <strong>Status:</strong> {{ job.get_status_display }}
-  </p>
-  <p>
-    <strong>Started on:</strong> {{ job.created_at }}
-  </p>
+  <p><strong>Criteria:</strong> {{ criteria }}</p>
+  <div>
+    <p><strong>Samples:</strong></p>
+    <ul>
+    {% for sample in job.samples.all %}
+      <li>{{ sample }}</li>
+    {% endfor %}
+    </ul>
+  </div>
+  <p><strong>Status:</strong> {{ job.get_status_display }}</p>
+  <p><strong>Started on:</strong> {{ job.created_at }}</p>
   <p>
     <strong>Completed on:</strong>
     {% if job.status < 10 %}

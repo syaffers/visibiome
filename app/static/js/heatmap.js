@@ -50,13 +50,13 @@ gleg.selectAll("rect")
 
 gleg.call(xAxis_g).append("text")
 .attr("class", "caption")
-.attr("x", 10).attr("y", -10).attr("font-size", "10px")
-.text("Beta Diversity (Bray Curtis)");
+.attr("x", 10).attr("y", -14).attr("font-size", "11px")
+.text("β-Diversity (Bray Curtis)");
 
 function adjacency(dataPath) {
   queue()
-  .defer(d3.csv, dataPath + "All_heatmap_nodelist.csv")
-  .defer(d3.csv, dataPath + "All_heatmap_edgelist.csv")
+  .defer(d3.csv, dataPath + "/All_heatmap_nodelist.csv")
+  .defer(d3.csv, dataPath + "/All_heatmap_edgelist.csv")
   .await(function(error, nodeList, edgeList) {
     createAdjacencyMatrix(nodeList, edgeList);
   });
@@ -71,9 +71,11 @@ function adjacency(dataPath) {
   .style("left", 0);
 
   function createAdjacencyMatrix(nodes, edges) {
-    var svgSize = $.unique(nodes).length * 8 +
+    var blockSize = 10,
+      offset = 200;
+    var svgSize = $.unique(nodes).length * blockSize +
       Math.max.apply(
-        Math, nodes.map(function (i) { return i.id.length })) * 8;
+        Math, nodes.map(function (i) { return i.id.length })) * blockSize;
     var edgeHash = {};
     edges.forEach(function(x) {
       var id = x.source + "-" + x.target;
@@ -81,7 +83,7 @@ function adjacency(dataPath) {
       edgeHash[id] = x;
       edgeHash[id1] = x;
     });
-    
+
     var matrix = [];
     //create all possible edges
     nodes.forEach(function(a, i) {
@@ -104,19 +106,19 @@ function adjacency(dataPath) {
     .attr("height", svgSize);
 
     var g = svg.append("g")
-    .attr("transform", "translate(185,175)")
+    .attr("transform", "translate(" + offset + "," + offset + ")")
     .attr("id", "adjacencyG")
     .selectAll("rect")
     .data(matrix)
     .enter()
     .append("rect")
-    .attr("width", 8)
-    .attr("height", 8)
+    .attr("width", blockSize)
+    .attr("height", blockSize)
     .attr("x", function(d) {
-      return d.x * 8
+      return d.x * blockSize
     })
     .attr("y", function(d) {
-      return d.y * 8
+      return d.y * blockSize
     })
     .style("stroke", "black")
     .style("stroke-width", "1px")
@@ -128,7 +130,7 @@ function adjacency(dataPath) {
     .on("mousemove", gridOver)
     .on("mouseout", mouseout);
 
-    var scaleSize = nodes.length * 8;
+    var scaleSize = nodes.length * blockSize;
     var nameScale = d3.scale.ordinal().domain(nodes.map(function(el) {
       return el.id
     })).rangePoints([0, scaleSize], 1);
@@ -164,8 +166,8 @@ function adjacency(dataPath) {
         "\nDistance:  " + d.weight;
       div
       .text(details)
-      .style("left", Number(d.x) * 8 + 190 - plotScrollLeft + "px")
-      .style("top", Number(d.y) * 8 + 180 + "px");
+      .style("left", Number(d.x) * blockSize + offset + 5 - plotScrollLeft + "px")
+      .style("top", Number(d.y) * blockSize + offset + 5 + "px");
     }
 
     function mouseover() {
