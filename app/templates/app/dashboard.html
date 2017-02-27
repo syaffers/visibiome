@@ -1,4 +1,5 @@
 {% extends "app/layout.html" %}
+{% load static from staticfiles  %}
 
 {% block title %}Jobs Dashboard{% endblock %}
 {% block content %}
@@ -13,13 +14,14 @@
   			<th width="10%">Status</th>
         <th width="16%">Start time</th>
         <th width="16%">Completion time</th>
-        <th width="30%">Error messages</th>
-        <th width="3%">Remove</th>
+        <th width="28%">Error messages</th>
+        <th width="2.5%">Remove</th>
+        <th width="2.5%">Re-run</th>
   		</tr>
   	</thead>
   	<tbody>
       {% for job in jobs %}
-        <tr>
+        <tr id="{{job.pk}}" class="job-row">
           <td>
             <a class="btn btn-primary btn-xs" href="{% url 'app:job_details' job.pk %}">
               {{ job.name }}
@@ -30,25 +32,38 @@
               <span class="criterion">{{ criterion }}</span>
             {% endfor %}
           </td>
-          <td>
-            {{ job.get_status_display }}
+          <td class="job-status" data-status-code="{{job.status}}">
+            {% if job.status >= job.VALIDATING and job.status < job.COMPLETED %}
+              <img class="loader" src="{% static 'img/loader.gif' %}" alt="Processing your job...">
+            {% endif %}
+            <span>{{ job.get_status_display }}</span>
           </td>
-          <td>
-            {{ job.created_at }}
+          <td class="job-created-at">
+            {{ job.created_at|date:"M. d, Y, f A" }}
           </td>
-          <td>
+          <td class="job-updated-at">
             {% if job.status < 10 %}
               -
             {% else %}
-              {{ job.updated_at }}
+              {{ job.updated_at|date:"M. d, Y, f A" }}
             {% endif %}
           </td>
-          <td>
+          <td class="job-error" data-status-code="{{job.error_code}}">
             {{ job.get_error_code_display }}
           </td>
-          <td>
-            <button data-remove-url="{% url 'app:job_remove' job.pk %}" class="btn btn-danger btn-job-remove" type="submit">
+          <td class="td-btn">
+            <button data-remove-url="{% url 'app:job_remove' job.pk %}"
+                    class="btn btn-danger btn-job btn-job-remove" type="submit">
               <span class="glyphicon glyphicon-remove"></span>
+            </button>
+          </td>
+          <td class="td-btn">
+            <button data-rerun-url="{% url 'app:job_rerun' job.pk %}"
+                    class="btn btn-warning btn-job btn-job-rerun
+                           {% if job.status >= job.VALIDATING and job.status < job.COMPLETED %}
+                             disabled
+                           {% endif %}" type="submit">
+              <span class="glyphicon glyphicon-step-backward"></span>
             </button>
           </td>
         </tr>

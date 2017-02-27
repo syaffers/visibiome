@@ -153,15 +153,19 @@ def validate_biom(job, file_path):
         otu_table = load_table(file_path)
 
         if len(otu_table.ids("sample")) <= 10:
-            # transaction atomic to speed up saving multiple samples
-            with transaction.atomic():
-                for sample_name in otu_table.ids(axis="sample"):
-                    sample = BiomSample(name=sample_name, job=job)
-                    sample.save()
+            # if it's a rerun, remove any errors but don't add any samples to the DB
+            if job.status == BiomSearchJob.RERUN:
+                job.error_code = BiomSearchJob.NO_ERRORS
+            else:
+                # atomic transaction to speed up saving multiple samples
+                with transaction.atomic():
+                    for sample_name in otu_table.ids(axis="sample"):
+                        sample = BiomSample(name=sample_name, job=job)
+                        sample.save()
 
             job.status = BiomSearchJob.QUEUED
             job.save()
-            m_n_betadiversity.delay(job.pk)
+            m_n_betadiversity.delay(job)
         else:
             job.status = BiomSearchJob.STOPPED
             job.error_code = BiomSearchJob.SAMPLE_COUNT_ERROR
@@ -184,8 +188,7 @@ def validate_biom(job, file_path):
 
 
 @app.task
-def m_n_betadiversity(job_id):
-    job = BiomSearchJob.objects.filter(id=job_id).first()
+def m_n_betadiversity(job):
     job.status = BiomSearchJob.PROCESSING
     job.save()
 

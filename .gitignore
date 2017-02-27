@@ -6,6 +6,7 @@
 
 venv/
 staticfiles/*/
+staticfiles/*
 !staticfiles/delete.me
 
 app/static/data/

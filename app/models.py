@@ -51,6 +51,7 @@ class BiomSearchJob(models.Model):
     VALIDATING = 0
     QUEUED = 1
     PROCESSING = 2
+    RERUN = 3
     COMPLETED = 10
 
     STATUSES = (
@@ -58,6 +59,7 @@ class BiomSearchJob(models.Model):
         (QUEUED, "Queued"),
         (VALIDATING, "Validating"),
         (PROCESSING, "Processing"),
+        (RERUN, "Re-running"),
         (COMPLETED, "Completed"),
     )
 

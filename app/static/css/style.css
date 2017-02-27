@@ -26,11 +26,21 @@
   background: #EEEEEE;
 }
 
-.btn-job-remove {
+.loader {
+  width: 15px;
+  height: 15px;
+}
+
+.td-btn {
+  text-align: center;
+}
+
+.btn-job {
   border-radius: 30px;
   font-size: 12px;
   padding: 4px 6px 2px;
 }
+
 .container-page {
   padding-bottom: 60px;
 }
