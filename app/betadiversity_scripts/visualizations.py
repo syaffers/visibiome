@@ -16,10 +16,11 @@ class Sample:
                  ontology_id_1, ontology_term_1,
                  ontology_id_2, ontology_term_2,
                  ontology_id_3, ontology_term_3,
-                 sample_size, distance, study_source):
+                 sample_size, distance, pvalue, study_source):
     	self.Ranking = rank
     	self.Name = name
     	self.Study = title
+        self.pvalue = pvalue
 
     	if ontology_id_1 == "":
             self.S_EnvO_1 = " "
@@ -56,22 +57,32 @@ def retrieve_source(sample_study):
 
 
 def generate_samples_metadata(top_m_n_distmtx, top_m_n_sample_ids,
-                              n_sample_ids, filepath):
+                              n_sample_ids, filepath, rankingDF=None):
+    ## TODO: do this consistently with pandas DataFrames!
+    ## TODO: assert that distmtx is symmetric when ranking=None, should be
+    import cPickle
+#    with open('/tmp/input.pcl', 'w') as input:
+#        cPickle.dump((top_m_n_distmtx,top_m_n_sample_ids, n_sample_ids,filepath,ranking), input)
+
     m_n_df = pd.DataFrame(top_m_n_distmtx, columns=top_m_n_sample_ids,
-                          index=top_m_n_sample_ids)
+                          index=top_m_n_sample_ids) if rankingDF is None else rankingDF
+    if not rankingDF is None: ## DEBUG Info, 2b rm'd
+        print "received Ranking (from GNAT)"
+        print rankingDF.head()
     # connect to microbiome database
     conn = MySQLdb.connect(**server_db)
     all_samples_dict = dict()
-
+    pvalues = np.load('%s/distanceProbability.npy')
     # for each user-submitted sample
     for sample_id_j in n_sample_ids:
         sample_metadata = []
         # rearrange distance matrix for the jth sample and get sample IDs
-        top_m_j_sample_ids = list(m_n_df.sort(sample_id_j).index)
+        ## New: deals with NaN values, individually (from GNAT ranking)
+        top_m_j_sample_ids = list(m_n_df.sort(sample_id_j)[sample_id_j].dropna(axis=0).index)
+        print "Matches (sorted) for", sample_id_j, list(m_n_df.sort(sample_id_j).index)[:10]
         # get the top m sample IDs without losing order
         top_m_sample_ids = [m_sample_id for m_sample_id in top_m_j_sample_ids
-                            if m_sample_id not in n_sample_ids]
-
+                            if m_sample_id not in n_sample_ids]## we could actually allow other user samples
         json_metadata_query = """
             SELECT DISTINCT sample_event_ID, title, OntologyTerm, OntologyID,
                 sample_size, study
@@ -84,9 +95,10 @@ def generate_samples_metadata(top_m_n_distmtx, top_m_n_sample_ids,
             ORDER BY FIELD(sample_event_ID, '{m_sample_ids}')
         """.format(m_sample_ids='\',\''.join(top_m_sample_ids))
 
+        #print json_metadata_query
         curs = conn.cursor(DictCursor)
-        curs.execute(json_metadata_query)
-
+        n = curs.execute(json_metadata_query)
+        #print len(top_m_j_sample_ids), len(top_m_sample_ids), n
         authors_list = title = study = ""
         ontology_terms = ["", "", ""]
         ontology_ids = ["", "", ""]
@@ -108,18 +120,23 @@ def generate_samples_metadata(top_m_n_distmtx, top_m_n_sample_ids,
                 ontology_terms[cnt] = ontology_term
                 ontology_ids[cnt] = ontology_id
                 sample_size = float(sample_size_i)
-                distance = "%.4f" % m_n_df[sample_id_i][sample_id_j]
+
+                distance = "%.4f" % m_n_df[sample_id_j][sample_id_i]
+                pvalue = pvalues[max(int(distance*10000),9999)]
+
+
                 study = retrieve_source(study_i)
 
             # when we encounter a new sample from database
             elif sample_event_id != sample_id_i:
                 rank = rank + 1
+
                 sample_metadata.append(vars(
                     Sample(rank, sample_event_id, title,
                            ontology_ids[0], ontology_terms[0],
                            ontology_ids[1], ontology_terms[1],
                            ontology_ids[2], ontology_terms[2],
-                           sample_size, distance, study
+                           sample_size, distance, pvalue, study
                     )
                 ))
                 # create new sample
@@ -132,6 +149,8 @@ def generate_samples_metadata(top_m_n_distmtx, top_m_n_sample_ids,
                 ontology_ids[cnt] = ontology_id
                 sample_size = float(sample_size_i)
                 distance = "%.4f" % m_n_df[sample_id_j][sample_id_i]
+                pvalue = pvalues[max(int(distance * 10000), 9999)]
+
                 study = retrieve_source(study_i)
 
             # if its the same sample
@@ -141,17 +160,20 @@ def generate_samples_metadata(top_m_n_distmtx, top_m_n_sample_ids,
 
             cnt = cnt + 1
 
+
         rank = rank + 1
         sample_metadata.append(vars(
             Sample(rank, sample_event_id, title,
                    ontology_ids[0], ontology_terms[0],
                    ontology_ids[1], ontology_terms[1],
                    ontology_ids[2], ontology_terms[2],
-                   sample_size, distance, study
+                   sample_size, distance, pvalue, study
             )
         ))
 
+
         all_samples_dict[sample_id_j] = sample_metadata
+
 
     # close connection once everything is done
     conn.close()
@@ -509,6 +531,7 @@ def generate_dendrogram_file(mnMatrix, mnsampleid, filepath):
     add_dendrogram_node(T, dendrogram)
     label_dendrogram_tree(dendrogram["children"][0], id2name, z_dict)
 
+    print mnMatrix.shape, filepath
     with open(filepath, "w") as json_output_file:
         print("Writing to file {}...".format(filepath))
         json.dump(dendrogram, json_output_file, sort_keys=True, indent=4)

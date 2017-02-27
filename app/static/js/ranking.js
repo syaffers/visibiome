@@ -25,7 +25,7 @@ function createRankingCards(data, index) {
         '<br>'+
         '<small>' +
           '<strong>' +
-            '(Distance: ' + content['Total_Distance'] +
+            '(Distance: ' + content['Total_Distance'] + ', P-value: ' + content['pvalue'] +
             ', Sample size: ' + content['Total_Sample_Size'] + ')' +
           '</strong>' +
         '</small>' +

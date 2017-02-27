@@ -18,9 +18,46 @@ from time import sleep
 import MySQLdb
 import json
 import numpy as np
-import os
+import os, pdb, sys
 import re
-import sys
+
+import cPickle
+from betadiversity_scripts import gnatsearch as gs
+from betadiversity_scripts import microbiomeUtils as mu
+#from betadiversity_scripts.microbiomeUtils import SearchEngine
+
+def gnat_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job):
+    print "GNATting..."
+
+    engine = gs.SearchEngine(n_otu_matrix, n_otu_ids, n_sample_ids, l_data_path, criteria)
+    engine.gnatsearch()
+    engine.shortReport()
+
+    print "GNAT search finished"
+
+    m_n_distmtx, m_n_sample_ids, rankingDF, compositions = engine.make_m_n_distmtx()
+    engine.close() ## closes Database connection
+    #print "SAMPLE IDS:", ",".join(m_n_sample_ids)
+    #print sorted(zip(m_n_distmtx[:,-1], m_n_sample_ids))
+
+    print("Making dendrogram...")
+    filepath = os.path.join(job_dir_path, "d3dendrogram.json")
+    generate_dendrogram_file(m_n_distmtx, m_n_sample_ids, filepath)
+    list()
+
+    # pcoa for available samples
+    print("Making PCOA...")
+    filepath = os.path.join(job_dir_path, "pcoa_1000.csv")
+    generate_pcoa_file(m_n_distmtx, m_n_sample_ids, filepath)
+
+    sample_filename = job.file_safe_name() + ".json"
+    filepath = os.path.join(job_dir_path, sample_filename)
+    ## this interface has been updated to cope with multiple rankings
+    print "Making sample metadata file (from GNAT results)"
+    generate_samples_metadata(m_n_distmtx, m_n_sample_ids, n_sample_ids, filepath, rankingDF=rankingDF)
+    print "Done"
+    job.status = BiomSearchJob.COMPLETED
+    job.save()
 
 def bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job):
     # query the representatives
@@ -33,8 +70,8 @@ def bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_
     # if representatives matrix and sample IDs are not empty
     if len(m_distmtx) != 0 and len(m_sample_ids) != 0:
         print("Performing M-N Betadiversity calculations (reps)...")
-        m_n_distmtx = make_m_n_distmtx(m_distmtx, m_sample_ids,
-                                       n_otu_matrix, n_otu_ids)
+        m_n_distmtx  = make_m_n_distmtx(m_distmtx, m_sample_ids,
+                                        n_otu_matrix, n_otu_ids)
 
         # 1000 dendogram
         print("Making 1000 dendrogram...")
@@ -181,6 +218,7 @@ def m_n_betadiversity(job_id):
         try:
             # stringify tuple of observation IDs
             n_otu_ids_formatted = str(tuple(map(int, n_otu_ids)))
+            n_otu_ids_formatted100 = str(tuple(map(int, n_otu_ids[:100])))
         except ValueError:
             # stop the job if non integer strings were found
             job.status = BiomSearchJob.STOPPED
@@ -191,7 +229,7 @@ def m_n_betadiversity(job_id):
         # preparing SQL query to get 16s copy number of each observation IDs
         # necessary query to check for non-existence of OTUs
         query_str = """
-            SELECT 16s_copy_number
+            SELECT 16s_copy_number, otu_id
             FROM OTUS_unified
             WHERE otu_id IN {sample_list_tuple}
             ORDER BY FIELD(otu_id, {sample_list_string})
@@ -202,15 +240,21 @@ def m_n_betadiversity(job_id):
         print("Querying for 16s copy numbers...")
         conn = MySQLdb.connect(**server_db)
         curs = conn.cursor(DictCursor)
-        curs.execute(query_str)
+        n = curs.execute(query_str)
 
+        records = curs.fetchall()
+        missingInfo =  [rec["otu_id"] for rec in records if rec["16s_copy_number"] is None]
+        if missingInfo:
+            print "Warning OTUs without copy nr!", missingInfo
+        # Warning this replaces missing values simply with 1!!!
         # convert 16s otu copy numbers into doubles for math manipulations
         otu_copy_numbers = np.array(
-            [float(rec["16s_copy_number"]) for rec in curs.fetchall()]
+            [float(rec["16s_copy_number"]) for rec in records] # 1. if rec["16s_copy_number"] is None else
         )
         conn.close()
-
+        print "... successful"
         # if there are observation IDs which are not in DB, exit with message
+        # TO BE FIXED!!! Copy missing entries from ServerMicrobiome to EarthMicrobiome
         if len(otu_copy_numbers) != len(n_otu_ids):
             job.status = BiomSearchJob.STOPPED
             job.error_code = BiomSearchJob.OTU_NOT_EXIST
@@ -222,13 +266,13 @@ def m_n_betadiversity(job_id):
             if job.is_normalized_otu:
                 print("OTUs are pre-normalized...")
             else:
-                print("OTUs are not normalized...")
+                print("OTUs are not normalized... normalizing")
                 n_otu_matrix = n_otu_matrix / otu_copy_numbers
 
                 if job.analysis_type == BiomSearchJob.BRAYCURTIS:
                     bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job)
                 elif job.analysis_type == BiomSearchJob.GNATUNIFRAC:
-                    pass
+                    gnat_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job)
                 else:
                     pass
 
