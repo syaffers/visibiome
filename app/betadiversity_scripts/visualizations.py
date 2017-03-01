@@ -56,23 +56,22 @@ def retrieve_source(sample_study):
         return "Unknown"
 
 
-def generate_samples_metadata(top_m_n_distmtx, top_m_n_sample_ids,
-                              n_sample_ids, filepath, rankingDF=None):
+def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20):
     ## TODO: do this consistently with pandas DataFrames!
     ## TODO: assert that distmtx is symmetric when ranking=None, should be
-    import cPickle
-#    with open('/tmp/input.pcl', 'w') as input:
-#        cPickle.dump((top_m_n_distmtx,top_m_n_sample_ids, n_sample_ids,filepath,ranking), input)
+    # import cPickle
+    # with open('/tmp/input.pcl', 'w') as input:
+    #     cPickle.dump((top_m_n_distmtx,top_m_n_sample_ids, n_sample_ids,filepath,ranking), input)
 
-    m_n_df = pd.DataFrame(top_m_n_distmtx, columns=top_m_n_sample_ids,
-                          index=top_m_n_sample_ids) if rankingDF is None else rankingDF
-    if not rankingDF is None: ## DEBUG Info, 2b rm'd
-        print "received Ranking (from GNAT)"
-        print rankingDF.head()
+    # SYAFIQ: I've updated the function to include the m_n_df dataframe
+    # in the arguments, Bray-curtis calcs are handling this too. You can clear
+    # this comment as needed
+
     # connect to microbiome database
     conn = MySQLdb.connect(**server_db)
     all_samples_dict = dict()
     pvalues = np.load('%s/distanceProbability.npy')
+
     # for each user-submitted sample
     for sample_id_j in n_sample_ids:
         sample_metadata = []
@@ -82,7 +81,11 @@ def generate_samples_metadata(top_m_n_distmtx, top_m_n_sample_ids,
         print "Matches (sorted) for", sample_id_j, list(m_n_df.sort(sample_id_j).index)[:10]
         # get the top m sample IDs without losing order
         top_m_sample_ids = [m_sample_id for m_sample_id in top_m_j_sample_ids
-                            if m_sample_id not in n_sample_ids]## we could actually allow other user samples
+                            if m_sample_id not in n_sample_ids][:top]
+        ## we could actually allow other user samples
+        ### SYAFIQ: I agree, in that case, we should include the top 20 + all the
+        ### user samples after query but we have to be careful since the loop
+        ### below only considers the samples which are in the database
         json_metadata_query = """
             SELECT DISTINCT sample_event_ID, title, OntologyTerm, OntologyID,
                 sample_size, study
@@ -123,6 +126,7 @@ def generate_samples_metadata(top_m_n_distmtx, top_m_n_sample_ids,
 
                 distance = "%.4f" % m_n_df[sample_id_j][sample_id_i]
                 pvalue = pvalues[max(int(distance*10000),9999)]
+                # pvalue = 1
 
 
                 study = retrieve_source(study_i)
@@ -150,6 +154,7 @@ def generate_samples_metadata(top_m_n_distmtx, top_m_n_sample_ids,
                 sample_size = float(sample_size_i)
                 distance = "%.4f" % m_n_df[sample_id_j][sample_id_i]
                 pvalue = pvalues[max(int(distance * 10000), 9999)]
+                # pvalue = 1
 
                 study = retrieve_source(study_i)
 
@@ -200,75 +205,70 @@ def get_sorted_representative_id(distmn, mn_sample_id, rankingcount):
     return samples_20
 
 
-def generate_heatmap_files(m_n_df, filepath, node_count, n_sample_count):
+def generate_heatmap_files(m_n_distmtx, m_n_sample_ids, userdir, rankingcount):
     """Make all heatmap-related files for D3.js drawings: large heatmap and
     small heatmap. Generates CSV files.
 
-    :param m_n_df: Pandas DataFrame of the M + N distance matrix with samples
-    on the axes
-    :param filepath: User directory path to which the file will be written
+    :param m_n_distmtx: Numpy array matrix of distances
+    :param m_n_sample_ids: List of strings containing sample IDs from M and N
+    :param userdir: User directory path to which the file will be written
     :param rankingcount: Integer number of OTUs to be returned
     :return: Numpy array small distance matrix to be used for dendrogram
     generation
     """
-    f_heatmap_all_nodes = open(os.path.join(filepath, "All_heatmap_nodelist.csv"), "w")
-    f_heatmap_all_edges = open(os.path.join(filepath, "All_heatmap_edgelist.csv"), "w")
-    # f_heatmap_top_nodes = open(os.path.join(filepath, "top_nodelist.csv"), "w")
-    # f_heatmap_top_edges = open(os.path.join(filepath, "top_edgelist.csv"), "w")
+    f_heatmap_all_nodes = open(os.path.join(userdir,
+        "All_heatmap_nodelist.csv"), "w")
+    f_heatmap_all_edges = open(os.path.join(userdir,
+        "All_heatmap_edgelist.csv"), "w")
+    f_heatmap_top_nodes = open(os.path.join(userdir, "top_nodelist.csv"), "w")
+    f_heatmap_top_edges = open(os.path.join(userdir, "top_edgelist.csv"), "w")
 
-    n_top_sample_ids = []
-    sorted_m_n_sample_ids = []
-    for sample_id_j in m_n_df.columns[-n_sample_count:]:
-        n_top_sample_ids.append(list(m_n_df.sort(sample_id_j).index))
+    sample_dict = dict(enumerate(m_n_sample_ids))
+    # sort last row
+    idx = np.argsort(m_n_distmtx[-1])
+    sorted_m_n_distmtx = m_n_distmtx[:,idx]
+    # sort first column
+    idx = np.argsort(sorted_m_n_distmtx[:,0])
+    sorted_m_n_distmtx = sorted_m_n_distmtx[idx,:]
 
-    i = 0
-    while len(sorted_m_n_sample_ids) < (node_count + n_sample_count):
-        for j in range(n_sample_count):
-            if n_top_sample_ids[j][i] not in sorted_m_n_sample_ids:
-                sorted_m_n_sample_ids.append(n_top_sample_ids[j][i])
-        i += 1
-
-    sorted_m_n_distmtx = m_n_df.ix[sorted_m_n_sample_ids, sorted_m_n_sample_ids].as_matrix()
-    """ NOT NEEDED """
+    sorted_m_n_sample_ids = [str(sample_dict[i]) for i in idx]
+    top_sorted_m_n_distmtx = sorted_m_n_distmtx[:rankingcount, :rankingcount]
+    top_sorted_m_n_sample_ids = sorted_m_n_sample_ids[:rankingcount]
 
     f_heatmap_all_nodes.write("id" + '\n')
     for sample_id in sorted_m_n_sample_ids:
         f_heatmap_all_nodes.write(str(sample_id) + "\n")
-    # f_heatmap_top_nodes.write("id" + '\n')
-    # for sample_id in top_sorted_m_n_sample_ids:
-    #     f_heatmap_top_nodes.write(str(sample_id) + "\n")
-    """ NOT NEEDED """
+    f_heatmap_top_nodes.write("id" + '\n')
+    for sample_id in top_sorted_m_n_sample_ids:
+        f_heatmap_top_nodes.write(str(sample_id) + "\n")
 
     m_n_sample_id_pairs = list(
         itertools.combinations(sorted_m_n_sample_ids, 2)
     )
-    # top_m_n_sample_id_pairs = list(
-    #     itertools.combinations(top_sorted_m_n_sample_ids, 2)
-    # )
-    """ NOT NEEDED """
-
+    top_m_n_sample_id_pairs = list(
+        itertools.combinations(top_sorted_m_n_sample_ids, 2)
+    )
     pairwise_distvec = squareform(sorted_m_n_distmtx, 'tovector')
+    top_pairwise_distvec = squareform(top_sorted_m_n_distmtx, 'tovector')
     edge_tuples = zip(m_n_sample_id_pairs, pairwise_distvec)
-    # top_pairwise_distvec = squareform(top_sorted_m_n_distmtx, 'tovector')
-    # top_edge_tuples = zip(top_m_n_sample_id_pairs, top_pairwise_distvec)
-    """ NOT NEEDED """
+    top_edge_tuples = zip(top_m_n_sample_id_pairs, top_pairwise_distvec)
 
     f_heatmap_all_edges.write("source,target,weight\n")
     for sample_ids, distance in edge_tuples:
         f_heatmap_all_edges.write("%s,%s,%s\n" %
                                   (sample_ids[0], sample_ids[1], distance))
 
-    # f_heatmap_top_edges.write("source,target,weight\n")
-    # for sample_ids, distance in top_edge_tuples:
-    #     f_heatmap_top_edges.write("%s,%s,%s\n" %
-    #                               (sample_ids[0], sample_ids[1], distance))
-    """ NOT NEEDED """
+    f_heatmap_top_edges.write("source,target,weight\n")
+    for sample_ids, distance in top_edge_tuples:
+        f_heatmap_top_edges.write("%s,%s,%s\n" %
+                                  (sample_ids[0], sample_ids[1], distance))
 
     f_heatmap_all_nodes.close()
     f_heatmap_all_edges.close()
-    # f_heatmap_top_nodes.close()
-    # f_heatmap_top_edges.close()
-    """ NOT NEEDED """
+    f_heatmap_top_nodes.close()
+    f_heatmap_top_edges.close()
+
+    return top_sorted_m_n_distmtx, top_sorted_m_n_sample_ids
 
 
 def query_pcoa_metadata(msampleid):

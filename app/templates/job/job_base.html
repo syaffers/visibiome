@@ -22,8 +22,9 @@
         <a href="{% if job.status < 10 %} # {% else %}{{ ranking_url }}{% endif %}">Ranking</a>
       </li>
 
-      <li><span class="nav-divider-custom">Visualization</span></li>
+      <!-- <li><span class="nav-divider-custom">Visualization</span></li> -->
 
+      <!--  PLOT SUMMARY LINKS -->
       <!-- {% if is_example %}
         {% url 'app:example_job_plot_summary' as plot_summary_url %}
       {% else %}
@@ -33,7 +34,8 @@
         <a href="{% if job.status < 10 %} # {% else %}{{ plot_summary_url }}{% endif %}">Plot Summary</a>
       </li> -->
 
-      {% if job.analysis_type == job.BRAYCURTIS %}
+      <!--  HEATMAP LINKS -->
+      <!-- {% if job.analysis_type == job.BRAYCURTIS %}
         {% if is_example %}
           {% url 'app:example_job_heatmap' as heatmap_url %}
         {% else %}
@@ -44,8 +46,9 @@
             Heatmap
           </a>
         </li>
-      {% endif %}
+      {% endif %} -->
 
+      <!--  PCOA REPS LINKS -->
       {% if is_example %}
         {% url 'app:example_job_pcoa_reps' as pcoa_url %}
       {% else %}
@@ -58,6 +61,7 @@
         </a>
       </li>
 
+      <!--  PCOA 250 LINKS -->
       <!-- {% if job.analysis_type == job.BRAYCURTIS %}
         {% if is_example %}
           {% url 'app:example_job_pcoa_similar' as pcoa_250_url %}
@@ -71,6 +75,7 @@
         </li>
       {% endif %} -->
 
+      <!--  DEND REPS LINKS -->
       {% if is_example %}
         {% url 'app:example_job_dend_reps' as dend_url %}
       {% else %}
@@ -83,6 +88,7 @@
         </a>
       </li>
 
+      <!--  DEND 250 LINKS -->
       <!-- {% if job.analysis_type == job.BRAYCURTIS %}
         {% if is_example %}
           {% url 'app:example_job_dend_similar' as dend_250_url %}

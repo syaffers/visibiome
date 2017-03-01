@@ -70,8 +70,8 @@
 {% endblock %}
 
 {% block lazy_js %}
-<script src="{% static 'js/d3.v3.min.js'}" type="text/javascript"></script>
-<script src="{% static 'js/pcoa.js'%}" type="text/javascript"></script>
+<script src="{% static 'js/d3.v3.min.js' %}" type="text/javascript"></script>
+<script src="{% static 'js/pcoa.js' %}" type="text/javascript"></script>
 <script>
   var pcoaFilePath = "{{ pcoa_file_path }}";
   var sampleIds = {{ samples|safe }};

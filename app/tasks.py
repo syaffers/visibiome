@@ -1,22 +1,16 @@
 from MySQLdb.cursors import DictCursor
-from StringIO import StringIO
 from app.models import BiomSearchJob, BiomSample
 from betadiversity_scripts.MNBetadiversity import make_m_n_distmtx
 from betadiversity_scripts.config import server_db
-from betadiversity_scripts.visualizations import (generate_heatmap_files,
-    get_sorted_representative_id, generate_samples_metadata,
-    generate_pcoa_file, generate_dendrogram_file)
+from betadiversity_scripts.visualizations import (generate_samples_metadata, generate_pcoa_file,
+    generate_dendrogram_file)
 from betadiversity_scripts.select_samples import query_samples
-from biom.parse import parse_biom_table
-from biom import parse_table, load_table
+from biom import load_table
 from biom.exception import TableException
 from vzb.celery import app
 from django.conf import settings
 from django.db import transaction
-from qiime import __version__ as qiime_ver
-from time import sleep
 import MySQLdb
-import json
 import numpy as np
 import pandas as pd
 import sys
@@ -75,8 +69,8 @@ def bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_
     # if representatives matrix and sample IDs are not empty
     if len(m_distmtx) != 0 and len(m_sample_ids) != 0:
         print("Performing M-N Betadiversity calculations (reps)...")
-        m_n_distmtx  = make_m_n_distmtx(m_distmtx, m_sample_ids,
-                                        n_otu_matrix, n_otu_ids)
+        m_n_distmtx = make_m_n_distmtx(m_distmtx, m_sample_ids, n_otu_matrix, n_otu_ids)
+        m_n_df = pd.DataFrame(m_n_distmtx, columns=m_n_sample_ids, index=m_n_sample_ids)
 
         # 1000 dendogram
         print("Making 1000 dendrogram...")
@@ -88,51 +82,52 @@ def bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_
         filepath = os.path.join(job_dir_path, "pcoa_1000.csv")
         generate_pcoa_file(m_n_distmtx, m_n_sample_ids, filepath)
 
-        # get top ranking representative OTU IDs
-        top_rep_sample_ids = get_sorted_representative_id(
-            m_n_distmtx, m_n_sample_ids, 251
-        )
+        # for closest 100 heatmap, 1000x1000 is just too big
+        # heatmap reduction faces heuristic problems, removed
+        # print("Making 100 heatmap...")
+        # generate_heatmap_files(m_n_df, job_dir_path, 100, len(n_sample_ids))
 
-        # query actual samples
-        print("Getting actual samples from representatives...")
-        m_distmtx, m_sample_ids = query_samples(
-            l_data_path, criteria, 250, list(top_rep_sample_ids)
-        )
-
-        # MN calculation for actual samples
-        print("Performing M-N Betadiversity calculations (actual)...")
-        m_n_distmtx = make_m_n_distmtx(m_distmtx, m_sample_ids,
-                                       n_otu_matrix, n_otu_ids)
-
-        # combine both sample ids from user samples and actual samples
-        m_n_sample_ids = m_sample_ids + n_sample_ids
-
-        # for top 250 dendogram
-        print("Making 250 dendrogram...")
-        filepath = os.path.join(job_dir_path, "d3dendrogram_sub.json")
-        generate_dendrogram_file(m_n_distmtx, m_n_sample_ids, filepath)
-
-        # for closest 250 samples
-        print("Making 250 PCOA...")
-        filepath = os.path.join(job_dir_path, "pcoa_250.csv")
-        generate_pcoa_file(m_n_distmtx, m_n_sample_ids, filepath)
-
-        # for closest 250 heatmap
-        print("Making 250 heatmap...")
-        top_m_n_distmtx, top_m_n_sample_ids = generate_heatmap_files(
-            m_n_distmtx, m_n_sample_ids, job_dir_path, 20 + len(n_sample_ids)
-        )
-
-        # for 20 dendogram
-        print("Making 20 dendrogram...")
-        filepath = os.path.join(job_dir_path, "d3dendrogram_sub_sub.json")
-        generate_dendrogram_file(top_m_n_distmtx, top_m_n_sample_ids, filepath)
+        """THE CODE BELOW IS NO LONGER USED AND SHOULD BE REMOVED ACCORDINGLY"""
+        # # get top ranking representative OTU IDs
+        # n_top_rep_sample_ids = get_sorted_representative_id(m_n_distmtx, m_n_sample_ids)
+        #
+        # # query actual samples
+        # print("Getting actual samples from representatives...")
+        # m_distmtx, m_sample_ids = query_samples(l_data_path, criteria, 250, n_top_rep_sample_ids)
+        # # combine both sample ids from user samples and actual samples
+        # m_n_sample_ids = m_sample_ids + n_sample_ids
+        #
+        # # MN calculation for actual samples
+        # print("Performing M-N Betadiversity calculations (actual)...")
+        # m_n_distmtx = make_m_n_distmtx(m_distmtx, m_sample_ids, n_otu_matrix, n_otu_ids)
+        #
+        # # for top 250 dendogram
+        # print("Making 250 dendrogram...")
+        # filepath = os.path.join(job_dir_path, "d3dendrogram_sub.json")
+        # generate_dendrogram_file(m_n_distmtx, m_n_sample_ids, filepath)
+        #
+        # # for closest 250 samples
+        # print("Making 250 PCOA...")
+        # filepath = os.path.join(job_dir_path, "pcoa_250.csv")
+        # generate_pcoa_file(m_n_distmtx, m_n_sample_ids, filepath)
+        #
+        # # for closest 250 heatmap
+        # print("Making 250 heatmap...")
+        # top_m_n_distmtx, top_m_n_sample_ids = generate_heatmap_files(
+        #     m_n_distmtx, m_n_sample_ids, job_dir_path, 20 + len(n_sample_ids)
+        # )
+        #
+        # # for 20 dendogram
+        # print("Making 20 dendrogram...")
+        # filepath = os.path.join(job_dir_path, "d3dendrogram_sub_sub.json")
+        # generate_dendrogram_file(top_m_n_distmtx, top_m_n_sample_ids, filepath)
+        """THE CODE ABOVE IS NO LONGER USED AND SHOULD BE REMOVED ACCORDINGLY"""
 
         print("Making sample metadata file...")
         sample_filename = job.file_safe_name() + ".json"
         filepath = os.path.join(job_dir_path, sample_filename)
-        generate_samples_metadata(top_m_n_distmtx, top_m_n_sample_ids,
-                                  n_sample_ids, filepath)
+        generate_samples_metadata(m_n_df, n_sample_ids, filepath)
+
         print("Done!")
         job.status = BiomSearchJob.COMPLETED
         job.save()
@@ -214,11 +209,11 @@ def m_n_betadiversity(job):
     l_data_path = settings.TEN_K_DATA_PATH
 
     try:
-        # load submitted biom file/text into otu_table and extract sample IDs
-        # and OTU IDs
+        # load submitted biom file/text into otu_table
         print("Getting file {}...".format(userbiom))
         n_otu_table = load_table(userbiom)
         n_otu_matrix = n_otu_table.matrix_data.toarray().T
+        # extract sample IDs and OTU IDs
         n_otu_ids = n_otu_table.ids(axis="observation")
         n_sample_ids = list(map(str, n_otu_table.ids(axis="sample")))
 
@@ -285,7 +280,8 @@ def m_n_betadiversity(job):
                     pass
 
     except:
-        print "Unexpected error:", sys.exc_info()
+        print("Unexpected error:", sys.exc_info())
+        traceback.print_tb(sys.exc_info()[2])
         job.status = BiomSearchJob.STOPPED
         job.error_code = BiomSearchJob.UNKNOWN_ERROR
         job.save()
@@ -323,13 +319,3 @@ def save_text(job, input_str):
     job.biom_file = file_path
     job.save()
     validate_biom.delay(job, file_path)
-
-
-@app.task
-def simulate_task(job_id):
-    j = BiomSearchJob.objects.filter(id=job_id).first()
-    j.status = BiomSearchJob.PROCESSING
-    j.save()
-    sleep(60) # basically doing some tasks here
-    j.status = BiomSearchJob.COMPLETED
-    j.save()

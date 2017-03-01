@@ -32,6 +32,7 @@ def prepare_sql_representatives(criteria):
     return re.sub("\n\s+", " ", sql.strip())
 
 
+""" NO LONGER NEEDED """
 def prepare_sql_actual(criteria, rep_sample_ids, limit):
     """Prepares SQL query to get actual sample IDs.
 
@@ -65,6 +66,7 @@ def prepare_sql_actual(criteria, rep_sample_ids, limit):
     )
     # remove unnecessary spaces
     return re.sub("\n\s+", " ", sql.strip())
+""" NO LONGER NEEDED """
 
 
 def query_samples(l_data_path, criteria, query_count, m_rep_sample_ids=None):
@@ -95,6 +97,7 @@ def query_samples(l_data_path, criteria, query_count, m_rep_sample_ids=None):
 
     # if there are representative sample IDs, we need to get the actual samples
     if m_rep_sample_ids:
+        """ NO LONGER NEEDED """
         sql_query = prepare_sql_actual(criteria, m_rep_sample_ids, query_count)
     else:
         sql_query = prepare_sql_representatives(criteria)
