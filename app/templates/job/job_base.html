@@ -21,16 +21,17 @@
       <li class="{% active ranking_url %} {% if job.status < 10 %} disabled {% endif %}">
         <a href="{% if job.status < 10 %} # {% else %}{{ ranking_url }}{% endif %}">Ranking</a>
       </li>
+
       <li><span class="nav-divider-custom">Visualization</span></li>
 
-      {% if is_example %}
+      <!-- {% if is_example %}
         {% url 'app:example_job_plot_summary' as plot_summary_url %}
       {% else %}
         {% url 'app:job_plot_summary' job.pk as plot_summary_url %}
       {% endif %}
       <li class="{% active plot_summary_url %} {% if job.status < 10 %} disabled {% endif %}">
         <a href="{% if job.status < 10 %} # {% else %}{{ plot_summary_url }}{% endif %}">Plot Summary</a>
-      </li>
+      </li> -->
 
       {% if job.analysis_type == job.BRAYCURTIS %}
         {% if is_example %}
@@ -57,7 +58,7 @@
         </a>
       </li>
 
-      {% if job.analysis_type == job.BRAYCURTIS %}
+      <!-- {% if job.analysis_type == job.BRAYCURTIS %}
         {% if is_example %}
           {% url 'app:example_job_pcoa_similar' as pcoa_250_url %}
         {% else %}
@@ -68,7 +69,7 @@
             250 Most Similar
           </a>
         </li>
-      {% endif %}
+      {% endif %} -->
 
       {% if is_example %}
         {% url 'app:example_job_dend_reps' as dend_url %}
@@ -82,7 +83,7 @@
         </a>
       </li>
 
-      {% if job.analysis_type == job.BRAYCURTIS %}
+      <!-- {% if job.analysis_type == job.BRAYCURTIS %}
         {% if is_example %}
           {% url 'app:example_job_dend_similar' as dend_250_url %}
         {% else %}
@@ -93,7 +94,7 @@
             250 Most Similar
           </a>
         </li>
-      {% endif %}
+      {% endif %} -->
     </ul>
   </div>
   <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10">

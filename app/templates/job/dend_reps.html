@@ -24,7 +24,7 @@
 {% endblock %}
 
 {% block lazy_js %}
-<script src="http://d3js.org/d3.v3.min.js" type="text/javascript"></script>
+<script src="{% static 'js/d3.v3.min.js'}" type="text/javascript"></script>
 <script src="{% static 'js/dendrogram.js'%}" type="text/javascript"></script>
 <script>
   var dendrogramFilePath = "{{ dendrogram_file_path }}";
