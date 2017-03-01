@@ -200,70 +200,75 @@ def get_sorted_representative_id(distmn, mn_sample_id, rankingcount):
     return samples_20
 
 
-def generate_heatmap_files(m_n_distmtx, m_n_sample_ids, userdir, rankingcount):
+def generate_heatmap_files(m_n_df, filepath, node_count, n_sample_count):
     """Make all heatmap-related files for D3.js drawings: large heatmap and
     small heatmap. Generates CSV files.
 
-    :param m_n_distmtx: Numpy array matrix of distances
-    :param m_n_sample_ids: List of strings containing sample IDs from M and N
-    :param userdir: User directory path to which the file will be written
+    :param m_n_df: Pandas DataFrame of the M + N distance matrix with samples
+    on the axes
+    :param filepath: User directory path to which the file will be written
     :param rankingcount: Integer number of OTUs to be returned
     :return: Numpy array small distance matrix to be used for dendrogram
     generation
     """
-    f_heatmap_all_nodes = open(os.path.join(userdir,
-        "All_heatmap_nodelist.csv"), "w")
-    f_heatmap_all_edges = open(os.path.join(userdir,
-        "All_heatmap_edgelist.csv"), "w")
-    f_heatmap_top_nodes = open(os.path.join(userdir, "top_nodelist.csv"), "w")
-    f_heatmap_top_edges = open(os.path.join(userdir, "top_edgelist.csv"), "w")
+    f_heatmap_all_nodes = open(os.path.join(filepath, "All_heatmap_nodelist.csv"), "w")
+    f_heatmap_all_edges = open(os.path.join(filepath, "All_heatmap_edgelist.csv"), "w")
+    # f_heatmap_top_nodes = open(os.path.join(filepath, "top_nodelist.csv"), "w")
+    # f_heatmap_top_edges = open(os.path.join(filepath, "top_edgelist.csv"), "w")
 
-    sample_dict = dict(enumerate(m_n_sample_ids))
-    # sort last row
-    idx = np.argsort(m_n_distmtx[-1])
-    sorted_m_n_distmtx = m_n_distmtx[:,idx]
-    # sort first column
-    idx = np.argsort(sorted_m_n_distmtx[:,0])
-    sorted_m_n_distmtx = sorted_m_n_distmtx[idx,:]
+    n_top_sample_ids = []
+    sorted_m_n_sample_ids = []
+    for sample_id_j in m_n_df.columns[-n_sample_count:]:
+        n_top_sample_ids.append(list(m_n_df.sort(sample_id_j).index))
 
-    sorted_m_n_sample_ids = [str(sample_dict[i]) for i in idx]
-    top_sorted_m_n_distmtx = sorted_m_n_distmtx[:rankingcount, :rankingcount]
-    top_sorted_m_n_sample_ids = sorted_m_n_sample_ids[:rankingcount]
+    i = 0
+    while len(sorted_m_n_sample_ids) < (node_count + n_sample_count):
+        for j in range(n_sample_count):
+            if n_top_sample_ids[j][i] not in sorted_m_n_sample_ids:
+                sorted_m_n_sample_ids.append(n_top_sample_ids[j][i])
+        i += 1
+
+    sorted_m_n_distmtx = m_n_df.ix[sorted_m_n_sample_ids, sorted_m_n_sample_ids].as_matrix()
+    """ NOT NEEDED """
 
     f_heatmap_all_nodes.write("id" + '\n')
     for sample_id in sorted_m_n_sample_ids:
         f_heatmap_all_nodes.write(str(sample_id) + "\n")
-    f_heatmap_top_nodes.write("id" + '\n')
-    for sample_id in top_sorted_m_n_sample_ids:
-        f_heatmap_top_nodes.write(str(sample_id) + "\n")
+    # f_heatmap_top_nodes.write("id" + '\n')
+    # for sample_id in top_sorted_m_n_sample_ids:
+    #     f_heatmap_top_nodes.write(str(sample_id) + "\n")
+    """ NOT NEEDED """
 
     m_n_sample_id_pairs = list(
         itertools.combinations(sorted_m_n_sample_ids, 2)
     )
-    top_m_n_sample_id_pairs = list(
-        itertools.combinations(top_sorted_m_n_sample_ids, 2)
-    )
+    # top_m_n_sample_id_pairs = list(
+    #     itertools.combinations(top_sorted_m_n_sample_ids, 2)
+    # )
+    """ NOT NEEDED """
+
     pairwise_distvec = squareform(sorted_m_n_distmtx, 'tovector')
-    top_pairwise_distvec = squareform(top_sorted_m_n_distmtx, 'tovector')
     edge_tuples = zip(m_n_sample_id_pairs, pairwise_distvec)
-    top_edge_tuples = zip(top_m_n_sample_id_pairs, top_pairwise_distvec)
+    # top_pairwise_distvec = squareform(top_sorted_m_n_distmtx, 'tovector')
+    # top_edge_tuples = zip(top_m_n_sample_id_pairs, top_pairwise_distvec)
+    """ NOT NEEDED """
 
     f_heatmap_all_edges.write("source,target,weight\n")
     for sample_ids, distance in edge_tuples:
         f_heatmap_all_edges.write("%s,%s,%s\n" %
                                   (sample_ids[0], sample_ids[1], distance))
 
-    f_heatmap_top_edges.write("source,target,weight\n")
-    for sample_ids, distance in top_edge_tuples:
-        f_heatmap_top_edges.write("%s,%s,%s\n" %
-                                  (sample_ids[0], sample_ids[1], distance))
+    # f_heatmap_top_edges.write("source,target,weight\n")
+    # for sample_ids, distance in top_edge_tuples:
+    #     f_heatmap_top_edges.write("%s,%s,%s\n" %
+    #                               (sample_ids[0], sample_ids[1], distance))
+    """ NOT NEEDED """
 
     f_heatmap_all_nodes.close()
     f_heatmap_all_edges.close()
-    f_heatmap_top_nodes.close()
-    f_heatmap_top_edges.close()
-
-    return top_sorted_m_n_distmtx, top_sorted_m_n_sample_ids
+    # f_heatmap_top_nodes.close()
+    # f_heatmap_top_edges.close()
+    """ NOT NEEDED """
 
 
 def query_pcoa_metadata(msampleid):
@@ -337,7 +342,7 @@ def generate_pcoa_file(distmtx, samples, filepath):
 
     :param distmtx: Numpy array matrix of distances
     :param samples: List of strings containing sample IDs
-    :param userdir: User directory path to which the file will be written
+    :param filepath: User directory path to which the file will be written
     """
     with open(filepath, "w") as f_pcoa:
         coords, eigvals = ms.principal_coordinates_analysis(distmtx)
