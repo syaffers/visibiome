@@ -79,13 +79,8 @@ def bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_
 
         # pcoa for 1000 samples
         print("Making 1000 PCOA...")
-        filepath = os.path.join(job_dir_path, "pcoa_1000.csv")
+        filepath = os.path.join(job_dir_path, "pcoa_representatives.json")
         generate_pcoa_file(m_n_distmtx, m_n_sample_ids, filepath)
-
-        # for closest 100 heatmap, 1000x1000 is just too big
-        # heatmap reduction faces heuristic problems, removed
-        # print("Making 100 heatmap...")
-        # generate_heatmap_files(m_n_df, job_dir_path, 100, len(n_sample_ids))
 
         """THE CODE BELOW IS NO LONGER USED AND SHOULD BE REMOVED ACCORDINGLY"""
         # # get top ranking representative OTU IDs

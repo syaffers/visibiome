@@ -31,6 +31,11 @@
   height: 15px;
 }
 
+.loader-md {
+  width: 60px;
+  height: 60px;
+}
+
 .td-btn {
   text-align: center;
 }
@@ -110,6 +115,16 @@ line.minor {
 
 .caption {
   font-weight: bold;
+}
+
+.legend-box {
+  cursor: pointer;
+}
+
+.mpld3-tooltip {
+  background: #FFFF66;
+  padding: 10px;
+  width: 300px;
 }
 
 div.tooltip {

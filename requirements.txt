@@ -15,3 +15,4 @@ uwsgi==2.0.13.1
 whitenoise==3.2.1
 wheel==0.24.0
 MySQL-python==1.2.5
+mpld3==0.3

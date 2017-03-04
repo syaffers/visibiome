@@ -203,8 +203,7 @@ def pcoa_reps(request, job_id):
             lambda sample: sample.name, job.samples.all()
         )
 
-        context["pcoa_file_path"] = join(dirname(job.biom_file.url), "pcoa_1000.csv")
-        context["samples"] = json_encoder.encode(job_samples)
+        context["pcoa_file_path"] = join(dirname(job.biom_file.url), "pcoa_representatives.json")
         context["job"] = job
         context["flash"] = msg_storage
         return render(request, 'job/pcoa_reps.html', context)
