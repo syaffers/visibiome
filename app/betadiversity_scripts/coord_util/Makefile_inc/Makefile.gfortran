@@ -1,0 +1,17 @@
+# -*- makefile -*-
+RMSD_OBJ=$(COORD_UTIL_HOME)/rmsd.o
+RMSD_CFLAGS=-DRMSD_SYMBOL_NAME=__rmsd_mod__rmsd -I$(COORD_UTIL_HOME)
+RMSD_FCFLAGS=-I$(COORD_UTIL_HOME)
+RMSD_LD_FLAGS=$(RMSD_OBJ) -L/usr/lib64 -llapack
+
+FC_ARCH_FLAGS=-m64
+COORD_UTIL_FCFLAGS+= -O3  -m64  
+COORD_UTIL_FC=gfortran $(FCFLAGS)
+F2PY_FC_NAME=gfortran
+
+
+
+
+
+
+
