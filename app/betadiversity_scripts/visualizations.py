@@ -1,10 +1,13 @@
 from MySQLdb.cursors import DictCursor
 from scipy.spatial.distance import squareform
 from config import server_db
+from mpld3.plugins import InteractiveLegendPlugin, PointHTMLTooltip
 import MySQLdb
 import cogent.cluster.metric_scaling as ms
 import itertools
 import json
+import matplotlib.pyplot as plt
+import mpld3
 import numpy as np
 import os
 import pandas as pd
@@ -56,23 +59,22 @@ def retrieve_source(sample_study):
         return "Unknown"
 
 
-def generate_samples_metadata(top_m_n_distmtx, top_m_n_sample_ids,
-                              n_sample_ids, filepath, rankingDF=None):
+def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20):
     ## TODO: do this consistently with pandas DataFrames!
     ## TODO: assert that distmtx is symmetric when ranking=None, should be
-    import cPickle
-#    with open('/tmp/input.pcl', 'w') as input:
-#        cPickle.dump((top_m_n_distmtx,top_m_n_sample_ids, n_sample_ids,filepath,ranking), input)
+    # import cPickle
+    # with open('/tmp/input.pcl', 'w') as input:
+    #     cPickle.dump((top_m_n_distmtx,top_m_n_sample_ids, n_sample_ids,filepath,ranking), input)
 
-    m_n_df = pd.DataFrame(top_m_n_distmtx, columns=top_m_n_sample_ids,
-                          index=top_m_n_sample_ids) if rankingDF is None else rankingDF
-    if not rankingDF is None: ## DEBUG Info, 2b rm'd
-        print "received Ranking (from GNAT)"
-        print rankingDF.head()
+    # SYAFIQ: I've updated the function to include the m_n_df dataframe
+    # in the arguments, Bray-curtis calcs are handling this too. You can clear
+    # this comment as needed
+
     # connect to microbiome database
     conn = MySQLdb.connect(**server_db)
     all_samples_dict = dict()
     pvalues = np.load('%s/distanceProbability.npy')
+
     # for each user-submitted sample
     for sample_id_j in n_sample_ids:
         sample_metadata = []
@@ -82,7 +84,11 @@ def generate_samples_metadata(top_m_n_distmtx, top_m_n_sample_ids,
         print "Matches (sorted) for", sample_id_j, list(m_n_df.sort(sample_id_j).index)[:10]
         # get the top m sample IDs without losing order
         top_m_sample_ids = [m_sample_id for m_sample_id in top_m_j_sample_ids
-                            if m_sample_id not in n_sample_ids]## we could actually allow other user samples
+                            if m_sample_id not in n_sample_ids][:top]
+        ## we could actually allow other user samples
+        ### SYAFIQ: I agree, in that case, we should include the top 20 + all the
+        ### user samples after query but we have to be careful since the loop
+        ### below only considers the samples which are in the database
         json_metadata_query = """
             SELECT DISTINCT sample_event_ID, title, OntologyTerm, OntologyID,
                 sample_size, study
@@ -123,6 +129,7 @@ def generate_samples_metadata(top_m_n_distmtx, top_m_n_sample_ids,
 
                 distance = "%.4f" % m_n_df[sample_id_j][sample_id_i]
                 pvalue = pvalues[max(int(distance*10000),9999)]
+                # pvalue = 1
 
 
                 study = retrieve_source(study_i)
@@ -150,6 +157,7 @@ def generate_samples_metadata(top_m_n_distmtx, top_m_n_sample_ids,
                 sample_size = float(sample_size_i)
                 distance = "%.4f" % m_n_df[sample_id_j][sample_id_i]
                 pvalue = pvalues[max(int(distance * 10000), 9999)]
+                # pvalue = 1
 
                 study = retrieve_source(study_i)
 
@@ -266,18 +274,18 @@ def generate_heatmap_files(m_n_distmtx, m_n_sample_ids, userdir, rankingcount):
     return top_sorted_m_n_distmtx, top_sorted_m_n_sample_ids
 
 
-def query_pcoa_metadata(msampleid):
+def query_pcoa_metadata(sample_id):
     """Subroutine to query for PCOA metadata"""
     pcoa_metadata_query = """
         SELECT sample_event_ID, REPLACE(title, "'", "") title,
-        REPLACE(OntologyTerm, "'", "") OntologyTerm, OntologyID, sample_size,
-        study, ecosystem
+        REPLACE(OntologyTerm, "'", "") OntologyTerm, OntologyID,
+        study, ecosystem, ecocolor
         FROM `samples_unified`
         NATURAL JOIN samples_sizes_unified
         NATURAL JOIN samples_EnvO_annotation_unified
         NATURAL JOIN envoColors
-        WHERE `sample_event_ID` = '{m_sample_id}'
-    """.format(m_sample_id=msampleid)
+        WHERE `sample_event_ID` = '{sample_id}'
+    """.format(sample_id=sample_id)
 
     # connect to the database and form query
     conn = MySQLdb.connect(**server_db)
@@ -286,26 +294,28 @@ def query_pcoa_metadata(msampleid):
 
     # prepare variables
     title = study_source = ""
-    otcnt = oicnt = ecnt = sample_size = 0
+    otcnt = oicnt = ecnt = 0
     ontology_terms = ["Unknown", "Unknown", "Unknown"]
     ontology_ids = ["Unknown", "Unknown", "Unknown"]
     ecosystems = ["Unknown", "Unknown", "Unknown"]
     sample_event_id = None
+    ecocolor = "black"
 
     # for each row in the query
     for row in curs.fetchall():
         ontology_term = row["OntologyTerm"].strip()
         ontology_id = row["OntologyID"].strip()
         ecosystem = row["ecosystem"].strip()
+        study_source = retrieve_source(row["study"].strip())
 
         # first run
         if sample_event_id is None:
             sample_event_id = row["sample_event_ID"].strip()
             title = row["title"].strip().replace(',', '')
-            sample_size = float(row["sample_size"])
             ontology_terms[otcnt] = ontology_term.replace(',', '')
             ontology_ids[oicnt] = ontology_id.strip()
             ecosystems[ecnt] = ecosystem.strip()
+            ecocolor = row["ecocolor"].strip()
             otcnt = otcnt + 1
             oicnt = oicnt + 1
             ecnt = ecnt + 1
@@ -323,39 +333,177 @@ def query_pcoa_metadata(msampleid):
                 ecnt = ecnt + 1
 
     conn.close()
-    return (title,
-       ontology_ids[0], ontology_terms[0],
-       ontology_ids[1], ontology_terms[1],
-       ontology_ids[2], ontology_terms[2],
-       sample_size, study_source,
-       ecosystems[0], ecosystems[1], ecosystems[2]
-    )
+
+    # cleaning ontology IDs
+    if ontology_terms[0] is not "Unknown" and ontology_ids[0] is not "Unknown":
+        ontology_terms = [ot for ot in ontology_terms if not ot is "Unknown"]
+        ontology_ids = [oi for oi in ontology_ids if not oi is "Unknown"]
+    else:
+        ontology_ids, ontology_terms = [["Unknown"], ["Unknown"]]
+        ecosystems = ["Unknown"]
+
+    return (title, ontology_ids, ontology_terms, ecosystems[0], study_source, ecocolor)
 
 
-def generate_pcoa_file(distmtx, samples, filepath):
+def generate_pcoa_file(distmtx, sample_ids, filepath):
     """Make PCoA-related file for D3.js drawings. Generates CSV file.
 
     :param distmtx: Numpy array matrix of distances
-    :param samples: List of strings containing sample IDs
-    :param userdir: User directory path to which the file will be written
+    :param sample_ids: List of strings containing sample IDs
+    :param filepath: User directory path to which the file will be written
     """
     with open(filepath, "w") as f_pcoa:
         coords, eigvals = ms.principal_coordinates_analysis(distmtx)
         pcnts = (np.abs(eigvals) / float(sum(np.abs(eigvals)))) * 100
         idxs_descending = pcnts.argsort()[::-1]
         coords = coords[idxs_descending]
-        # eigvals = eigvals[idxs_descending]
-        # pcnts = pcnts[idxs_descending]
 
-        header = "Sample Name,PC1,PC2,PC3,Title,OntologyID1,OntologyTerm1,"
-        header += "OntologyID2,OntologyTerm2,OntologyID3,OntologyTerm3,"
-        header += "Sample Size,Study Source,Ecosystem1,Ecosystem2,Ecosystem3\n"
+        colormap = [
+            "#3366cc", "#dc3912", "#ff9900", "#109618", "#990099", "#0099c6", "#dd4477",
+            "#66aa00", "#b82e2e", "#316395", "#994499", "#22aa99", "#aaaa11", "#6633cc",
+            "#e67300", "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"
+        ]
 
-        f_pcoa.write(header)
-        for i in zip(samples, coords.T[:,0], coords.T[:,1], coords.T[:,2]):
-            res = str(i + query_pcoa_metadata(i[0])).replace("u\'","")\
-                      .replace("\'","").replace("(","").replace(")","")
-            f_pcoa.write(res + "\n")
+        tooltip_html = """
+        Sample: {}<br>
+        Ecosystem: {}<br>
+        Envo ID: {}<br>
+        Envo Term: {}<br>
+        Study: {} <br>
+        Study Source: {}
+        """
+
+        """Okay messy indexing coming up! eco_samples_idx holds a list
+        of sample indices for each ecosystem that is queried (along with
+        color) e.g. {
+            ("Biofilm", "grey"): [1,12,...],
+            ("Soil", "gold"): [3,16,...]
+        }.
+        envo_samples_idx holds a list of sample indices for each envo that
+        is queried (along witg color) e.g. {
+            ENVO:00009003": [1,12,...],
+            ENVO:00000073": [3,16,...]
+        }.
+        tooltip_htmls contains the html formatted string of the metadata
+        for each sample. Metdata is a tuple of (title, ontology_ids,
+        ontology_terms, ecosystem, study_source, color)
+        """
+        user_key = ("Unknown", "black")
+        eco_samples_idx = dict()
+        envo_samples_idx = dict()
+        tooltip_htmls = []
+        for sample_index, sample_id in enumerate(sample_ids):
+            metadata = query_pcoa_metadata(sample_id)
+            tooltip_htmls.append(
+                tooltip_html.format(
+                    sample_id, metadata[3], ", ".join(metadata[1]),
+                    ", ".join(metadata[2]), metadata[0], metadata[4]
+                )
+            )
+
+            color_id = len(envo_samples_idx)
+            eco_term = metadata[3]
+            eco_color = metadata[5]
+            envo_term = metadata[1][0]
+            eco_key = (eco_term, eco_color)
+            if eco_term is "Unknown":
+                envo_key = user_key
+            else:
+                if envo_term in map(lambda x: x[0], envo_samples_idx):
+                    envo_color = filter(lambda x: x[0] == envo_term, envo_samples_idx)[0][1]
+                    envo_key = (envo_term, envo_color)
+                else:
+                    envo_key = (envo_term, colormap[color_id % len(colormap)])
+
+            if eco_key in eco_samples_idx:
+                eco_samples_idx[eco_key].append(sample_index)
+            else:
+                eco_samples_idx[eco_key] = [sample_index]
+
+            if envo_key in envo_samples_idx:
+                envo_samples_idx[envo_key].append(sample_index)
+            else:
+                envo_samples_idx[envo_key] = [sample_index]
+
+        """ PLOTTING """
+
+        plots = {}
+        # loop through groupings
+        for group in ["ecosystem", "envo"]:
+            # loop through each top 3 pairs of principal coordinates
+            for pc1, pc2 in itertools.combinations(range(3), 2):
+                # start the plot
+                fig, ax = plt.subplots()
+                fig.set_figwidth(11)
+
+                # plot all the points except for the users samples, they go last
+                group_samples_idx = eco_samples_idx
+                non_user_group_samples_idx = [e for e in eco_samples_idx.keys()
+                                              if not e == user_key]
+                if group is "envo":
+                    group_samples_idx = envo_samples_idx
+                    non_user_group_samples_idx = [e for e in envo_samples_idx.keys()
+                                                  if not e == user_key]
+
+                # scatter the ecosystem-labelled points
+                # remember that the keys are in the format
+                # ("Ecosystem/Envo", "Color")
+                for key in non_user_group_samples_idx:
+                    ax.scatter(
+                        coords.T[group_samples_idx[key], pc1],
+                        coords.T[group_samples_idx[key], pc2],
+                        marker="o", label=key[0], color=key[1], alpha=1
+                    )
+
+                # plot user samples
+                ax.scatter(
+                    coords.T[group_samples_idx[user_key], pc1],
+                    coords.T[group_samples_idx[user_key], pc2],
+                    marker="*", s=96, label=user_key[0], color=user_key[1], alpha=1
+                )
+
+                # draw PC axis labels
+                ax.set_xlabel("PC%d" % (pc1 + 1))
+                ax.set_ylabel("PC%d" % (pc2 + 1))
+                ax.set_title("PCoA Plot grouped by %s" % (group.capitalize()))
+
+                # adjust the plot abit for the legend for sample legend
+                box = ax.get_position()
+                ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+
+                """INTERACTIVITY"""
+
+                # make interactive legends for sample groupings
+                if group is "ecosystem":
+                    handles, legend_labels = ax.get_legend_handles_labels()
+                    interactive_legend = InteractiveLegendPlugin(
+                        zip(handles, ax.collections), legend_labels, alpha_unsel=0.3,
+                        alpha_over=1, start_visible=False)
+
+                    mpld3.plugins.connect(fig, interactive_legend)
+
+                # make interactive html labels for non-user samples first, since
+                # they are now ordered
+                html_labels = np.array(tooltip_htmls)
+                for i, key in enumerate(non_user_group_samples_idx):
+                    tooltip = PointHTMLTooltip(
+                        ax.collections[i],
+                        labels=list(html_labels[group_samples_idx[key]])
+                    )
+                    mpld3.plugins.connect(fig, tooltip)
+
+                # make interactive html labels for user samples
+                tooltip = PointHTMLTooltip(
+                    ax.collections[-1],
+                    labels=list(html_labels[group_samples_idx[user_key]])
+                )
+                mpld3.plugins.connect(fig, tooltip)
+
+                plot_name = (pc1 + 1, pc2 + 1, group.capitalize())
+                plots["PC%d%d%s" % plot_name] = mpld3.fig_to_dict(fig)
+
+        """ FINISH! """
+        json.dump(plots, f_pcoa)
 
 
 def add_dendrogram_node(node, parent):
