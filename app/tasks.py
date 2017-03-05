@@ -2,10 +2,8 @@ from MySQLdb.cursors import DictCursor
 from app.models import BiomSearchJob, BiomSample
 from betadiversity_scripts.MNBetadiversity import make_m_n_distmtx
 from betadiversity_scripts.config import server_db
-
 from betadiversity_scripts.visualizations import (generate_samples_metadata, generate_pcoa_file,
     generate_dendrogram_file, generate_barcharts)
-
 from betadiversity_scripts.select_samples import query_samples
 from biom import load_table
 from biom.exception import TableException
@@ -47,7 +45,7 @@ def gnat_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n
 
     # pcoa for available samples
     print("Making PCOA...")
-    filepath = os.path.join(job_dir_path, "pcoa_1000.csv")
+    filepath = os.path.join(job_dir_path, "pcoa_1000.json")
     generate_pcoa_file(m_n_distmtx, m_n_sample_ids, filepath)
 
     sample_filename = job.file_safe_name() + ".json"
@@ -80,7 +78,7 @@ def bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_
 
         # pcoa for 1000 samples
         print("Making 1000 PCOA...")
-        filepath = os.path.join(job_dir_path, "pcoa_representatives.json")
+        filepath = os.path.join(job_dir_path, "pcoa_1000.json")
         generate_pcoa_file(m_n_distmtx, m_n_sample_ids, filepath)
 
         """THE CODE BELOW IS NO LONGER USED AND SHOULD BE REMOVED ACCORDINGLY"""
