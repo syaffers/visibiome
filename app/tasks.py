@@ -2,8 +2,10 @@ from MySQLdb.cursors import DictCursor
 from app.models import BiomSearchJob, BiomSample
 from betadiversity_scripts.MNBetadiversity import make_m_n_distmtx
 from betadiversity_scripts.config import server_db
+
 from betadiversity_scripts.visualizations import (generate_samples_metadata, generate_pcoa_file,
-    generate_dendrogram_file)
+    generate_dendrogram_file, generate_barcharts)
+
 from betadiversity_scripts.select_samples import query_samples
 from biom import load_table
 from biom.exception import TableException
@@ -26,23 +28,22 @@ from betadiversity_scripts import microbiomeUtils as mu
 #from betadiversity_scripts.microbiomeUtils import SearchEngine
 
 def gnat_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job):
-    print "GNATting..."
+    print "GNATing..."
 
     engine = gs.SearchEngine(n_otu_matrix, n_otu_ids, n_sample_ids, l_data_path, criteria)
-    engine.gnatsearch()
-    engine.shortReport()
+    try:
+        engine.gnatsearch()
+        engine.shortReport()
+        m_n_distmtx, m_n_sample_ids, rankingDF = engine.make_m_n_distmtx()
+    finally:
+        engine.close() ## closes Database connection
 
-    print "GNAT search finished"
-
-    m_n_distmtx, m_n_sample_ids, rankingDF, compositions = engine.make_m_n_distmtx()
-    engine.close() ## closes Database connection
-    #print "SAMPLE IDS:", ",".join(m_n_sample_ids)
-    #print sorted(zip(m_n_distmtx[:,-1], m_n_sample_ids))
+    print("Making top hit correspondence barcharts...")
+    barchartDicts = generate_barcharts(engine.GNATresults, job_dir_path)
 
     print("Making dendrogram...")
     filepath = os.path.join(job_dir_path, "d3dendrogram.json")
     generate_dendrogram_file(m_n_distmtx, m_n_sample_ids, filepath)
-    list()
 
     # pcoa for available samples
     print("Making PCOA...")
@@ -52,8 +53,8 @@ def gnat_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n
     sample_filename = job.file_safe_name() + ".json"
     filepath = os.path.join(job_dir_path, sample_filename)
     ## this interface has been updated to cope with multiple rankings
-    print "Making sample metadata file (from GNAT results)"
-    generate_samples_metadata(m_n_distmtx, m_n_sample_ids, n_sample_ids, filepath, rankingDF=rankingDF)
+    print "Making sample metadata file (from GNAT results) with barchart info"
+    generate_samples_metadata(rankingDF, n_sample_ids, filepath, barcharts=barchartDicts)
     print "Done"
     job.status = BiomSearchJob.COMPLETED
     job.save()

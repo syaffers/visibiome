@@ -18,17 +18,14 @@ adapted from EMDUnifrac (biorxiv/github, also python) see:
 #from EMDUnifrac import EMDUnifrac_weighted_plain, parse_tree_file
 import numpy as np
 from collections import Counter
-import glob
-import os
 import cPickle
 import scipy.sparse
 from collections import defaultdict
 from itertools import izip
-import sys
-sys.path.append('/home/qiime/visibiome/app/betadiversity_scripts/coord_util')
-import gnat as g
+import pandas as pd
 
-def emdusparse(Tint, lint, indexLevelDict, maxlevel, i,j):
+def emdusparse(Tint, lint, indexLevelDict, maxlevel, i,j, reportNodes=False):
+    ## Adapted from EMDUnifrac
     ## Consider using networkx graph for Tint, lint, indexLevelDict, nodes_to_index etc, much less hassle
     ## initializing dicts for all levels (maybe some unused), so to do stricly level-based bottom up!
     ## Difficulty was with uneven depths
@@ -53,7 +50,10 @@ def emdusparse(Tint, lint, indexLevelDict, maxlevel, i,j):
                 parentLevel = currentLevel-1
                 levels[parentLevel][1][parent] += value
                 Z += lint[node] * abs(value)
-    return Z #, len(visitedNodes)
+    if reportNodes:
+        return Z, len(visitedNodes)
+    else:
+        return Z
 
 class Sample:
     """ Sample objects, precalculated from sql database
@@ -89,16 +89,30 @@ class Sample:
             return scipy.sparse.csc_matrix((seqP, (indices, np.zeros(len(indices), dtype=int))), shape=(len(nodes_to_index),1))
     def calcP(self, nodes_to_index):
         ## Legacy code, not used, as it is not adaptively rarefying...
-        ## possibly EMDUnifrac can be tweaked to work with sparse vectors...
-        #p = pd.Series([self.compactPdict.get(node,0) for idx, node in enumerate(nodes_in_order)])
-        #self.p = np.zeros(len(nodes_to_index)) direct version, not trhough sparse vector
-        #[nodes_to_index[otu] for otu,abu in zip(self.otus,self.seqP)]
         indices = [nodes_to_index[otu] for otu in self.otus]
         self.p = scipy.sparse.csc_matrix((self.seqP, (indices, np.zeros(self.size))), shape=(len(nodes_to_index),1))
         return self.p
-        #self.p.to_pickle("%s/%s_sparse.pcl" %(datadir, self.sampleID))
-    def composition(self, curs):
-        pass
+
+    def computeComposition(self, curs):
+        '''creates nice dataframe with otu_id as index:
+         1. reads lineage info from SQL db -> dataframe df
+         2. otus/seqCounts -> dataframe df0
+         3. joins them
+         Convenient barchart construction: df.groupby(['phylum']).sum()
+         Only needed for query matches that are top ranked!
+        '''
+        ## this requires EArthMicroBiome!!
+        columns = 'otu_id phylum family genus'.split()
+        lineageQuery = "SELECT %s FROM OTUS_unified WHERE otu_id IN (%s)"
+        query = lineageQuery % (','.join(columns), ','.join(["'%s'"%otu for otu in self.otus]))
+
+        curs.execute(query)
+        records = list(curs.fetchall())
+        df = pd.DataFrame(records, columns=columns)
+        df.set_index('otu_id', inplace=True)
+        df0 = pd.DataFrame(zip(self.otus, self.seqP), columns=['otu_id', 'rel_abundance'])
+        df0.set_index('otu_id', inplace=True)
+        self.composition = pd.concat([df, df0], axis=1, join='inner')
 
 
 class UserSample(Sample):
@@ -112,8 +126,10 @@ class UserSample(Sample):
         self.seqP = self.seqCounts / float(self.seqCounts.sum())
 
 class SQLSample(Sample):
-    '''Almost the same as UserSample, deals with samples coming from DB, maybe merge'''
-    def __init__(self, sampleID, vectorOtus):
+    '''Extract sample info from DB, just given id and open cursor'''
+    def __init__(self, sampleID, curs):
+        curs.execute("SELECT otu_id, normalized_count FROM OTUS_samples_unified WHERE sample_event_id = '%s'" % sampleID)
+        vectorOtus = curs.fetchall()
         self.sampleID = sampleID
         self.key = None
         self.otus, seqCounts = zip(*vectorOtus)

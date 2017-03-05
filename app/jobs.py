@@ -140,6 +140,8 @@ def ranking(request, job_id):
         context["samples"] = json_encoder.encode(job_samples)
         context["job"] = job
         context["flash"] = msg_storage
+        context["barchart_files"] = json_encoder.encode([])
+
         return render(request, 'job/ranking.html', context)
     else:
         messages.add_message(request, messages.ERROR, unauthorized_access_message)

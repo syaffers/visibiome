@@ -12,6 +12,8 @@ import numpy as np
 import os
 import pandas as pd
 import scipy.cluster.hierarchy as sch
+from collections import defaultdict
+from django.conf import settings
 
 
 class Sample:
@@ -19,7 +21,7 @@ class Sample:
                  ontology_id_1, ontology_term_1,
                  ontology_id_2, ontology_term_2,
                  ontology_id_3, ontology_term_3,
-                 sample_size, distance, pvalue, study_source):
+                 sample_size, distance, pvalue, study_source, barcharts=None):
     	self.Ranking = rank
     	self.Name = name
     	self.Study = title
@@ -43,7 +45,10 @@ class Sample:
     	self.Total_Sample_Size = sample_size
     	self.Total_Distance = distance
     	self.Study_Source = study_source
-
+        if not barcharts is None:
+            self.barchart_genus = barcharts[1]
+            self.barchart_family = barcharts[2]
+            self.barchart_phylum = barcharts[0]
 
 def retrieve_source(sample_study):
     """String replacing subroutine"""
@@ -59,7 +64,7 @@ def retrieve_source(sample_study):
         return "Unknown"
 
 
-def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20):
+def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=None):
     ## TODO: do this consistently with pandas DataFrames!
     ## TODO: assert that distmtx is symmetric when ranking=None, should be
     # import cPickle
@@ -73,11 +78,12 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20):
     # connect to microbiome database
     conn = MySQLdb.connect(**server_db)
     all_samples_dict = dict()
-    pvalues = np.load('%s/distanceProbability.npy')
+    pvalues = np.load(os.path.join(settings.TEN_K_DATA_PATH, 'distanceProbability.npy'))
+
 
     # for each user-submitted sample
     for sample_id_j in n_sample_ids:
-        sample_metadata = []
+        rankingOfMatchedSamples = []
         # rearrange distance matrix for the jth sample and get sample IDs
         ## New: deals with NaN values, individually (from GNAT ranking)
         top_m_j_sample_ids = list(m_n_df.sort(sample_id_j)[sample_id_j].dropna(axis=0).index)
@@ -128,9 +134,8 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20):
                 sample_size = float(sample_size_i)
 
                 distance = "%.4f" % m_n_df[sample_id_j][sample_id_i]
-                pvalue = pvalues[max(int(distance*10000),9999)]
-                # pvalue = 1
 
+                pvalue = pvalues[min(int(m_n_df[sample_id_j][sample_id_i]*10000),9999)]
 
                 study = retrieve_source(study_i)
 
@@ -138,7 +143,7 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20):
             elif sample_event_id != sample_id_i:
                 rank = rank + 1
 
-                sample_metadata.append(vars(
+                rankingOfMatchedSamples.append(vars(
                     Sample(rank, sample_event_id, title,
                            ontology_ids[0], ontology_terms[0],
                            ontology_ids[1], ontology_terms[1],
@@ -156,8 +161,7 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20):
                 ontology_ids[cnt] = ontology_id
                 sample_size = float(sample_size_i)
                 distance = "%.4f" % m_n_df[sample_id_j][sample_id_i]
-                pvalue = pvalues[max(int(distance * 10000), 9999)]
-                # pvalue = 1
+                pvalue = pvalues[min(int(m_n_df[sample_id_j][sample_id_i] * 10000), 9999)]
 
                 study = retrieve_source(study_i)
 
@@ -170,7 +174,7 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20):
 
 
         rank = rank + 1
-        sample_metadata.append(vars(
+        rankingOfMatchedSamples.append(vars(
             Sample(rank, sample_event_id, title,
                    ontology_ids[0], ontology_terms[0],
                    ontology_ids[1], ontology_terms[1],
@@ -180,14 +184,104 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20):
         ))
 
 
-        all_samples_dict[sample_id_j] = sample_metadata
+        all_samples_dict[sample_id_j] =  {"rankinkg":  rankingOfMatchedSamples,
+                                          "barcharts":  barcharts[sample_id_j]}
 
 
     # close connection once everything is done
     conn.close()
-
+    print filepath
     with open(filepath, "w") as json_output_file:
         json.dump(all_samples_dict, json_output_file, sort_keys=True, indent=4)
+
+def generate_barcharts(gnatresults, filepath):
+    '''Drawing pairwise stacked barcharts of compositions, connecting corresponding fractions by lines.
+       Latest version uses mpld3 to be hooked up with d3 javascript library
+       Possible TODO: instead of pairwise'''
+    import cPickle
+    import mpld3
+    from django.conf import settings
+
+    def comparativeBarchart(df, rank, drawLegend=False):
+        colors = [colorDict[rank][phyl] for phyl in df.columns.values]
+        df.columns = [taxa if taxa else '(unassigned)' for taxa in df.columns.values]
+
+        ## Stacked bar chart for convenient visual comparison
+        ax = df.plot.bar(width=0.2, stacked=True, legend=drawLegend, color=colors)
+        ## Beautifying the plot
+        ax.set_xticklabels(df.index.values, rotation='horizontal')
+        ax.set_ylabel('Relative abundance')
+
+        ## drawing all corresponding lines and mpld3 tooltip labels
+        m,n = df.shape ## this way I can directly use Syafiq's code
+        xs = []
+        ys = []
+        for j in range(0, n * m, m):
+            for i in range(m):
+                p = ax.patches[j + i]
+                bw = p.get_width() / 2.
+                xs.append(p.get_x() + p.get_width() / 2.)  # constant for each bar
+                ys.append(p.get_y() + p.get_height() / 2.)
+
+                if i > 0:
+                    xsys = ([xs[j + i - 1] + bw, xs[j + i] - bw],
+                            [ys[j + i - 1], ys[j + i]])
+                    line = ax.plot(xsys[0], xsys[1],
+                                   color=p.get_facecolor(), linewidth=3)[0]
+                    #line_label = "OTU%d --- OTU%d" % (j / m, j / m)
+                    #line_label = "%s: %.2f%% vs %.2f%%" % (taxon, 100 * patch1.get_height(), 100 * patch2.get_height())
+                    #tooltip = mpld3.plugins.LineLabelTooltip(line, label='yo!')
+                    #mpld3.plugins.connect(ax.get_figure(), tooltip)
+        for i, patch in enumerate(ax.patches):
+            tooltip = mpld3.plugins.LineLabelTooltip(patch,
+                                                     label="%s %.2f" % (
+                                                     df.columns.values[int(i / float(m))], 100.*patch.get_height()))
+            mpld3.plugins.connect(ax.get_figure(), tooltip)
+
+        fig = ax.get_figure()
+        #filetype = 'html' #json ## change back to json!!!
+        #filename = os.path.join(filepath, "%s___%s.%s" % (userSample.sampleID, rank, filetype))
+        #filename1 = os.path.join('/tmp/', "%s___%s.%s" % (userSample.sampleID, rank, filetype))
+        #print "Trying to save %s" % filename
+        return mpld3.fig_to_dict(fig) ## encountered issues with save_html
+
+        #with open(filename, 'w') as w:
+        #    print >> w, html
+        #with open(filename, 'w') as w:
+        #    print >> w, html
+
+        #mpld3.save_html(fig, filename)
+        #saveFct = getattr(mpld3, 'save_%s' % filetype)
+        #saveFct(fig, filename)
+        #fig.savefig(filename) ## could also just save the svg/png (without all mpld3 wizzardry)
+        #return filename
+
+    def groupby(rank, sample):
+        df = sample.composition.groupby(rank).sum()
+        df.columns = [sample.sampleID]
+        #print df.head()
+        return df
+    ## loading color dicts for consistent coloring
+
+    colorDict = {}
+    for rank in ['phylum', 'genus', 'family']: ## TODO: simplify: just pickle the entire thing as one dict
+        with open(os.path.join(settings.TEN_K_DATA_PATH, '%sColorDict.pcl'%rank)) as f:
+            colorDict[rank] = cPickle.load(f)
+    barcharts = defaultdict(list)
+
+    for gnatresult in gnatresults:
+        userSample = gnatresult.qsample
+        if gnatresult.ranking:
+            matchSamples = list(zip(*gnatresult.ranking)[1][:5])
+            for rank in ['phylum', 'genus', 'family']:
+                print "Multiple barchart for", userSample.sampleID, rank
+                taxaGroupedTables = [groupby(rank, sample) for sample in [userSample] + matchSamples]
+                combinedAbundances = pd.concat(taxaGroupedTables, axis=1, join='outer').fillna(0.00001)
+                combinedAbundances.sort_values(userSample.sampleID, inplace=True, ascending=False)
+                print combinedAbundances.head()
+                barcharts[userSample.sampleID][rank] = comparativeBarchart(combinedAbundances.T, rank)
+    return barcharts
+
 
 
 def get_sorted_representative_id(distmn, mn_sample_id, rankingcount):

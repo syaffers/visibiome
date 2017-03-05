@@ -1,13 +1,13 @@
 /**
  * Creating the ranking cards
  */
-function displayRankings(jobSamplesRankingFile, sampleIds) {
+function displayRankings(jobSamplesRankingFile, sampleIds, barchartFiles) {
   $(".tab-pane").first().addClass("active");
   $("li[role=presentation]").first().addClass("active");
 
   $.ajax(jobSamplesRankingFile).done(function(data, status) {
     sampleIds.forEach(function(sampleId, index) {
-      createRankingCards(data[sampleId], index + 1);
+      createRankingCards(data[sampleId], index + 1, barchartFiles);
     });
   });
 
@@ -16,7 +16,7 @@ function displayRankings(jobSamplesRankingFile, sampleIds) {
 /**
  * Cards template for each sample
  */
-function createRankingCards(data, index) {
+function createRankingCards(data, index, barchartFiles) {
   data.forEach(function(content) {
     var html = ''+
     '<div class="card">' +

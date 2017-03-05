@@ -37,7 +37,7 @@ DATABASES = {
     # Microbiome Database configuration. This database is not handled by
     # Django due to legacy reasons so no engine configuration needed.
     'microbiome': {
-        'NAME': 'ServerMicroBiome',
+        'NAME': 'EarthMicroBiome',
         # Currently it's pointing to the old microbiome sevrer in an EC2
         'HOST': '52.33.150.116',
         'USER': 'syafiq',

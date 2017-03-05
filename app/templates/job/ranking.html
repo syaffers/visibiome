@@ -49,9 +49,10 @@
 <script src="{% static 'js/ranking.js'%}" type="text/javascript"></script>
 <script>
   var jobSamplesRankingFile = "{{ ranking_file_path }}";
+  var barchartFiles = "{{ barchart_files }}";
   var sampleIds = {{ samples|safe }};
   $(document).ready(function () {
-    displayRankings(jobSamplesRankingFile, sampleIds);
+    displayRankings(jobSamplesRankingFile, sampleIds, barchartFiles);
   });
 </script>
 {% endblock %}
