@@ -108,7 +108,7 @@ def details_json(request, job_id):
                 "errorCode": job.error_code,
                 "status": job.get_status_display(),
                 "statusCode": job.status,
-                "createdAt": job.created_at,
+                "lastRunAt": job.last_run_at,
                 "updatedAt": job.updated_at,
             }
         }

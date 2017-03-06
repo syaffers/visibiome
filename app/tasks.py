@@ -10,6 +10,7 @@ from biom.exception import TableException
 from vzb.celery import app
 from django.conf import settings
 from django.db import transaction
+from django.utils import timezone
 import MySQLdb
 import numpy as np
 import pandas as pd
@@ -144,6 +145,7 @@ def validate_biom(job, file_path):
     :param file_path: String containing file path to uploaded file
     """
     try:
+        job.last_run_at = timezone.now()
         otu_table = load_table(file_path)
 
         if len(otu_table.ids("sample")) <= 10:

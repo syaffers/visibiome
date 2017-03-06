@@ -29,7 +29,8 @@
     </ul>
   </div>
   <p><strong>Status:</strong> {{ job.get_status_display }}</p>
-  <p><strong>Started on:</strong> {{ job.created_at }}</p>
+  <p><strong>Created on:</strong> {{ job.created_at }}</p>
+  <p><strong>Last run on:</strong> {{ job.last_run_at }}</p>
   <p>
     <strong>Completed on:</strong>
     {% if job.status < 10 %}
