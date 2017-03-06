@@ -7,7 +7,7 @@ function displayRankings(jobSamplesRankingFile, sampleIds, barchartFiles) {
 
   $.ajax(jobSamplesRankingFile).done(function(data, status) {
     sampleIds.forEach(function(sampleId, index) {
-      createRankingCards(data[sampleId], index + 1, barchartFiles);
+      createRankingCards(data[sampleId]["ranking"], index + 1, barchartFiles);
     });
   });
 

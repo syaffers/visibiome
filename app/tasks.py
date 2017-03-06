@@ -46,7 +46,7 @@ def gnat_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n
     # pcoa for available samples
     print("Making PCOA...")
     filepath = os.path.join(job_dir_path, "pcoa_1000.json")
-    generate_pcoa_file(m_n_distmtx, m_n_sample_ids, filepath)
+    generate_pcoa_file(m_n_distmtx, m_n_sample_ids, n_sample_ids, filepath)
 
     sample_filename = job.file_safe_name() + ".json"
     filepath = os.path.join(job_dir_path, sample_filename)
@@ -79,7 +79,7 @@ def bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_
         # pcoa for 1000 samples
         print("Making 1000 PCOA...")
         filepath = os.path.join(job_dir_path, "pcoa_1000.json")
-        generate_pcoa_file(m_n_distmtx, m_n_sample_ids, filepath)
+        generate_pcoa_file(m_n_distmtx, m_n_sample_ids, n_sample_ids, filepath)
 
         """THE CODE BELOW IS NO LONGER USED AND SHOULD BE REMOVED ACCORDINGLY"""
         # # get top ranking representative OTU IDs
