@@ -11,6 +11,7 @@ import pdb
 #from coord_util import gnat
 # datastructure  got pickled
 from collections import defaultdict
+from config import server_db
 from itertools import izip
 import sys
 sys.path.append('/home/qiime/visibiome/app/betadiversity_scripts/coord_util')
@@ -159,7 +160,7 @@ class SearchEngine:
         self.criteria = criteria
         self.userSamples = [UserSample(n_sample_id, sample, self.n_otu_ids) for
                             (n_sample_id, sample) in zip(self.n_sample_ids, self.n_otu_matrix)]
-        self.conn = MySQLdb.connect(user='root', host='localhost', passwd='qiime', db='EarthMicroBiome')  ## **server_db!!!
+        self.conn = MySQLdb.connect(**server_db)
         self.curs = self.conn.cursor()
         print "Search engine/DB initialized...", n_sample_ids
 
@@ -266,5 +267,3 @@ if __name__ == "__main__":
     # userSamples = [UserSample(n_sample_id, sample, n_otu_ids) for (n_sample_id, sample) in
     #                zip(n_sample_ids, n_otu_matrix)]
     # metric.dist(userSamples[0], userSamples[0])
-
-
