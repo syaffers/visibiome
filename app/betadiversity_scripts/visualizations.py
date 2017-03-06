@@ -71,23 +71,18 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=
     # with open('/tmp/input.pcl', 'w') as input:
     #     cPickle.dump((top_m_n_distmtx,top_m_n_sample_ids, n_sample_ids,filepath,ranking), input)
 
-    # SYAFIQ: I've updated the function to include the m_n_df dataframe
-    # in the arguments, Bray-curtis calcs are handling this too. You can clear
-    # this comment as needed
-
     # connect to microbiome database
     conn = MySQLdb.connect(**server_db)
     all_samples_dict = dict()
     pvalues = np.load(os.path.join(settings.TEN_K_DATA_PATH, 'distanceProbability.npy'))
-
 
     # for each user-submitted sample
     for sample_id_j in n_sample_ids:
         rankingOfMatchedSamples = []
         # rearrange distance matrix for the jth sample and get sample IDs
         ## New: deals with NaN values, individually (from GNAT ranking)
-        top_m_j_sample_ids = list(m_n_df.sort(sample_id_j)[sample_id_j].dropna(axis=0).index)
-        print "Matches (sorted) for", sample_id_j, list(m_n_df.sort(sample_id_j).index)[:10]
+        top_m_j_sample_ids = list(m_n_df.sort_values(sample_id_j)[sample_id_j].dropna(axis=0).index)
+        print "Matches (sorted) for", sample_id_j, list(m_n_df.sort_values(sample_id_j).index)[:10]
         # get the top m sample IDs without losing order
         top_m_sample_ids = [m_sample_id for m_sample_id in top_m_j_sample_ids
                             if m_sample_id not in n_sample_ids][:top]

@@ -7,6 +7,7 @@ Django==1.9.2
 kombu==3.0.33
 pycparser==2.14
 python-dateutil==2.5.0
+pandas==0.17.0
 pytz==2015.7
 redis==2.10.5
 requests==2.9.1
