@@ -74,7 +74,7 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=
     # connect to microbiome database
     conn = MySQLdb.connect(**server_db)
     all_samples_dict = dict()
-    pvalues = np.load(os.path.join(settings.TEN_K_DATA_PATH, 'distanceProbability.npy'))
+    pvalues = np.load(os.path.join(settings.L_MATRIX_DATA_PATH, 'distanceProbability.npy'))
 
     # for each user-submitted sample
     for sample_id_j in n_sample_ids:
@@ -262,7 +262,7 @@ def generate_barcharts(gnatresults, filepath):
 
     colorDict = {}
     for rank in ['phylum', 'genus', 'family']: ## TODO: simplify: just pickle the entire thing as one dict
-        with open(os.path.join(settings.TEN_K_DATA_PATH, '%sColorDict.pcl'%rank)) as f:
+        with open(os.path.join(settings.L_MATRIX_DATA_PATH, '%sColorDict.pcl'%rank)) as f:
             colorDict[rank] = cPickle.load(f)
     barcharts = defaultdict(dict)
 

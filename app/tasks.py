@@ -200,7 +200,7 @@ def m_n_betadiversity(job):
         criteria[criteria.index('All')] = 'All_eco'
 
     # TODO: Still hack-y! Find a better way to include the 10k files
-    l_data_path = settings.TEN_K_DATA_PATH
+    l_data_path = settings.L_MATRIX_DATA_PATH
 
     try:
         # load submitted biom file/text into otu_table

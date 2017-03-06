@@ -70,7 +70,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'app/static/')
 # The 10K matrix path. This is placed wherever you want as long as it is
 # readable by the user deploying the webserver. Assuming you are using the
 # Ubuntu VM provided by Qiime, the path should look something like below
-TEN_K_DATA_PATH = os.path.join(STATIC_ROOT, 'data/')
+L_MATRIX_DATA_PATH = os.path.join(STATIC_ROOT, 'data/')
 
 # If you can host a redis on your machine, just use 127.0.0.1, else
 # use an online one. If you can setup a redis on your home machine and is
