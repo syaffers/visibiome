@@ -35,7 +35,7 @@ function startPcoa(filePath) {
 // }
 
 function drawPcoaByGroup(filePath) {
-  $(".svg-container").html('<img class="loader-md" src="/static/img/loader.gif" alt="Loader image" />');
+  $(".svg-container").html('<span>Loading...</span>');
 
   $.ajax({"url": filePath}).done(function(data, err){
     mpld3.draw_figure("pcoa-pc1-pc2-ecosystem", data["PC12Ecosystem"]);
@@ -45,7 +45,7 @@ function drawPcoaByGroup(filePath) {
     mpld3.draw_figure("pcoa-pc1-pc3-envo", data["PC13Envo"]);
     mpld3.draw_figure("pcoa-pc2-pc3-envo", data["PC23Envo"]);
 
-    $(".svg-container > img").remove();
+    $(".svg-container > span").remove();
   });
 };
 

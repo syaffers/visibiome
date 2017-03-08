@@ -46,23 +46,6 @@ function drawDendrogram(dataPath, sampleIds) {
     return d;
   });
 
-  /**
-   * drawing the actual dendrogram
-   * is there a way to dynamically set the height?
-   */
-  width = 960;
-  height = 15000;
-
-  var cluster = d3.layout.cluster()
-  .size([height - 200, width - 550]);
-
-  svg = d3.select("#dendrogram").append("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .append("g")
-    // offset the graph by this amount
-    .attr("transform", "translate(90,50)");
-
   // Add tooltip div
   var div = d3.select("#dendrogram-tooltip").append("div")
     .attr("class", "tooltip")
@@ -83,8 +66,47 @@ function drawDendrogram(dataPath, sampleIds) {
   /********************************* DRAWING *********************************/
 
   d3.json(dataPath, function(json) {
+    // HACK: make dendrograms using mpld3!
+    var height = 0;
+    var width = 960;
+
+    var cluster = d3.layout.cluster()
+    .size([0, 0]);
+
+    var nodes = cluster.nodes(json);
+
+    nodes.forEach(function(node) {
+      if (Object.keys(node).indexOf("children") < 0) {
+        height += 20;
+      }
+    });
+
+    cluster = null;
+
+    svg = d3.select("#dendrogram").append("svg")
+      .attr("width", width)
+      .attr("height", height + 50)
+      .append("g")
+      // offset the graph by this amount
+      .attr("transform", "translate(90,50)");
+
+    var cluster = d3.layout.cluster()
+    .size([height, width]);
+
     var nodes = cluster.nodes(json);
     var yscale = scaleBranchLengths(nodes, width - 550);
+
+    nodes.forEach(function(node) {
+      if (Object.keys(node).indexOf("ecocolor") >= 0) {
+        console.log(node.ecocolor[0]);
+        if (node.ecocolor[0] === "White") {
+          node.ecocolor[0] = "black"
+          node.ecocolor[1] = "black"
+          node.ecocolor[2] = "black"
+        }
+
+      }
+    });
 
     // preparing branches
     var link = svg.selectAll("path.link")
@@ -191,12 +213,15 @@ function drawDendrogram(dataPath, sampleIds) {
     // colored leaf node text
     svg.selectAll('g.leaf.node').append("text")
       .attr("dx", 100)
-      .attr("dy", 0)
+      .attr("dy", 4)
       .attr("text-anchor", "start")
-      .attr("font-weight", "bold")
+      .attr("font-weight", function(d) {
+        if (sampleIds.indexOf(d.name) >= 0) return "bold";
+        else return "normal";
+      })
       .attr('font-size', function(d) {
         if (sampleIds.indexOf(d.name) >= 0) return "14px";
-        else return "7px";
+        else return "10px";
       })
       .attr('fill', function(d) {
         if (sampleIds.indexOf(d.name) >= 0) return "red";

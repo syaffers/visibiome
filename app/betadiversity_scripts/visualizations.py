@@ -196,18 +196,28 @@ def generate_barcharts(gnatresults, filepath):
        Latest version uses mpld3 to be hooked up with d3 javascript library
        Possible TODO: instead of pairwise'''
     import cPickle
-    import mpld3
-    from django.conf import settings
+
+    def cutoff_sample_id(sample_id, cutoff=4):
+        if len(sample_id) > cutoff:
+            return sample_id[:cutoff] + "..."
+        return sample_id
 
     def comparativeBarchart(df, rank, drawLegend=False):
+        tooltip_html = "Sample: %s<br>Clade: %s<br>Abundance: %.2f%%"
         colors = [colorDict[rank][phyl] for phyl in df.columns.values]
         df.columns = [taxa if taxa else '(unassigned)' for taxa in df.columns.values]
 
         ## Stacked bar chart for convenient visual comparison
-        ax = df.plot.bar(width=0.2, stacked=True, legend=drawLegend, color=colors)
+        ax = df.plot.bar(width=0.2, stacked=True, legend=drawLegend, color=colors,
+                         figsize=(4, 3)) # Syafiq: figures are too big for the page, I need to minify
         ## Beautifying the plot
-        ax.set_xticklabels(df.index.values, rotation='horizontal')
+        # Syafiq: ticks are unreadable, i need to cut them
+        ax.set_xticklabels(map(cutoff_sample_id, df.index.values), rotation='horizontal')
         ax.set_ylabel('Relative abundance')
+        ax.set_ylim(0, 1)
+        # Syafiq: can't access the zoom functions easily, raising the plot
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0 + box.height * 0.10, box.width, box.height * 0.90])
 
         ## drawing all corresponding lines and mpld3 tooltip labels
         m,n = df.shape ## this way I can directly use Syafiq's code
@@ -230,9 +240,13 @@ def generate_barcharts(gnatresults, filepath):
                     #tooltip = mpld3.plugins.LineLabelTooltip(line, label='yo!')
                     #mpld3.plugins.connect(ax.get_figure(), tooltip)
         for i, patch in enumerate(ax.patches):
-            tooltip = mpld3.plugins.LineLabelTooltip(patch,
-                                                     label="%s %.2f" % (
-                                                     df.columns.values[int(i / float(m))], 100.*patch.get_height()))
+            clade_name = df.columns.values[int(i / float(m))]
+            relative_abundance = 100. * patch.get_height()
+            sample_name = df.index.values[i % m]
+            tooltip = mpld3.plugins.PointHTMLTooltip(
+                patch, labels=[tooltip_html % (sample_name, clade_name, relative_abundance)]
+            )
+
             mpld3.plugins.connect(ax.get_figure(), tooltip)
 
         fig = ax.get_figure()
