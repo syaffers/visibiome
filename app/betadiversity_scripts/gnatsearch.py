@@ -8,19 +8,15 @@ import pandas as pd
 import scipy.sparse
 import MySQLdb
 import pdb
-#from coord_util import gnat
 # datastructure  got pickled
 from collections import defaultdict
 from config import server_db
+from django.conf import settings
 from itertools import izip
 import sys
-sys.path.append('/home/qiime/visibiome/app/betadiversity_scripts/coord_util')
+sys.path.append(settings.COORD_UTIL_PATH)
 import gnat
 from microbiomeUtils import emdusparse, UserSample, SQLSample, rarefy
-# from django.conf import settings ## This needs a fix!!! Syafiq
-#
-# settings.configure()
-# from config import server_db
 
 def add_refs(gnatnode, db, metric):
     gnatnode.db = db
