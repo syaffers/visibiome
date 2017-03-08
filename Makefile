@@ -1,3 +1,9 @@
+reset-dev:
+	python manage.py collectstatic --settings=vzb.settings.development
+	python manage.py migrate --settings=vzb.settings.development
+	python manage.py loaddata initial.json --settings=vzb.settings.development
+	python manage.py createsuperuser --settings=vzb.settings.development
+
 reset-local:
 	rm -r local/
 	rm db.sqlite3
@@ -22,6 +28,3 @@ restart-dev:
 	rm logs/celery.log
 	sleep 4
 	uwsgi --ini uwsgi.ini
-
-copy-staticfiles:
-	python manage.py collectstatic --settings=vzb.settings.development -i data

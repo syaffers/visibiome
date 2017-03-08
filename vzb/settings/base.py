@@ -89,3 +89,6 @@ LOGIN_URL = '/login/'
 MESSAGE_TAGS = {
     message_constants.ERROR: 'danger'
 }
+
+# Coord util files to be included later
+COORD_UTIL_PATH = os.path.join(BASE_DIR, 'app/betadiversity_scripts/coord_util')

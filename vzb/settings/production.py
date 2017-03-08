@@ -33,7 +33,7 @@ DATABASES = {
     # Microbiome Database configuration. This database is not handled by
     # Django due to legacy reasons so no engine configuration needed.
     'microbiome': {
-        'NAME': 'ServerMicroBiome',
+        'NAME': 'EarthMicroBiome',
         # Currently it's pointing to the old microbiome sevrer in an EC2
         'HOST': '52.33.150.116',
         'USER': 'syafiq',
@@ -77,7 +77,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles/')
 # The 10K matrix path. This is placed wherever you want as long as it is
 # readable by the user deploying the webserver. Assuming you are using an EC2
 # server with the Qiime AMI, it should look something like the string below
-TEN_K_DATA_PATH = os.path.join(STATIC_ROOT, 'data/')
+L_MATRIX_DATA_PATH = os.path.join(STATIC_ROOT, 'data/')
 
 # Use a live redis cache to do message queueing. Consider putting the password
 # to the redis server in an environment variable

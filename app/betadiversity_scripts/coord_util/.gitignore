@@ -1,0 +1,8 @@
+*.pyc
+Makefile.inc
+rmsd_f.so
+*~
+*.o
+*.mod
+*#
+*.pyo

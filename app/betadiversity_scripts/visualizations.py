@@ -12,6 +12,8 @@ import numpy as np
 import os
 import pandas as pd
 import scipy.cluster.hierarchy as sch
+from collections import defaultdict
+from django.conf import settings
 
 
 class Sample:
@@ -19,7 +21,7 @@ class Sample:
                  ontology_id_1, ontology_term_1,
                  ontology_id_2, ontology_term_2,
                  ontology_id_3, ontology_term_3,
-                 sample_size, distance, pvalue, study_source):
+                 sample_size, distance, pvalue, study_source, barcharts=None):
     	self.Ranking = rank
     	self.Name = name
     	self.Study = title
@@ -43,7 +45,10 @@ class Sample:
     	self.Total_Sample_Size = sample_size
     	self.Total_Distance = distance
     	self.Study_Source = study_source
-
+        if not barcharts is None:
+            self.barchart_genus = barcharts[1]
+            self.barchart_family = barcharts[2]
+            self.barchart_phylum = barcharts[0]
 
 def retrieve_source(sample_study):
     """String replacing subroutine"""
@@ -59,29 +64,25 @@ def retrieve_source(sample_study):
         return "Unknown"
 
 
-def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20):
+def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=None):
     ## TODO: do this consistently with pandas DataFrames!
     ## TODO: assert that distmtx is symmetric when ranking=None, should be
     # import cPickle
     # with open('/tmp/input.pcl', 'w') as input:
     #     cPickle.dump((top_m_n_distmtx,top_m_n_sample_ids, n_sample_ids,filepath,ranking), input)
 
-    # SYAFIQ: I've updated the function to include the m_n_df dataframe
-    # in the arguments, Bray-curtis calcs are handling this too. You can clear
-    # this comment as needed
-
     # connect to microbiome database
     conn = MySQLdb.connect(**server_db)
     all_samples_dict = dict()
-    pvalues = np.load('%s/distanceProbability.npy')
+    pvalues = np.load(os.path.join(settings.L_MATRIX_DATA_PATH, 'distanceProbability.npy'))
 
     # for each user-submitted sample
     for sample_id_j in n_sample_ids:
-        sample_metadata = []
+        rankingOfMatchedSamples = []
         # rearrange distance matrix for the jth sample and get sample IDs
         ## New: deals with NaN values, individually (from GNAT ranking)
-        top_m_j_sample_ids = list(m_n_df.sort(sample_id_j)[sample_id_j].dropna(axis=0).index)
-        print "Matches (sorted) for", sample_id_j, list(m_n_df.sort(sample_id_j).index)[:10]
+        top_m_j_sample_ids = list(m_n_df.sort_values(sample_id_j)[sample_id_j].dropna(axis=0).index)
+        print "Matches (sorted) for", sample_id_j, list(m_n_df.sort_values(sample_id_j).index)[:10]
         # get the top m sample IDs without losing order
         top_m_sample_ids = [m_sample_id for m_sample_id in top_m_j_sample_ids
                             if m_sample_id not in n_sample_ids][:top]
@@ -128,9 +129,8 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20):
                 sample_size = float(sample_size_i)
 
                 distance = "%.4f" % m_n_df[sample_id_j][sample_id_i]
-                pvalue = pvalues[max(int(distance*10000),9999)]
-                # pvalue = 1
 
+                pvalue = pvalues[min(int(m_n_df[sample_id_j][sample_id_i]*10000),9999)]
 
                 study = retrieve_source(study_i)
 
@@ -138,7 +138,7 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20):
             elif sample_event_id != sample_id_i:
                 rank = rank + 1
 
-                sample_metadata.append(vars(
+                rankingOfMatchedSamples.append(vars(
                     Sample(rank, sample_event_id, title,
                            ontology_ids[0], ontology_terms[0],
                            ontology_ids[1], ontology_terms[1],
@@ -156,8 +156,7 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20):
                 ontology_ids[cnt] = ontology_id
                 sample_size = float(sample_size_i)
                 distance = "%.4f" % m_n_df[sample_id_j][sample_id_i]
-                pvalue = pvalues[max(int(distance * 10000), 9999)]
-                # pvalue = 1
+                pvalue = pvalues[min(int(m_n_df[sample_id_j][sample_id_i] * 10000), 9999)]
 
                 study = retrieve_source(study_i)
 
@@ -170,7 +169,7 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20):
 
 
         rank = rank + 1
-        sample_metadata.append(vars(
+        rankingOfMatchedSamples.append(vars(
             Sample(rank, sample_event_id, title,
                    ontology_ids[0], ontology_terms[0],
                    ontology_ids[1], ontology_terms[1],
@@ -180,14 +179,120 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20):
         ))
 
 
-        all_samples_dict[sample_id_j] = sample_metadata
+        all_samples_dict[sample_id_j] = {
+            "ranking": rankingOfMatchedSamples,
+            "barcharts": barcharts[sample_id_j] if barcharts else None
+        }
 
 
     # close connection once everything is done
     conn.close()
-
+    print filepath
     with open(filepath, "w") as json_output_file:
         json.dump(all_samples_dict, json_output_file, sort_keys=True, indent=4)
+
+def generate_barcharts(gnatresults, filepath):
+    '''Drawing pairwise stacked barcharts of compositions, connecting corresponding fractions by lines.
+       Latest version uses mpld3 to be hooked up with d3 javascript library
+       Possible TODO: instead of pairwise'''
+    import cPickle
+
+    def cutoff_sample_id(sample_id, cutoff=4):
+        if len(sample_id) > cutoff:
+            return sample_id[:cutoff] + "..."
+        return sample_id
+
+    def comparativeBarchart(df, rank, drawLegend=False):
+        tooltip_html = "Sample: %s<br>Clade: %s<br>Abundance: %.2f%%"
+        colors = [colorDict[rank][phyl] for phyl in df.columns.values]
+        df.columns = [taxa if taxa else '(unassigned)' for taxa in df.columns.values]
+
+        ## Stacked bar chart for convenient visual comparison
+        ax = df.plot.bar(width=0.2, stacked=True, legend=drawLegend, color=colors,
+                         figsize=(4, 3)) # Syafiq: figures are too big for the page, I need to minify
+        ## Beautifying the plot
+        # Syafiq: ticks are unreadable, i need to cut them
+        ax.set_xticklabels(map(cutoff_sample_id, df.index.values), rotation='horizontal')
+        ax.set_ylabel('Relative abundance')
+        ax.set_ylim(0, 1)
+        # Syafiq: can't access the zoom functions easily, raising the plot
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0 + box.height * 0.10, box.width, box.height * 0.90])
+
+        ## drawing all corresponding lines and mpld3 tooltip labels
+        m,n = df.shape ## this way I can directly use Syafiq's code
+        xs = []
+        ys = []
+        for j in range(0, n * m, m):
+            for i in range(m):
+                p = ax.patches[j + i]
+                bw = p.get_width() / 2.
+                xs.append(p.get_x() + p.get_width() / 2.)  # constant for each bar
+                ys.append(p.get_y() + p.get_height() / 2.)
+
+                if i > 0:
+                    xsys = ([xs[j + i - 1] + bw, xs[j + i] - bw],
+                            [ys[j + i - 1], ys[j + i]])
+                    line = ax.plot(xsys[0], xsys[1],
+                                   color=p.get_facecolor(), linewidth=3)[0]
+                    #line_label = "OTU%d --- OTU%d" % (j / m, j / m)
+                    #line_label = "%s: %.2f%% vs %.2f%%" % (taxon, 100 * patch1.get_height(), 100 * patch2.get_height())
+                    #tooltip = mpld3.plugins.LineLabelTooltip(line, label='yo!')
+                    #mpld3.plugins.connect(ax.get_figure(), tooltip)
+        for i, patch in enumerate(ax.patches):
+            clade_name = df.columns.values[int(i / float(m))]
+            relative_abundance = 100. * patch.get_height()
+            sample_name = df.index.values[i % m]
+            tooltip = mpld3.plugins.PointHTMLTooltip(
+                patch, labels=[tooltip_html % (sample_name, clade_name, relative_abundance)]
+            )
+
+            mpld3.plugins.connect(ax.get_figure(), tooltip)
+
+        fig = ax.get_figure()
+        #filetype = 'html' #json ## change back to json!!!
+        #filename = os.path.join(filepath, "%s___%s.%s" % (userSample.sampleID, rank, filetype))
+        #filename1 = os.path.join('/tmp/', "%s___%s.%s" % (userSample.sampleID, rank, filetype))
+        #print "Trying to save %s" % filename
+        return mpld3.fig_to_dict(fig) ## encountered issues with save_html
+
+        #with open(filename, 'w') as w:
+        #    print >> w, html
+        #with open(filename, 'w') as w:
+        #    print >> w, html
+
+        #mpld3.save_html(fig, filename)
+        #saveFct = getattr(mpld3, 'save_%s' % filetype)
+        #saveFct(fig, filename)
+        #fig.savefig(filename) ## could also just save the svg/png (without all mpld3 wizzardry)
+        #return filename
+
+    def groupby(rank, sample):
+        df = sample.composition.groupby(rank).sum()
+        df.columns = [sample.sampleID]
+        #print df.head()
+        return df
+    ## loading color dicts for consistent coloring
+
+    colorDict = {}
+    for rank in ['phylum', 'genus', 'family']: ## TODO: simplify: just pickle the entire thing as one dict
+        with open(os.path.join(settings.L_MATRIX_DATA_PATH, '%sColorDict.pcl'%rank)) as f:
+            colorDict[rank] = cPickle.load(f)
+    barcharts = defaultdict(dict)
+
+    for gnatresult in gnatresults:
+        userSample = gnatresult.qsample
+        if gnatresult.ranking:
+            matchSamples = list(zip(*gnatresult.ranking)[1][:5])
+            for rank in ['phylum', 'genus', 'family']:
+                print "Multiple barchart for", userSample.sampleID, rank
+                taxaGroupedTables = [groupby(rank, sample) for sample in [userSample] + matchSamples]
+                combinedAbundances = pd.concat(taxaGroupedTables, axis=1, join='outer').fillna(0.00001)
+                combinedAbundances.sort_values(userSample.sampleID, inplace=True, ascending=False)
+                print combinedAbundances.head()
+                barcharts[userSample.sampleID][rank] = comparativeBarchart(combinedAbundances.T, rank)
+    return barcharts
+
 
 
 def get_sorted_representative_id(distmn, mn_sample_id, rankingcount):
@@ -345,164 +450,173 @@ def query_pcoa_metadata(sample_id):
     return (title, ontology_ids, ontology_terms, ecosystems[0], study_source, ecocolor)
 
 
-def generate_pcoa_file(distmtx, sample_ids, filepath):
+def generate_pcoa_file(distmtx, m_n_sample_ids, n_sample_ids, filepath):
     """Make PCoA-related file for D3.js drawings. Generates CSV file.
 
     :param distmtx: Numpy array matrix of distances
-    :param sample_ids: List of strings containing sample IDs
+    :param m_n_sample_ids: List of strings containing m and n sample IDs
+    :param n_sample_ids: List of strings containing user (or n) sample IDs
     :param filepath: User directory path to which the file will be written
     """
-    with open(filepath, "w") as f_pcoa:
-        coords, eigvals = ms.principal_coordinates_analysis(distmtx)
-        pcnts = (np.abs(eigvals) / float(sum(np.abs(eigvals)))) * 100
-        idxs_descending = pcnts.argsort()[::-1]
-        coords = coords[idxs_descending]
+    coords, eigvals = ms.principal_coordinates_analysis(distmtx)
+    pcnts = (np.abs(eigvals) / float(sum(np.abs(eigvals)))) * 100
+    idxs_descending = pcnts.argsort()[::-1]
+    coords = coords[idxs_descending]
 
-        colormap = [
-            "#3366cc", "#dc3912", "#ff9900", "#109618", "#990099", "#0099c6", "#dd4477",
-            "#66aa00", "#b82e2e", "#316395", "#994499", "#22aa99", "#aaaa11", "#6633cc",
-            "#e67300", "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"
-        ]
+    # from google10c
+    colormap = [
+        "#3366cc", "#dc3912", "#ff9900", "#109618", "#990099", "#0099c6", "#dd4477",
+        "#66aa00", "#b82e2e", "#316395", "#994499", "#22aa99", "#aaaa11", "#6633cc",
+        "#e67300", "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"
+    ]
 
-        tooltip_html = """
-        Sample: {}<br>
-        Ecosystem: {}<br>
-        Envo ID: {}<br>
-        Envo Term: {}<br>
-        Study: {} <br>
-        Study Source: {}
-        """
+    tooltip_html = """
+    Sample: {}<br>
+    Ecosystem: {}<br>
+    Envo ID: {}<br>
+    Envo Term: {}<br>
+    Study: {} <br>
+    Study Source: {}
+    """
 
-        """Okay messy indexing coming up! eco_samples_idx holds a list
-        of sample indices for each ecosystem that is queried (along with
-        color) e.g. {
-            ("Biofilm", "grey"): [1,12,...],
-            ("Soil", "gold"): [3,16,...]
-        }.
-        envo_samples_idx holds a list of sample indices for each envo that
-        is queried (along witg color) e.g. {
-            ENVO:00009003": [1,12,...],
-            ENVO:00000073": [3,16,...]
-        }.
-        tooltip_htmls contains the html formatted string of the metadata
-        for each sample. Metdata is a tuple of (title, ontology_ids,
-        ontology_terms, ecosystem, study_source, color)
-        """
-        user_key = ("Unknown", "black")
-        eco_samples_idx = dict()
-        envo_samples_idx = dict()
-        tooltip_htmls = []
-        for sample_index, sample_id in enumerate(sample_ids):
-            metadata = query_pcoa_metadata(sample_id)
-            tooltip_htmls.append(
-                tooltip_html.format(
-                    sample_id, metadata[3], ", ".join(metadata[1]),
-                    ", ".join(metadata[2]), metadata[0], metadata[4]
+    """Okay messy indexing coming up! eco_samples_idx holds a list of sample
+    indices for each ecosystem that is queried (along with color) e.g. {
+        ("Biofilm", "grey"): [1,12,...],
+        ("Soil", "gold"): [3,16,...]
+    }.
+    envo_samples_idx holds a list of sample indices for each envo that is
+    queried (along with color) e.g. {
+        ("ENVO:00009003", "blue"): [1,12,...],
+        ("ENVO:00000073", "red"): [3,16,...]
+    }.
+    tooltip_htmls contains the html formatted string of the metadata for each
+    sample. Metdata is a tuple of (title, ontology_ids, ontology_terms,
+    ecosystem, study_source, color)
+    """
+    m_sample_ids = [sample_id for sample_id in m_n_sample_ids
+                    if not sample_id in n_sample_ids]
+    user_key = ("User Samples", "red")
+    eco_samples_idx = {user_key: []}
+    envo_samples_idx = {user_key: []}
+    tooltip_htmls = [""] * len(m_n_sample_ids)
+
+    # all other samples excluding user samples
+    for sample_id in m_sample_ids:
+        metadata = query_pcoa_metadata(sample_id)
+        tooltip_htmls[m_n_sample_ids.index(sample_id)] = tooltip_html.format(
+            sample_id, metadata[3], ", ".join(metadata[1]),
+            ", ".join(metadata[2]), metadata[0], metadata[4]
+        )
+
+        color_id = len(envo_samples_idx)
+        eco_term = metadata[3]
+        eco_color = metadata[5]
+        envo_term = metadata[1][0]
+        eco_key = (eco_term, eco_color)
+        # if the envo has already been encountered before, don't add a new sample
+        if envo_term in map(lambda x: x[0], envo_samples_idx):
+            envo_color = filter(lambda x: x[0] == envo_term, envo_samples_idx)[0][1]
+            envo_key = (envo_term, envo_color)
+        else:
+            envo_key = (envo_term, colormap[color_id % len(colormap)])
+
+        if eco_key in eco_samples_idx:
+            eco_samples_idx[eco_key].append(m_n_sample_ids.index(sample_id))
+        else:
+            eco_samples_idx[eco_key] = [m_n_sample_ids.index(sample_id)]
+
+        if envo_key in envo_samples_idx:
+            envo_samples_idx[envo_key].append(m_n_sample_ids.index(sample_id))
+        else:
+            envo_samples_idx[envo_key] = [m_n_sample_ids.index(sample_id)]
+
+    # add user samples to eco_samples_idx, envo_samples_idx and html_tooltips
+    for sample_id_j in n_sample_ids:
+        envo_samples_idx[user_key].append(m_n_sample_ids.index(sample_id_j))
+        eco_samples_idx[user_key].append(m_n_sample_ids.index(sample_id_j))
+        tooltip_htmls[m_n_sample_ids.index(sample_id_j)] = tooltip_html.format(
+            sample_id_j, user_key[0], user_key[0], user_key[0], "", ""
+        )
+
+    """ PLOTTING """
+
+    plots = {}
+    # loop through groupings
+    for group in ["ecosystem", "envo"]:
+        # loop through each top 3 pairs of principal coordinates
+        for pc1, pc2 in itertools.combinations(range(3), 2):
+            # start the plot
+            fig, ax = plt.subplots()
+            fig.set_figwidth(11)
+
+            # plot all the points except for the users samples, they go last
+            group_samples_idx = eco_samples_idx
+            non_user_group_samples_idx = [e for e in eco_samples_idx.keys()
+                                          if not e == user_key]
+            if group is "envo":
+                group_samples_idx = envo_samples_idx
+                non_user_group_samples_idx = [e for e in envo_samples_idx.keys()
+                                              if not e == user_key]
+
+            # scatter the ecosystem-labelled points
+            # remember that the keys are in the format
+            # ("Ecosystem/Envo", "Color")
+            for key in non_user_group_samples_idx:
+                ax.scatter(
+                    coords.T[group_samples_idx[key], pc1],
+                    coords.T[group_samples_idx[key], pc2],
+                    marker="o", label=key[0], color=key[1], alpha=1
                 )
+
+            # plot user samples
+            ax.scatter(
+                coords.T[group_samples_idx[user_key], pc1],
+                coords.T[group_samples_idx[user_key], pc2],
+                marker="*", s=96, label=user_key[0], color=user_key[1], alpha=1
             )
 
-            color_id = len(envo_samples_idx)
-            eco_term = metadata[3]
-            eco_color = metadata[5]
-            envo_term = metadata[1][0]
-            eco_key = (eco_term, eco_color)
-            if eco_term is "Unknown":
-                envo_key = user_key
-            else:
-                if envo_term in map(lambda x: x[0], envo_samples_idx):
-                    envo_color = filter(lambda x: x[0] == envo_term, envo_samples_idx)[0][1]
-                    envo_key = (envo_term, envo_color)
-                else:
-                    envo_key = (envo_term, colormap[color_id % len(colormap)])
+            # draw PC axis labels
+            ax.set_xlabel("PC%d" % (pc1 + 1))
+            ax.set_ylabel("PC%d" % (pc2 + 1))
+            ax.set_title("PCoA Plot grouped by %s" % (group.capitalize()))
 
-            if eco_key in eco_samples_idx:
-                eco_samples_idx[eco_key].append(sample_index)
-            else:
-                eco_samples_idx[eco_key] = [sample_index]
+            # adjust the plot abit for the legend for sample legend
+            box = ax.get_position()
+            ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
 
-            if envo_key in envo_samples_idx:
-                envo_samples_idx[envo_key].append(sample_index)
-            else:
-                envo_samples_idx[envo_key] = [sample_index]
+            """INTERACTIVITY"""
 
-        """ PLOTTING """
+            # make interactive legends for sample groupings
+            if group is "ecosystem":
+                handles, legend_labels = ax.get_legend_handles_labels()
+                interactive_legend = InteractiveLegendPlugin(
+                    zip(handles, ax.collections), legend_labels, alpha_unsel=0.3,
+                    alpha_over=1, start_visible=False)
 
-        plots = {}
-        # loop through groupings
-        for group in ["ecosystem", "envo"]:
-            # loop through each top 3 pairs of principal coordinates
-            for pc1, pc2 in itertools.combinations(range(3), 2):
-                # start the plot
-                fig, ax = plt.subplots()
-                fig.set_figwidth(11)
+                mpld3.plugins.connect(fig, interactive_legend)
 
-                # plot all the points except for the users samples, they go last
-                group_samples_idx = eco_samples_idx
-                non_user_group_samples_idx = [e for e in eco_samples_idx.keys()
-                                              if not e == user_key]
-                if group is "envo":
-                    group_samples_idx = envo_samples_idx
-                    non_user_group_samples_idx = [e for e in envo_samples_idx.keys()
-                                                  if not e == user_key]
-
-                # scatter the ecosystem-labelled points
-                # remember that the keys are in the format
-                # ("Ecosystem/Envo", "Color")
-                for key in non_user_group_samples_idx:
-                    ax.scatter(
-                        coords.T[group_samples_idx[key], pc1],
-                        coords.T[group_samples_idx[key], pc2],
-                        marker="o", label=key[0], color=key[1], alpha=1
-                    )
-
-                # plot user samples
-                ax.scatter(
-                    coords.T[group_samples_idx[user_key], pc1],
-                    coords.T[group_samples_idx[user_key], pc2],
-                    marker="*", s=96, label=user_key[0], color=user_key[1], alpha=1
-                )
-
-                # draw PC axis labels
-                ax.set_xlabel("PC%d" % (pc1 + 1))
-                ax.set_ylabel("PC%d" % (pc2 + 1))
-                ax.set_title("PCoA Plot grouped by %s" % (group.capitalize()))
-
-                # adjust the plot abit for the legend for sample legend
-                box = ax.get_position()
-                ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-
-                """INTERACTIVITY"""
-
-                # make interactive legends for sample groupings
-                if group is "ecosystem":
-                    handles, legend_labels = ax.get_legend_handles_labels()
-                    interactive_legend = InteractiveLegendPlugin(
-                        zip(handles, ax.collections), legend_labels, alpha_unsel=0.3,
-                        alpha_over=1, start_visible=False)
-
-                    mpld3.plugins.connect(fig, interactive_legend)
-
-                # make interactive html labels for non-user samples first, since
-                # they are now ordered
-                html_labels = np.array(tooltip_htmls)
-                for i, key in enumerate(non_user_group_samples_idx):
-                    tooltip = PointHTMLTooltip(
-                        ax.collections[i],
-                        labels=list(html_labels[group_samples_idx[key]])
-                    )
-                    mpld3.plugins.connect(fig, tooltip)
-
-                # make interactive html labels for user samples
+            # make interactive html labels for non-user samples first, since
+            # they are now ordered
+            html_labels = np.array(tooltip_htmls)
+            for i, key in enumerate(non_user_group_samples_idx):
                 tooltip = PointHTMLTooltip(
-                    ax.collections[-1],
-                    labels=list(html_labels[group_samples_idx[user_key]])
+                    ax.collections[i],
+                    labels=list(html_labels[group_samples_idx[key]])
                 )
                 mpld3.plugins.connect(fig, tooltip)
 
-                plot_name = (pc1 + 1, pc2 + 1, group.capitalize())
-                plots["PC%d%d%s" % plot_name] = mpld3.fig_to_dict(fig)
+            # make interactive html labels for user samples
+            tooltip = PointHTMLTooltip(
+                ax.collections[-1],
+                labels=list(html_labels[group_samples_idx[user_key]])
+            )
+            mpld3.plugins.connect(fig, tooltip)
 
-        """ FINISH! """
+            plot_name = (pc1 + 1, pc2 + 1, group.capitalize())
+            plots["PC%d%d%s" % plot_name] = mpld3.fig_to_dict(fig)
+
+    """ FINISH! """
+    with open(filepath, "w") as f_pcoa:
         json.dump(plots, f_pcoa)
 
 

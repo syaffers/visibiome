@@ -3,13 +3,14 @@ from app.models import BiomSearchJob, BiomSample
 from betadiversity_scripts.MNBetadiversity import make_m_n_distmtx
 from betadiversity_scripts.config import server_db
 from betadiversity_scripts.visualizations import (generate_samples_metadata, generate_pcoa_file,
-    generate_dendrogram_file)
+    generate_dendrogram_file, generate_barcharts)
 from betadiversity_scripts.select_samples import query_samples
 from biom import load_table
 from biom.exception import TableException
 from vzb.celery import app
 from django.conf import settings
 from django.db import transaction
+from django.utils import timezone
 import MySQLdb
 import numpy as np
 import pandas as pd
@@ -26,34 +27,33 @@ from betadiversity_scripts import microbiomeUtils as mu
 #from betadiversity_scripts.microbiomeUtils import SearchEngine
 
 def gnat_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job):
-    print "GNATting..."
+    print "GNATing..."
 
     engine = gs.SearchEngine(n_otu_matrix, n_otu_ids, n_sample_ids, l_data_path, criteria)
-    engine.gnatsearch()
-    engine.shortReport()
+    try:
+        engine.gnatsearch()
+        engine.shortReport()
+        m_n_distmtx, m_n_sample_ids, rankingDF = engine.make_m_n_distmtx()
+    finally:
+        engine.close() ## closes Database connection
 
-    print "GNAT search finished"
-
-    m_n_distmtx, m_n_sample_ids, rankingDF, compositions = engine.make_m_n_distmtx()
-    engine.close() ## closes Database connection
-    #print "SAMPLE IDS:", ",".join(m_n_sample_ids)
-    #print sorted(zip(m_n_distmtx[:,-1], m_n_sample_ids))
+    print("Making top hit correspondence barcharts...")
+    barchartDicts = generate_barcharts(engine.GNATresults, job_dir_path)
 
     print("Making dendrogram...")
     filepath = os.path.join(job_dir_path, "d3dendrogram.json")
     generate_dendrogram_file(m_n_distmtx, m_n_sample_ids, filepath)
-    list()
 
     # pcoa for available samples
     print("Making PCOA...")
-    filepath = os.path.join(job_dir_path, "pcoa_1000.csv")
-    generate_pcoa_file(m_n_distmtx, m_n_sample_ids, filepath)
+    filepath = os.path.join(job_dir_path, "pcoa_1000.json")
+    generate_pcoa_file(m_n_distmtx, m_n_sample_ids, n_sample_ids, filepath)
 
     sample_filename = job.file_safe_name() + ".json"
     filepath = os.path.join(job_dir_path, sample_filename)
     ## this interface has been updated to cope with multiple rankings
-    print "Making sample metadata file (from GNAT results)"
-    generate_samples_metadata(m_n_distmtx, m_n_sample_ids, n_sample_ids, filepath, rankingDF=rankingDF)
+    print "Making sample metadata file (from GNAT results) with barchart info"
+    generate_samples_metadata(rankingDF, n_sample_ids, filepath, barcharts=barchartDicts)
     print "Done"
     job.status = BiomSearchJob.COMPLETED
     job.save()
@@ -79,8 +79,8 @@ def bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_
 
         # pcoa for 1000 samples
         print("Making 1000 PCOA...")
-        filepath = os.path.join(job_dir_path, "pcoa_representatives.json")
-        generate_pcoa_file(m_n_distmtx, m_n_sample_ids, filepath)
+        filepath = os.path.join(job_dir_path, "pcoa_1000.json")
+        generate_pcoa_file(m_n_distmtx, m_n_sample_ids, n_sample_ids, filepath)
 
         """THE CODE BELOW IS NO LONGER USED AND SHOULD BE REMOVED ACCORDINGLY"""
         # # get top ranking representative OTU IDs
@@ -145,6 +145,7 @@ def validate_biom(job, file_path):
     :param file_path: String containing file path to uploaded file
     """
     try:
+        job.last_run_at = timezone.now()
         otu_table = load_table(file_path)
 
         if len(otu_table.ids("sample")) <= 10:
@@ -201,7 +202,7 @@ def m_n_betadiversity(job):
         criteria[criteria.index('All')] = 'All_eco'
 
     # TODO: Still hack-y! Find a better way to include the 10k files
-    l_data_path = settings.TEN_K_DATA_PATH
+    l_data_path = settings.L_MATRIX_DATA_PATH
 
     try:
         # load submitted biom file/text into otu_table

@@ -11,7 +11,8 @@ var biomSearchFormId = "#biom-search-form",
   jobStatusTd = "td.job-status",
   jobStatusTdSpan = "td.job-status span",
   jobErrorTd = "td.job-error",
-  jobUpdatedAtTd = "td.job-updated-at";
+  jobUpdatedAtTd = "td.job-updated-at",
+  jobLastRunAtTd = "td.job-last-run-at";
 
 function handleBiomCheckbox() {
   var checkedBoxes = $(biomSearchFormId)
@@ -65,6 +66,7 @@ function updateJobDetailsText(data) {
   if (data.status == 200) {
     var job = data.data;
     var updatedDateString = fecha.format(new Date(job.updatedAt), "MMM. D, YYYY, h:mm A");
+    var lastRunDateString = fecha.format(new Date(job.lastRunAt), "MMM. D, YYYY, h:mm A");
 
     var statusTextSelector = "#" + job.id.toString() + jobDashboardRow + " " + jobStatusTdSpan;
     var rerunButtonSelector = "#" + job.id.toString() + jobDashboardRow + " " + rerunJobButtons;
@@ -72,11 +74,13 @@ function updateJobDetailsText(data) {
     var loaderSelector = "#" + job.id.toString() + jobDashboardRow + " " + jobStatusTd + " .loader";
     var errorTdSelector = "#" + job.id.toString() + jobDashboardRow + " " + jobErrorTd;
     var updatedAtTdSelector = "#" + job.id.toString() + jobDashboardRow + " " + jobUpdatedAtTd;
+    var lastRunAtTdSelector = "#" + job.id.toString() + jobDashboardRow + " " + jobLastRunAtTd;
 
     $(statusTextSelector).text(job.status);
     $(statusTdSelector).attr("data-status-code", job.statusCode);
     $(errorTdSelector).text(job.error);
     $(errorTdSelector).attr("data-status-code", job.errorCode);
+    $(lastRunAtTdSelector).text(lastRunDateString);
     if (Number(job.statusCode) >= 10 || Number(job.statusCode) < 0) {
       $(loaderSelector).remove();
       $(updatedAtTdSelector).text(updatedDateString);
