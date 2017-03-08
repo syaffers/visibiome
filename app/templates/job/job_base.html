@@ -12,6 +12,7 @@
         {% url 'app:job_details' job.pk as details_url  %}
       {% endif %}
       <li class="{% active details_url %}"><a href="{{ details_url }}">Details</a></li>
+
       {% if is_example %}
         {% url 'app:example_job_ranking' as ranking_url %}
       {% else %}
@@ -20,25 +21,34 @@
       <li class="{% active ranking_url %} {% if job.status < 10 %} disabled {% endif %}">
         <a href="{% if job.status < 10 %} # {% else %}{{ ranking_url }}{% endif %}">Ranking</a>
       </li>
-      <li><span class="nav-divider-custom">Visualization</span></li>
-      {% if is_example %}
+
+      <!-- <li><span class="nav-divider-custom">Visualization</span></li> -->
+
+      <!--  PLOT SUMMARY LINKS -->
+      <!-- {% if is_example %}
         {% url 'app:example_job_plot_summary' as plot_summary_url %}
       {% else %}
         {% url 'app:job_plot_summary' job.pk as plot_summary_url %}
       {% endif %}
       <li class="{% active plot_summary_url %} {% if job.status < 10 %} disabled {% endif %}">
         <a href="{% if job.status < 10 %} # {% else %}{{ plot_summary_url }}{% endif %}">Plot Summary</a>
-      </li>
-      {% if is_example %}
-        {% url 'app:example_job_heatmap' as heatmap_url %}
-      {% else %}
-        {% url 'app:job_heatmap' job.pk as heatmap_url %}
-      {% endif %}
-      <li class="{% active heatmap_url %} {% if job.status < 10 %} disabled {% endif %}">
-        <a href="{% if job.status < 10 %} # {% else %}{{ heatmap_url }}{% endif %}">
-          Heatmap
-        </a>
-      </li>
+      </li> -->
+
+      <!--  HEATMAP LINKS -->
+      <!-- {% if job.analysis_type == job.BRAYCURTIS %}
+        {% if is_example %}
+          {% url 'app:example_job_heatmap' as heatmap_url %}
+        {% else %}
+          {% url 'app:job_heatmap' job.pk as heatmap_url %}
+        {% endif %}
+        <li class="{% active heatmap_url %} {% if job.status < 10 %} disabled {% endif %}">
+          <a href="{% if job.status < 10 %} # {% else %}{{ heatmap_url }}{% endif %}">
+            Heatmap
+          </a>
+        </li>
+      {% endif %} -->
+
+      <!--  PCOA REPS LINKS -->
       {% if is_example %}
         {% url 'app:example_job_pcoa_reps' as pcoa_url %}
       {% else %}
@@ -50,16 +60,22 @@
           Representatives
         </a>
       </li>
-      {% if is_example %}
-        {% url 'app:example_job_pcoa_similar' as pcoa_250_url %}
-      {% else %}
-        {% url 'app:job_pcoa_similar' job.pk as pcoa_250_url %}
-      {% endif %}
-      <li class="{% active pcoa_250_url %} {% if job.status < 10 %} disabled {% endif %}">
-        <a href="{% if job.status < 10 %} # {% else %}{{ pcoa_250_url }}{% endif %}">
-          250 Most Similar
-        </a>
-      </li>
+
+      <!--  PCOA 250 LINKS -->
+      <!-- {% if job.analysis_type == job.BRAYCURTIS %}
+        {% if is_example %}
+          {% url 'app:example_job_pcoa_similar' as pcoa_250_url %}
+        {% else %}
+          {% url 'app:job_pcoa_similar' job.pk as pcoa_250_url %}
+        {% endif %}
+        <li class="{% active pcoa_250_url %} {% if job.status < 10 %} disabled {% endif %}">
+          <a href="{% if job.status < 10 %} # {% else %}{{ pcoa_250_url }}{% endif %}">
+            250 Most Similar
+          </a>
+        </li>
+      {% endif %} -->
+
+      <!--  DEND REPS LINKS -->
       {% if is_example %}
         {% url 'app:example_job_dend_reps' as dend_url %}
       {% else %}
@@ -71,16 +87,20 @@
           Representatives
         </a>
       </li>
-      {% if is_example %}
-        {% url 'app:example_job_dend_similar' as dend_250_url %}
-      {% else %}
-        {% url 'app:job_dend_similar' job.pk as dend_250_url %}
-      {% endif %}
-      <li class="{% active dend_250_url %} {% if job.status < 10 %} disabled {% endif %}">
-        <a href="{% if job.status < 10 %} # {% else %}{{ dend_250_url }}{% endif %}">
-          250 Most Similar
-        </a>
-      </li>
+
+      <!--  DEND 250 LINKS -->
+      <!-- {% if job.analysis_type == job.BRAYCURTIS %}
+        {% if is_example %}
+          {% url 'app:example_job_dend_similar' as dend_250_url %}
+        {% else %}
+          {% url 'app:job_dend_similar' job.pk as dend_250_url %}
+        {% endif %}
+        <li class="{% active dend_250_url %} {% if job.status < 10 %} disabled {% endif %}">
+          <a href="{% if job.status < 10 %} # {% else %}{{ dend_250_url }}{% endif %}">
+            250 Most Similar
+          </a>
+        </li>
+      {% endif %} -->
     </ul>
   </div>
   <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10">

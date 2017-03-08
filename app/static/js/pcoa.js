@@ -1,323 +1,229 @@
-function drawPcoa(dataPath, sampleIds) {
-  var margin = {
-    top: 20,
-    right: 20,
-    bottom: 30,
-    left: 80
-  },
-    width = 720 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
-
-  // when user clicks the view by ecosystem button
-  $("#view-by-eco").click(function (e) {
-    // don't scroll back up
-    e.preventDefault();
-    // auto toggle
-    $("#toggle-user-sample").addClass("active");
-
-    $(this).addClass('active');
-    $("#view-by-envo").removeClass('active');
-    // reset when replotting pcoa
-    d3.select("svg").remove();
-    d3.select("svg").remove();
-    d3.select("svg").remove();
-
-    var colorMap = d3.scale.ordinal()
-      .domain([
-        ' Freshwater',
-        ' Plant',
-        ' Soil',
-        ' Animal/Human',
-        ' Geothermal',
-        ' Marine',
-        ' Anthropogenic',
-        ' Biofilm',
-        ' Unknown/User'
-      ])
-      .range([
-        'blue',
-        'Darkgreen',
-        'Gold',
-        'DarkViolet',
-        'SaddleBrown',
-        'Cyan',
-        'DarkOrange',
-        'SlateGray',
-        'Black'
-      ]);
-
-    drawAllPcoa('Ecosystem1', colorMap, margin, width, height, dataPath,
-                sampleIds, true);
+function startPcoa(filePath) {
+  $("#view-by-envo").click(function () {
+    $(this).addClass("active");
+    $("#view-by-eco").removeClass("active");
+    $("#ecosystem-plots").css("display", "none");
+    $("#envo-plots").css("display", "block");
   });
 
-  // when user clicks the view by envo button
-  $("#view-by-envo").click(function (event) {
-    // don't scroll back up
-    event.preventDefault();
-    // auto toggle
-    $("#toggle-user-sample").addClass("active");
-
-    $(this).addClass('active');
-    $("#view-by-eco").removeClass('active');
-    // reset when replotting pcoa
-    d3.select("svg").remove();
-    d3.select("svg").remove();
-    d3.select("svg").remove();
-
-    var colorMap = d3.scale.category20();
-
-    drawAllPcoa('OntologyTerm1', colorMap, margin, width, height, dataPath,
-                sampleIds, false);
-  });
-
-  // when user clicks toggle query label
-  $("#toggle-user-sample").click(function (event) {
-     // hide/unhide label
-    $(this).toggleClass("active");
-    $(".point-labels .query-sample").toggle();
-    event.preventDefault();
+  $("#view-by-eco").click(function () {
+    $(this).addClass("active");
+    $("#view-by-envo").removeClass("active");
+    $("#envo-plots").css("display", "none");
+    $("#ecosystem-plots").css("display", "block");
   });
 
   // when user clicks any of the download links
-  $("#plots .download-link").click(function (event) {
-    var plot = $(this).data("plot");
-    writeDownloadLink(plot);
-    event.preventDefault();
-  });
+  // $("#plots .download-link").click(function (event) {
+  //   var plot = $(this).data("plot");
+  //   writeDownloadLink(plot);
+  //   event.preventDefault();
+  // });
 
-  $(document).ready(function() {
-    $("#view-by-eco").click();
-  });
+  $("#envo-plots").css("display", "none")
+  drawPcoaByGroup(filePath);
 }
 
-/**
- * Function that generates an SVG of the provided plot and opens a new window
- * showing the respective plot
- */
-function writeDownloadLink(plotId) {
-  var html = d3.select("#" + plotId + " svg")
-        .attr("title", plotId.toUpperCase().split("-").join(" "))
-        .attr("version", 1.1)
-        .attr("xmlns", "http://www.w3.org/2000/svg")
-        .node().parentNode.innerHTML;
+// function writeDownloadLink(plotId) {
+//   var html = d3.select("#" + plotId + " svg")
+//         .attr("title", plotId.toUpperCase().split("-").join(" "))
+//         .attr("version", 1.1)
+//         .attr("xmlns", "http://www.w3.org/2000/svg")
+//         .node().parentNode.innerHTML;
+//
+//   window.open("data:image/svg+xml;base64,"+ btoa(html), '_blank');
+// }
 
-  window.open("data:image/svg+xml;base64,"+ btoa(html), '_blank');
+function drawPcoaByGroup(filePath) {
+  $(".svg-container").html('<span>Loading...</span>');
+
+  $.ajax({"url": filePath}).done(function(data, err){
+    mpld3.draw_figure("pcoa-pc1-pc2-ecosystem", data["PC12Ecosystem"]);
+    mpld3.draw_figure("pcoa-pc1-pc3-ecosystem", data["PC13Ecosystem"]);
+    mpld3.draw_figure("pcoa-pc2-pc3-ecosystem", data["PC23Ecosystem"]);
+    mpld3.draw_figure("pcoa-pc1-pc2-envo", data["PC12Envo"]);
+    mpld3.draw_figure("pcoa-pc1-pc3-envo", data["PC13Envo"]);
+    mpld3.draw_figure("pcoa-pc2-pc3-envo", data["PC23Envo"]);
+
+    $(".svg-container > span").remove();
+  });
 };
 
-
 /**
-* Function to draw all PCoA plots onto the page
+* Functions copied from MPLD3 HTML outputs, try not to mess with this
 */
-function drawAllPcoa(plotType, colorMap, margin, width, height, dataPath,
-                     sampleIds, showLegend) {
-  drawPcXVsPcYByType(1, 2, plotType, colorMap, width, height, margin, dataPath,
-                     sampleIds, showLegend);
-  drawPcXVsPcYByType(1, 3, plotType, colorMap, width, height, margin, dataPath,
-                     sampleIds, showLegend);
-  drawPcXVsPcYByType(2, 3, plotType, colorMap, width, height, margin, dataPath,
-                     sampleIds, showLegend);
-}
+mpld3.register_plugin("htmltooltip", HtmlTooltipPlugin);
+HtmlTooltipPlugin.prototype = Object.create(mpld3.Plugin.prototype);
+HtmlTooltipPlugin.prototype.constructor = HtmlTooltipPlugin;
+HtmlTooltipPlugin.prototype.requiredProps = ["id"];
+HtmlTooltipPlugin.prototype.defaultProps = {labels:null, hoffset:0, voffset:10};
 
+function HtmlTooltipPlugin(fig, props){
+  mpld3.Plugin.call(this, fig, props);
+};
 
-/**
-* Function to draw PCX agaisnt PCY, you know, to generate the graphs colored
-* by ecosystem
-*/
-function drawPcXVsPcYByType(pcx, pcy, type, colorMap, width, height, margin,
-                            dataPath, sampleIds, showLegend) {
-  // setup x axis
-  var xValue = function(d) { return d["PC" + pcx]; }, // data -> value
-    xScale = d3.scale.linear().range([0, width]), // value -> display
-    xMap = function(d) { return xScale(xValue(d)); }, // data -> display
-    xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+HtmlTooltipPlugin.prototype.draw = function(){
+  var obj = mpld3.get_element(this.props.id);
+  var labels = this.props.labels;
+  var tooltip = d3.select("body").append("div")
+  .attr("class", "mpld3-tooltip")
+  .style("position", "absolute")
+  .style("z-index", "10")
+  .style("visibility", "hidden");
 
-  // setup y axis
-  var yValue = function(d) { return d["PC" + pcy]; }, // data -> value
-    yScale = d3.scale.linear().range([height, 0]), // value -> display
-    yMap = function(d) { return yScale(yValue(d)); }, // data -> display
-    yAxis = d3.svg.axis().scale(yScale).orient("left");
+  obj.elements()
+  .on("mouseover", function(d, i){
+    tooltip.html(labels[i])
+    .style("visibility", "visible");})
+  .on("mousemove", function(d, i){
+    tooltip
+    .style("top", d3.event.pageY + this.props.voffset + "px")
+    .style("left",d3.event.pageX + this.props.hoffset + "px");
+  }.bind(this))
+  .on("mouseout",  function(d, i){
+    tooltip.style("visibility", "hidden");});
+  };
 
-  // setup fill color
-  var cValue = function(d) {
-    return d[type];
-  },
-  color = colorMap;
+mpld3.register_plugin("interactive_legend", InteractiveLegend);
+InteractiveLegend.prototype = Object.create(mpld3.Plugin.prototype);
+InteractiveLegend.prototype.constructor = InteractiveLegend;
+InteractiveLegend.prototype.requiredProps = ["element_ids", "labels"];
+InteractiveLegend.prototype.defaultProps = {"ax":null, "alpha_unsel":0.2, "alpha_over":1.0, "start_visible":true}
 
-  var legendLabelHeight = 20;
-  var legendHeight = color.domain().length * legendLabelHeight;
+function InteractiveLegend(fig, props){
+  mpld3.Plugin.call(this, fig, props);
+};
 
-  // add the graph canvas to the body of the webpage
-  var svg = d3.select("#pcoa-pc" + pcx + "-pc" + pcy)
-    .append("svg")
-    .attr("font-family", "Helvetica, Arial, sans-serif")
-    .attr("width", width + 100 + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+InteractiveLegend.prototype.draw = function(){
+  var alpha_unsel = this.props.alpha_unsel;
+  var alpha_over = this.props.alpha_over;
 
-  // Add tooltip div
-  var tooltip = d3.select("#pcoa-pc" + pcx + "-pc" + pcy + "-tooltip")
-    .append("div")
-    .attr("class", "tooltip")
-    .style("opacity", 1e-6)
-    .style("font", 12)
-    .style("background", "#FFFF66")
-    .style("border", 0);
+  var legendItems = new Array();
+  for(var i=0; i<this.props.labels.length; i++){
+    var obj = {};
+    obj.label = this.props.labels[i];
 
-  d3.csv(dataPath, function(error, data) {
+    var element_id = this.props.element_ids[i];
+    mpld3_elements = [];
+    for(var j=0; j<element_id.length; j++){
+      var mpld3_element = mpld3.get_element(element_id[j], this.fig);
 
-    // change string (from CSV) into number format
-    data.forEach(function(d) {
-      d["PC" + pcx] = Number(d["PC" + pcx]);
-      d["PC" + pcy] = Number(d["PC" + pcy]);
-    });
+      // mpld3_element might be null in case of Line2D instances
+      // for we pass the id for both the line and the markers. Either
+      // one might not exist on the D3 side
+      if(mpld3_element){
+        mpld3_elements.push(mpld3_element);
+      }
+    }
 
-    // don't want dots overlapping axis, so add in buffer to data domain
-    xScale.domain([d3.min(data, xValue) - 0.1, d3.max(data, xValue) + 0.1]);
-    yScale.domain([d3.min(data, yValue) - 0.1, d3.max(data, yValue) + 0.1]);
-
-    // draw x-axis
-    svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis)
-      .append("text")
-      .attr("class", "label")
-      .attr("x", width)
-      .attr("y", -6)
-      .style("text-anchor", "end")
-      .text("PC" + pcx);
-
-    // draw y-axis
-    svg.append("g")
-      .attr("class", "y axis")
-      .call(yAxis)
-      .append("text")
-      .attr("class", "label")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
-      .text("PC" + pcy);
-
-    // draw dotted line at x = 0
-    svg.append("line")
-      .attr("class", "x line")
-      .attr("x1", xScale(0))
-      .attr("y1", 0)
-      .attr("x2", xScale(0))
-      .attr("y2", height)
-      .style('stroke', '#999999')
-      .style('stroke-width', 1)
-      .style('stroke-dasharray', "5, 5");
-
-    // draw dotted line at y = 0
-    svg.append("line")
-      .attr("class", "y line")
-      .attr("x1", 0)
-      .attr("y1", yScale(0))
-      .attr("x2", width)
-      .attr("y2", yScale(0))
-      .style('stroke', '#999999')
-      .style('stroke-width', 1)
-      .style('stroke-dasharray', "5, 5");
-
-    // draw all points from data
-    svg.append("g")
-      .attr("class", "points")
-      .selectAll("circle")
-      .data(data)
-      .enter()
-        .append("g")
-        .append ("circle")
-        .attr("class", "point")
-        .attr("r", 2.75)
-        .attr("cx", xMap)
-        .attr("cy", yMap)
-        .style("fill", function(d) {
-          // set user queried point to black
-          if (sampleIds.indexOf(d["Sample Name"]) >= 0)
-            return 'black';
-          return color(cValue(d));
-        })
-        .on("mouseover", function(d) {
-          tooltip.transition()
-          .duration(10)
-          .style("opacity", .9);
-
-          tooltip.html(
-            "Sample: " + d["Sample Name"] +
-            "<br>Ecosystem: " + d.Ecosystem1 + " " +
-            d.Ecosystem2.replace(' Unknown', '') + " " +
-            d.Ecosystem3.replace(' Unknown', '') +
-            "<br>Envo ID : " + d.OntologyID1 + ", " +
-            d.OntologyID2.replace(' Unknown', '') + " " +
-            d.OntologyID3.replace(' Unknown', '') +
-            "<br>Envo term: " + d.OntologyTerm1 + ", " +
-            d.OntologyTerm2.replace(' Unknown', '') + " " +
-            d.OntologyTerm3.replace(' Unknown', '') +
-            "<br>Study: " + d.Title + "<br>Study Source " + d["Study Source"]
-          )
-          .style("left", margin.left + xScale(d["PC" + pcx]) + "px")
-          .style("top", margin.top + yScale(d["PC" + pcy]) + "px");
-        })
-        .on("mouseout", function(d) {
-          tooltip.transition()
-          .duration(10)
-          .style("opacity", 0);
-        });
-
-    // draw text label for the user queried sample point
-    svg.append("g")
-      .attr("class", "point-labels")
-      .selectAll()
-      // only draw the text svg element for user submitted samples
-      .data(data.filter(function(sample) {
-        return sampleIds.indexOf(sample["Sample Name"]) >= 0
-      }))
-      .enter()
-        .append("text")
-        .attr("class", "query-sample")
-        .attr("x", xMap)
-        .attr("y", yMap)
-        .text(function(d) {
-          return "..................." + d["Sample Name"];
-        })
-        .attr("text-anchor", "start")
-        .attr("font-weight", "bold")
-        .attr('font-size', "10px")
-        .attr('fill', "red")
-
-  });
-
-  // draw legend
-  if (showLegend) {
-    var legend = svg.append("g")
-    .attr("class", "legend")
-    .selectAll(".legend")
-    .data(color.domain())
-    .enter()
-      .append("g")
-      .attr("class", "legend-item")
-      .attr("transform", function(d, i) {
-        var yCenter = ((height + margin.top) / 2.) - (legendHeight / 2.);
-        return "translate(10," + (yCenter + i * legendLabelHeight) + ")";
-      });
-
-    // draw legend colored rectangles
-    legend.append("rect")
-      .attr("x", width - 0)
-      .attr("width", legendLabelHeight / 2.)
-      .attr("height", legendLabelHeight / 2.)
-      .style("fill", color);
-
-    // draw legend text
-    legend.append("text")
-      .attr("x", width +14)
-      .attr("y", 6)
-      .attr("dy", ".35em")
-      .style("text-anchor", "start")
-      .text(function(d) { return d;});
+    obj.mpld3_elements = mpld3_elements;
+    obj.visible = this.props.start_visible[i]; // should become be setable from python side
+    legendItems.push(obj);
+    set_alphas(obj, false);
   }
 
-}
+  // determine the axes with which this legend is associated
+  var ax = this.props.ax
+  if(!ax){
+    ax = this.fig.axes[0];
+  } else{
+    ax = mpld3.get_element(ax, this.fig);
+  }
+
+  // add a legend group to the canvas of the figure
+  var legend = this.fig.canvas.append("svg:g")
+  .attr("class", "legend");
+
+  // add the rectangles
+  legend.selectAll("rect")
+  .data(legendItems)
+  .enter().append("rect")
+  .attr("height", 10)
+  .attr("width", 25)
+  .attr("x", ax.width + ax.position[0] + 25)
+  .attr("y",function(d,i) {
+    return ax.position[1] + i * 25 + 10;})
+  .attr("stroke", get_color)
+  .attr("class", "legend-box")
+  .style("fill", function(d, i) {
+    return d.visible ? get_color(d) : "white";})
+  .on("click", click).on('mouseover', over).on('mouseout', out);
+
+  // add the labels
+  legend.selectAll("text")
+  .data(legendItems)
+  .enter().append("text")
+  .attr("x", function (d) {
+    return ax.width + ax.position[0] + 25 + 40;})
+  .attr("y", function(d,i) {
+    return ax.position[1] + i * 25 + 10 + 10 - 1;})
+  .text(function(d) { return d.label });
+
+
+  // specify the action on click
+  function click(d,i){
+    d.visible = !d.visible;
+    d3.select(this)
+    .style("fill",function(d, i) {
+      return d.visible ? get_color(d) : "white";
+    })
+    set_alphas(d, false);
+
+  };
+
+  // specify the action on legend overlay
+  function over(d,i){
+    set_alphas(d, true);
+  };
+
+  // specify the action on legend overlay
+  function out(d,i){
+    set_alphas(d, false);
+  };
+
+  // helper function for setting alphas
+  function set_alphas(d, is_over){
+    for(var i=0; i<d.mpld3_elements.length; i++){
+      var type = d.mpld3_elements[i].constructor.name;
+
+      if(type =="mpld3_Line"){
+        var current_alpha = d.mpld3_elements[i].props.alpha;
+        var current_alpha_unsel = current_alpha * alpha_unsel;
+        var current_alpha_over = current_alpha * alpha_over;
+        d3.select(d.mpld3_elements[i].path[0][0])
+        .style("stroke-opacity", is_over ? current_alpha_over :
+        (d.visible ? current_alpha : current_alpha_unsel))
+        .style("stroke-width", is_over ?
+        alpha_over * d.mpld3_elements[i].props.edgewidth : d.mpld3_elements[i].props.edgewidth);
+      } else if((type=="mpld3_PathCollection")||
+      (type=="mpld3_Markers")){
+        var current_alpha = d.mpld3_elements[i].props.alphas[0];
+        var current_alpha_unsel = current_alpha * alpha_unsel;
+        var current_alpha_over = current_alpha * alpha_over;
+        d3.selectAll(d.mpld3_elements[i].pathsobj[0])
+        .style("stroke-opacity", is_over ? current_alpha_over :
+        (d.visible ? current_alpha : current_alpha_unsel))
+        .style("fill-opacity", is_over ? current_alpha_over :
+        (d.visible ? current_alpha : current_alpha_unsel));
+      } else{
+        console.log(type + " not yet supported");
+      }
+    }
+  };
+
+
+  // helper function for determining the color of the rectangles
+  function get_color(d){
+    var type = d.mpld3_elements[0].constructor.name;
+    var color = "black";
+    if(type =="mpld3_Line"){
+      color = d.mpld3_elements[0].props.edgecolor;
+    } else if((type=="mpld3_PathCollection")||
+    (type=="mpld3_Markers")){
+      color = d.mpld3_elements[0].props.facecolors[0];
+    } else{
+      console.log(type + " not yet supported");
+    }
+    return color;
+  };
+};

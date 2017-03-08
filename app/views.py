@@ -123,8 +123,7 @@ def ex_pcoa_reps(request):
     )
 
     context["pcoa_file_path"] = \
-        staticfiles_storage.url("example_data/pcoa_1000.csv")
-    context["samples"] = json_encoder.encode(job_samples)
+        staticfiles_storage.url("example_data/pcoa_1000.json")
     context["job"] = example_job
     context["flash"] = msg_storage
     return render(request, 'job/pcoa_reps.html', context)

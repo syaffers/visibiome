@@ -130,6 +130,7 @@ class BiomSearchJob(models.Model):
     is_normalized_otu = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    last_run_at = models.DateTimeField(null=True)
 
     def __unicode__(self):
         return u"({}) by {} created at {}".format(

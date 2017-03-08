@@ -108,7 +108,7 @@ def details_json(request, job_id):
                 "errorCode": job.error_code,
                 "status": job.get_status_display(),
                 "statusCode": job.status,
-                "createdAt": job.created_at,
+                "lastRunAt": job.last_run_at,
                 "updatedAt": job.updated_at,
             }
         }
@@ -140,6 +140,8 @@ def ranking(request, job_id):
         context["samples"] = json_encoder.encode(job_samples)
         context["job"] = job
         context["flash"] = msg_storage
+        context["barchart_files"] = json_encoder.encode([])
+
         return render(request, 'job/ranking.html', context)
     else:
         messages.add_message(request, messages.ERROR, unauthorized_access_message)
@@ -203,8 +205,7 @@ def pcoa_reps(request, job_id):
             lambda sample: sample.name, job.samples.all()
         )
 
-        context["pcoa_file_path"] = join(dirname(job.biom_file.url), "pcoa_1000.csv")
-        context["samples"] = json_encoder.encode(job_samples)
+        context["pcoa_file_path"] = join(dirname(job.biom_file.url), "pcoa_1000.json")
         context["job"] = job
         context["flash"] = msg_storage
         return render(request, 'job/pcoa_reps.html', context)

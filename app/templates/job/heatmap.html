@@ -5,17 +5,15 @@
 {% block job_page %}
   <h2>Heatmap</h2>
   <p>
-    The heatmap enables user to view the non-phylogenetic (Bray-Curtis)
-    distances for every possible pair of samples. This heatmap is generated with
-    the 250 most similar samples from the reference database against the user
-    submitted sample.
+    The heatmap enables user to view the non-phylogenetic (Bray-Curtis) distances for every
+    possible pair of samples. This heatmap is generated with the 250 most similar representative
+    samples from the reference database against the user submitted samples.
 
   </p>
   <p>
-    The color gradient gives an idea as to the distance between the samples
-    (white being the closest, blue being the farthest). Hover over the heatmap
-    cells to get more information regarding the distance between the two
-    corresponding samples.
+    The color gradient gives an idea as to the distance between the samples (white being the
+    closest, blue being the farthest). Hover over the heatmap cells to get more information
+    regarding the distance between the two corresponding samples.
 
   </p>
 
@@ -28,8 +26,8 @@
 {% endblock %}
 
 {% block lazy_js %}
-<script src="http://d3js.org/d3.v3.min.js" type="text/javascript"></script>
-<script src="http://d3js.org/queue.v1.min.js" type="text/javascript"></script>
+<script src="{% static 'js/d3.v3.min.js' %}" type="text/javascript"></script>
+<script src="{% static 'js/queue.v1.min.js' %}" type="text/javascript"></script>
 <script src="{% static 'js/heatmap.js'%}" type="text/javascript"></script>
 <script>
   var jobDir = "{{ job_dir }}";
