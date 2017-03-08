@@ -1,5 +1,9 @@
+copy-staticfiles-dev:
+	python manage.py collectstatic -i data/ --settings=vzb.settings.development
+
+# Delete your database for this to work properly! Use at your own risk!
 reset-dev:
-	python manage.py collectstatic --settings=vzb.settings.development
+	python manage.py collectstatic -i data/ --settings=vzb.settings.development
 	python manage.py migrate --settings=vzb.settings.development
 	python manage.py loaddata initial.json --settings=vzb.settings.development
 	python manage.py createsuperuser --settings=vzb.settings.development
@@ -12,7 +16,7 @@ reset-local:
 	python manage.py createsuperuser --settings=vzb.settings.local
 	# a really hard password
 
-start-worker:
+start-worker-local:
 	celery -A vzb worker
 
 start-local:
@@ -20,6 +24,9 @@ start-local:
 
 start-dev:
 	uwsgi --ini uwsgi.ini
+
+stop-dev:
+	uwsgi --stop /tmp/vzb-master.pid
 
 restart-dev:
 	uwsgi --stop /tmp/vzb-master.pid

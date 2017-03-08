@@ -1,6 +1,14 @@
 # Visibiome: Microbiome Search and Visualization Tool #
 
-## Setup ##
+## Using the VirtualBox image
+We recommend users who would like to use Visibiome to download the prepared
+VirtualBox image. This removes the necessary configuration and provides a
+barebones usable deployment complete with databases, pre-calculated matrix data
+and the webserver itself.
+
+The Visibiome distribution can be found at http://link.to-be-put-here.com/
+
+## QIIME-based Ubuntu VM Setup ##
 There are three possible deployment settings (indicated in this document with a
   placeholder `<SETTING>`). The settings are `local`, `deployment`, `production`
   which is stored under `vzb/settings`. Any lines showing the `$` sign at the
@@ -23,7 +31,13 @@ There are three possible deployment settings (indicated in this document with a
 
         $ pip install -r requirements.txt
 
-5. Visibiome handles many relational database systems but we use MySQL. Edit
+5. Matplotlib has some breaking issues with servers without Xorg, it is advised
+  to add the following line into your `matplotlibrc` file (usually found in
+  `~/.config/matplotlib/matplotlibrc`).
+
+        backend : agg
+
+6. Visibiome handles many relational database systems but we use MySQL. Edit
   `vzb/settings/<SETTING>.py` to update the webserver database configuration. Be
   sure to create the database before doing the following steps
 
@@ -42,7 +56,7 @@ There are three possible deployment settings (indicated in this document with a
           },
         ...
 
-6. Update `vzb/settings/<SETTING>.py` to match current Microbiome DB service
+7. Update `vzb/settings/<SETTING>.py` to match current Microbiome DB service
 
         ...
         # Microbiome Database configuration. This database is not handled by
@@ -58,31 +72,31 @@ There are three possible deployment settings (indicated in this document with a
         }
         ...
 
-7. Edit `vzb/settings/<SETTING>.py` to include Redis server URL by editing the
+8. Edit `vzb/settings/<SETTING>.py` to include Redis server URL by editing the
   following line. Set `<REDIS_IP_ADDRESS>` to `127.0.0.1` for local redis.
 
         ...
         BROKER_URL = "redis://<REDIS_IP_ADDRESS>//"
         ...
 
-8. Move the static files for live deployment (for `development` and `production`
+9. Move the static files for live deployment (for `development` and `production`
   settings only, do not perform for `local` setting!)
 
         $ python manage.py collectstatic --settings=vzb.settings.development
 
-9. Migrate and populate database. Clear (or delete) the current database to
+10. Migrate and populate database. Clear (or delete) the current database to
   start with a fresh installation.
 
         $ python manage.py migrate --settings=vzb.settings.<SETTING>
         $ python manage.py loaddata initial.json --settings=vzb.settings.<SETTING>
 
-10. Create an admin account (optional, but useful!). Change `<SETTING>` to your
+11. Create an admin account (optional, but useful!). Change `<SETTING>` to your
   current deployment settings
 
         $ python manage.py createsuperuser --settings=vzb.settings.<SETTING>
 
-11. Download pre-calculated distance matrix files into the `staticfiles/data` directory (for
-  local deployment, put into `app/static/data/` folder)
+12. Download pre-calculated distance matrix files into the `staticfiles/data`
+  directory (for local deployment, put into `app/static/data/` folder)
 
         $ cd staticfiles/data (or app/static/data for local)
         $ for f in $(cat download_these_files.txt); do wget $f; done;
@@ -187,3 +201,19 @@ called
 - Development or production server:
 
         $ uwsgi --stop /tmp/vzb-master.pid
+
+## Installing Visibiome on fresh Ubuntu distributions ##
+1. Start with the following minimal installations:
+
+        $ sudo apt-get install git python-pip mysql-server libmysqld-dev
+
+2. Follow the tutorial above for QIIME-based VMs
+
+## Using the Makefile
+The `Makefile` in this project is provided as quick tools from the developer.
+These commands are aliases for sets of commands to perform initiation,
+termination and resets of deployments. Use at your own risk and always check the
+commands before you perform any of these actions. `Makefile` commands can be
+called as follows:
+
+        $ make <MAKEFILE_COMMAND>
