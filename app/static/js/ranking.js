@@ -57,6 +57,16 @@ function showBarchartsContainer(containerIndex) {
  */
 function createRankingCards(data, index, barchartFiles) {
   data.forEach(function(content) {
+    var formatPvalue = ""
+    if (Number(content["pvalue"]) < 0.01) {
+      formatPvalue = "< 0.01"
+    } else {
+      if (Number(content["pvalue"]) == 1) {
+        formatPvalue = "N/A"
+      } else {
+          formatPvalue = String(Math.round(content["pvalue"] * 100) / 100);
+      }
+    }
     var html = ''+
     '<div class="card">' +
       '<h4>#' +
@@ -64,7 +74,8 @@ function createRankingCards(data, index, barchartFiles) {
         '<br>'+
         '<small>' +
           '<strong>' +
-            '(Distance: ' + content['Total_Distance'] + ', P-value: ' + content['pvalue'] +
+            '(Distance: ' + content['Total_Distance'] + ', ' +
+              '<abbr title="' + content["pvalue"] + '">P-value: ' + formatPvalue + '</abbr>' +
             ', Sample size: ' + content['Total_Sample_Size'] + ')' +
           '</strong>' +
         '</small>' +
