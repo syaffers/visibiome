@@ -1,0 +1,10 @@
+https://s3.amazonaws.com/visibiome-data-files/10k_bray_curtis_adaptive.npy.gz
+https://s3.amazonaws.com/visibiome-data-files/10k_samples.pcl
+https://s3.amazonaws.com/visibiome-data-files/24K_EMDunifrac_copynrCorrected_DM.h5
+https://s3.amazonaws.com/visibiome-data-files/distanceProbability.npy
+https://s3.amazonaws.com/visibiome-data-files/familyColorDict.pcl
+https://s3.amazonaws.com/visibiome-data-files/genusColorDict.pcl
+https://s3.amazonaws.com/visibiome-data-files/gg13_97_otus2.pcl
+https://s3.amazonaws.com/visibiome-data-files/gnat24Kemdu50b_noRef.pcl
+https://s3.amazonaws.com/visibiome-data-files/orderedSampleIDs.pcl
+https://s3.amazonaws.com/visibiome-data-files/phylumColorDict.pcl

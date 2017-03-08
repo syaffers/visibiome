@@ -5,11 +5,16 @@
 .idea/tasks.xml
 
 venv/
-staticfiles/*/
+
 staticfiles/*
 !staticfiles/delete.me
+!staticfiles/data/
 
-app/static/data/
+staticfiles/data/*
+!staticfiles/data/download_these_files.txt
+
+app/static/data/*
+!app/static/data/download_these_files.txt
 
 mediafiles/*/
 !mediafiles/delete.me

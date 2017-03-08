@@ -81,14 +81,11 @@ There are three possible deployment settings (indicated in this document with a
 
         $ python manage.py createsuperuser --settings=vzb.settings.<SETTING>
 
-11. Download distance matrix files into the `staticfiles/data` directory (for
+11. Download pre-calculated distance matrix files into the `staticfiles/data` directory (for
   local deployment, put into `app/static/data/` folder)
 
-        $ cd staticfiles/ (or app/static/ for local)
-        $ mkdir data/
-        $ cd data/
-        $ wget https://s3.amazonaws.com/visibiome-data-files/10k_bray_curtis_adaptive.npy.gz
-        $ wget https://s3.amazonaws.com/visibiome-data-files/10k_samples.pcl
+        $ cd staticfiles/data (or app/static/data for local)
+        $ for f in $(cat download_these_files.txt); do wget $f; done;
         $ gunzip 10k_bray_curtis_adaptive.npy.gz
 
 ### Additional Settings for production

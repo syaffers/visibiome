@@ -86,4 +86,4 @@ TEN_K_DATA_PATH = os.path.join(STATIC_ROOT, 'data/')
 # Use a live redis cache to do message queueing
 # BROKER_URL = "redis://:pizzaisgreat@"\
 #              "pub-redis-17533.us-east-1-4.3.ec2.garantiadata.com:17533"
-BROKER_URL = "redis://10.0.2.2//"
+BROKER_URL = "redis://127.0.0.1//"
