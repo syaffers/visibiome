@@ -50,14 +50,14 @@
       </div>
     </div>
     <div class="panel panel-default">
-      <div class="panel-heading" role="tab" id="headingTwo">
+      <div class="panel-heading" role="tab" id="inputTab">
         <h4 class="panel-title">
-          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#input" aria-expanded="false" aria-controls="input">
             Input
           </a>
         </h4>
       </div>
-      <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+      <div id="input" class="panel-collapse collapse" role="tabpanel" aria-labelledby="inputTab">
         <div class="panel-body">
           <p>
             Visibiome takes BIOM file as an input. BIOM file can either be in
@@ -65,9 +65,10 @@
             for biological sample by observation contingency tables. BIOM is a
             recognized standard for the Earth Microbiome Project. Users can use
             Qiime to create a BIOM formatted table after running
-            closed-reference OTU picking on sequences against GreenGenes 13_5.
-            The toy samples shown below have only one sample although up to 10
-            samples can be handled by Visibiome in a single job.
+            closed-reference OTU picking on sequences against GreenGenes 13.5.
+            The toy samples shown below have only one sample although
+            <strong>up to 10 samples</strong> can be handled by Visibiome in a
+            single job.
           </p>
           <p>
             Example TSV text:
@@ -75,17 +76,17 @@
           <pre>
 # Constructed from biom file
 #OTU ID     S1
-O1    0.0
-O2    3.0
-O3    5.0
-O4    4.0
-O5    5.0
-O6    6.0
-O7    5.0
-O8    8.0
-O9    9.0
-O10   1.0
-O11   2.0
+4371191     0.0
+126871      3.0
+533625      5.0
+217471      4.0
+834306      5.0
+114076      6.0
+253428      5.0
+544561      8.0
+813711      9.0
+1827890     1.0
+4294883     2.0
           </pre>
           <p>
             Example JSON text (output from
@@ -111,15 +112,15 @@ O11   2.0
   ],
   "rows": [
     {
-      "id": "O1",
+      "id": "253428",
       "metadata": null
     },
     {
-      "id": "O2",
+      "id": "533625",
       "metadata": null
     },
     {
-      "id": "O3",
+      "id": "1827890",
       "metadata": null
     },
     // ...
@@ -136,72 +137,94 @@ O11   2.0
       </div>
     </div>
     <div class="panel panel-default">
-      <div class="panel-heading" role="tab" id="headingThree">
+      <div class="panel-heading" role="tab" id="outputTab">
         <h4 class="panel-title">
-          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#output" aria-expanded="false" aria-controls="output">
             Output
           </a>
         </h4>
       </div>
-      <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+      <div id="output" class="panel-collapse collapse" role="tabpanel" aria-labelledby="outputTab">
         <div class="panel-body">
-          Visibiome has several ways to put the user in an environmental
-          context. These visualizations are generated  when the user loads the
-          page. For the optimal experience, we recommend that you use a modern
-          browser which is capable of viewing SVGs and on a computer with enough
-          memory to support the large visualizations.
+          <p>
+            Visibiome has several ways to put the user samples in an
+            environmental context. Mainly, the contextualization is done
+            through visualizations of a queried sample against the Visibiome
+            database samples. These visualizations are generated using
+            <a href="https://d3js.org/">d3.js</a> when the user loads the page.
+            For the optimal experience, we recommend that users download a
+            modern browser which is capable of viewing SVGs and on a computer
+            with enough memory to support the large visualizations. Typically a
+            recent version of Mozilla Firefox or Google Chrome is more than
+            adequate. <em>IE9 and below are unsupported and no guarantees can
+            be made for the visualizations appearing properly in those
+            browsers.</em>
+          </p>
+          <p>Available visualizations:</p>
           <ol>
-            <li>Ranking</li>
-            <li>Heatmap</li>
-            <li>
-              Dendrogram
-              <ol class="lower">
-                <li>Against 1000 representatives</li>
-                <li>Against 250 most similar samples</li>
-              </ol>
-            </li>
-            <li>
-              PCoA plots
-              <ol class="lower">
-                <li>Against 1000 representatives</li>
-                <li>Against 250 most similar samples</li>
-              </ol>
-            </li>
+            <li>Ranking with barcharts</li>
+            <li>Dendrogram against representatives</li>
+            <li>PCoA plots against representatives</li>
           </ol>
         </div>
       </div>
     </div>
     <div class="panel panel-default">
-      <div class="panel-heading" role="tab" id="headingFour">
+      <div class="panel-heading" role="tab" id="rankingTab">
         <h4 class="panel-title">
-          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-            1. Ranking
+          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#ranking" aria-expanded="false" aria-controls="ranking">
+            1. Ranking with barcharts
           </a>
         </h4>
       </div>
-      <div id="collapseFour" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
+      <div id="ranking" class="panel-collapse collapse" role="tabpanel" aria-labelledby="rankingTab">
         <div class="panel-body">
           <p>
-            Ranking has 3 different ways to present the 20 most similar samples
-            in our database to the user sample based upon the non-Phylogenetic
-            (Bray Curtis) distance. Heatmap, Dendrogram, and Tabular format.
-            <br>
-      		  <em>
-              *For heatmap and dendrogram please look for their respective
-              sections below.
-            </em>
+            Ranking has 2 different ways to present the most similar samples
+            in our database to the user sample based upon the distance measure
+            selected by the user when making a query: clade barcharts and
+            ranking cards.
           </p>
           <p>
-            In tabular format, users can view the 20 most similar samples to the
-            uploaded sample. It contains the details for each sample such as
+            Visibiome features 3 barcharts, for three different taxonomic
+            ranks: phylum, family genus. Each barchart contains clades of the
+            samples which are matched (including the user-submitted samples)
+            according to each taxonomic rank. These clades are inferred based
+            on the GreenGenes ID of the OTUs in the samples. The barcharts
+            allow the users to identify the culprits of what is causing the
+            samples to match and a higher granularity compared to other plots
+            in Visibiome.
+          </p>
+          <p>
+            The ranking cards allow users to view the most similar samples to the
+            uploaded samples. It contains the details for each sample such as
             study title and source, EnvO(s), Ecosystem, and Sample depth. These
-            details helps user to characterize his sample and perform more
-            specific downstream analysis.
+            details help user to characterize uploaded samples against actual
+            samples which can be found in popular microbiome databases and
+            perform more specific downstream analysis.
+          </p>
+          <p>
+            <strong>
+              Why do I see "No barcharts available for this sample" in my
+              ranking page?
+            </strong>
+            <br>
+            <ol>
+              <li>We do not currently provide barcharts for Bray-Curtis queries.</li>
+              <li>
+                Our algorithms have strict bounds on distances and if matched
+                samples are much farther than a threshold, we do not consider
+                the matched samples as a relevant match and no barcharts are
+                drawn for these user samples. When relevant, a maximum of 6
+                matches (bars) are shown. Poorly matched results are
+                still placed in the ranking table.
+              </li>
+            </ol>
           </p>
         </div>
       </div>
     </div>
-    <div class="panel panel-default">
+    <!-- <div class="panel panel-default">
       <div class="panel-heading" role="tab" id="headingFive">
         <h4 class="panel-title">
           <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
@@ -224,59 +247,61 @@ O11   2.0
           </p>
         </div>
       </div>
-    </div>
+    </div> -->
     <div class="panel panel-default">
-      <div class="panel-heading" role="tab" id="headingSix">
+      <div class="panel-heading" role="tab" id="dendrogramTab">
         <h4 class="panel-title">
-          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
+          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#dendrogram" aria-expanded="false" aria-controls="dendrogram">
             3. Dendrogram
           </a>
         </h4>
       </div>
-      <div id="collapseSix" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingSix">
+      <div id="dendrogram" class="panel-collapse collapse" role="tabpanel" aria-labelledby="dendrogramTab">
         <div class="panel-body">
           <p>
             A dendrogram is a tree diagram used to illustrate the arrangement
             of the clusters produced by hierarchical clustering. Each sample
             has colored bar(s) to represent the ecosystem(s) it belongs to,
             simplifying the environmental similarity to the user. Hovering the
-            mouse will give the details about the sample and one or more EnvOs
-            of the sample further increasing the comprehensiveness of result.
-            On the sidebar user can find 2 dendogram options, one is against
-        		all the representatives of the reference database while the second
-            is against the 250 most similar samples.
+            mouse over the leaf nodes will show more details about the sample
+            and one or more EnvO label of the samplefor a more comprehensive
+            visualization.
           </p>
         </div>
       </div>
     </div>
     <div class="panel panel-default">
-      <div class="panel-heading" role="tab" id="headingSeven">
+      <div class="panel-heading" role="tab" id="pcoaTab">
         <h4 class="panel-title">
-          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseSeven" aria-expanded="false" aria-controls="collapseSeven">
+          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#pcoa" aria-expanded="false" aria-controls="pcoa">
             4. PCoA
           </a>
         </h4>
       </div>
-      <div id="collapseSeven" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingSeven">
+      <div id="pcoa" class="panel-collapse collapse" role="tabpanel" aria-labelledby="pcoaTab">
         <div class="panel-body">
           <p>
-            Principal coordinates analysis gives another dimension to understand
-            the results. Two different options are given to see the principle
-            coordinates against the 250 most similar samples and against all the
-            representatives.
+            Principal coordinates analysis (PCoA) adds another dimension to
+            contextualizing the samples. It is hard to visually see how the
+            samples cluster together in high dimensional space. Using PCoA, we
+            reduce the dimension of the original data down to 2 dimensions
+            split into three plots of top 3 most "important" principal
+            coordinates. The PCoA plots gives a rough idea how user samples
+            cluster against the Visibiome database samples and as well as how
+            all the matches cluster together.
           </p>
         </div>
       </div>
     </div>
     <div class="panel panel-default">
-      <div class="panel-heading" role="tab" id="headingEight">
+      <div class="panel-heading" role="tab" id="testExampleTab">
         <h4 class="panel-title">
-          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseEight" aria-expanded="false" aria-controls="collapseEight">
+          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#testExample" aria-expanded="false" aria-controls="testExample">
             5. Test Example
           </a>
         </h4>
       </div>
-      <div id="collapseEight" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingSeven">
+      <div id="testExample" class="panel-collapse collapse" role="tabpanel" aria-labelledby="testExampleTab">
         <div class="panel-body">
           <p>
             If you wish to run an example task to be familiar with the user

@@ -14,15 +14,20 @@ function displayRankings(jobSamplesRankingFile, sampleIds, barchartFiles) {
       createRankingCards(data[sampleId]["ranking"], index + 1, barchartFiles);
       var cssSafeSampleId = sampleId.replace(/[^0-9a-zA-Z]/g, "-");
       var sampleBarchartsContainer = "#ranking-barcharts-" + (index + 1);
+      var noBarchartHtml = '<hr>' +
+        '<p>No barcharts available for this sample. ' +
+          '<a href="/help#ranking">Help</a>' +
+        '</p>' +
+      '<hr>';
 
       if (data[sampleId]["barcharts"] === null) {
         $(sampleBarchartsContainer + " .barchart-container").remove()
-        $(sampleBarchartsContainer).html("<p>No barcharts available for this sample.</p>");
+        $(sampleBarchartsContainer).html(noBarchartHtml);
 
       } else {
         if (Object.keys(data[sampleId]["barcharts"]).length === 0) {
           $(sampleBarchartsContainer + " .barchart-container").remove()
-          $(sampleBarchartsContainer).html("<p>No barcharts available for this sample.</p>");
+          $(sampleBarchartsContainer).html(noBarchartHtml);
 
         } else {
           var loaderHtml = '<span>Loading...<span>';
