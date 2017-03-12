@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import auth, messages
 from .models import Guest, UserForm
 
+context = {"flash": None}
+
 
 def register(request):
     """
@@ -42,10 +44,8 @@ def register(request):
                 request, messages.ERROR, "Failed to create user."
             )
 
-    context = {
-        "form": form,
-        "flash": msg_storage,
-    }
+    context["form"] = form
+    context["flash"] =  msg_storage
     return render(request, "auth/register.html", context)
 
 
@@ -64,7 +64,7 @@ def login(request):
     if request.user.is_authenticated():
         return redirect("app:dashboard")
     if request.method == "GET":
-        return render(request, 'auth/login.html')
+        return render(request, 'auth/login.html', context)
     elif request.method == "POST":
         username = request.POST['username']
         password = request.POST['password']
@@ -85,14 +85,13 @@ def login(request):
                 messages.add_message(
                     request, messages.ERROR, "Your account is not activated!"
                 )
-                return render(
-                    request, "auth/login.html", {"flash": msg_storage}
-                )
+                context["flash"] = msg_storage
+                return render(request, "auth/login.html", context)
         else:
             messages.add_message(
-                request, messages.ERROR, "Invalid email and/or password")
-            return render(
-                request, "auth/login.html", {"flash": msg_storage})
+                request, messages.ERROR, "Invalid email and/or password"
+            )
+            return render(request, "auth/login.html", {"flash": msg_storage})
 
 
 def logout(request):
@@ -144,8 +143,7 @@ def update_details(request):
                 request, messages.ERROR, "Failed to save information.")
 
     request.user.refresh_from_db()
-    context = {
-        "form": form,
-        "flash": msg_storage,
-    }
+    context["form"] = form
+    context["flash"] = msg_storage
+    
     return render(request, 'auth/update.html', context)
