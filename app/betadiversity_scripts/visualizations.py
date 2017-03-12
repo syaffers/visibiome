@@ -21,7 +21,8 @@ class Sample:
                  ontology_id_1, ontology_term_1,
                  ontology_id_2, ontology_term_2,
                  ontology_id_3, ontology_term_3,
-                 sample_size, distance, pvalue, study_source, barcharts=None):
+                 sample_size, distance, pvalue, study_source, link,
+                 barcharts=None):
     	self.Ranking = rank
     	self.Name = name
     	self.Study = title
@@ -45,6 +46,7 @@ class Sample:
     	self.Total_Sample_Size = sample_size
     	self.Total_Distance = distance
     	self.Study_Source = study_source
+        self.Link = link
         if not barcharts is None:
             self.barchart_genus = barcharts[1]
             self.barchart_family = barcharts[2]
@@ -52,16 +54,28 @@ class Sample:
 
 def retrieve_source(sample_study):
     """String replacing subroutine"""
+    mgrast_link = "http://metagenomics.anl.gov/linkin.cgi?project=mgp"
+    emb_link = "https://qiita.ucsd.edu/study/description/"
+
     if sample_study.find('CHA_') != -1:
-        return "Chaffron data"
+        return ("Chaffron Data", None)
+
     elif sample_study.find('QDB_') != -1:
-        return "Earth Microbiome Project"
+        study_id = sample_study.split("QDB_")[1]
+        return ("Earth Microbiome Project", emb_link + study_id)
+
     elif sample_study.find('MI_MIT_') != -1:
-        return "MI MIT Sequencing"
+        return ("MI MIT Sequencing", None)
+
     elif sample_study.find('SRA_') != -1:
-        return "SRA data"
+        return ("SRA Data", None)
+
+    elif sample_study.find('MGRAST_') != -1:
+        study_id = sample_study.split("MGRAST_")[1]
+        return ("MgRAST Data", mgrast_link + study_id)
+
     else:
-        return "Unknown"
+        return ("Unknown", None)
 
 
 def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=None):
@@ -132,7 +146,7 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=
 
                 pvalue = pvalues[min(int(m_n_df[sample_id_j][sample_id_i]*10000),9999)]
 
-                study = retrieve_source(study_i)
+                study, link = retrieve_source(study_i)
 
             # when we encounter a new sample from database
             elif sample_event_id != sample_id_i:
@@ -143,7 +157,7 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=
                            ontology_ids[0], ontology_terms[0],
                            ontology_ids[1], ontology_terms[1],
                            ontology_ids[2], ontology_terms[2],
-                           sample_size, distance, pvalue, study
+                           sample_size, distance, pvalue, study, link
                     )
                 ))
                 # create new sample
@@ -158,7 +172,7 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=
                 distance = "%.4f" % m_n_df[sample_id_j][sample_id_i]
                 pvalue = pvalues[min(int(m_n_df[sample_id_j][sample_id_i] * 10000), 9999)]
 
-                study = retrieve_source(study_i)
+                study, link = retrieve_source(study_i)
 
             # if its the same sample
             else:
@@ -174,7 +188,7 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=
                    ontology_ids[0], ontology_terms[0],
                    ontology_ids[1], ontology_terms[1],
                    ontology_ids[2], ontology_terms[2],
-                   sample_size, distance, pvalue, study
+                   sample_size, distance, pvalue, study, link
             )
         ))
 
@@ -411,7 +425,7 @@ def query_pcoa_metadata(sample_id):
         ontology_term = row["OntologyTerm"].strip()
         ontology_id = row["OntologyID"].strip()
         ecosystem = row["ecosystem"].strip()
-        study_source = retrieve_source(row["study"].strip())
+        study_source, link = retrieve_source(row["study"].strip())
 
         # first run
         if sample_event_id is None:
@@ -712,7 +726,7 @@ def query_dendrogram_metadata(m_sample_id):
             sample_event_id = row["sample_event_ID"]
             title = row["title"]
             sample_size = float(row["sample_size"])
-            study_source = retrieve_source(row["study"])
+            study_source, link = retrieve_source(row["study"])
             ontology_terms.append(ontology_term)
             ecosystems.append(ecosystem)
             ecocolors.append(ecocolor)

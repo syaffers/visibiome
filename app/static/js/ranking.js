@@ -61,47 +61,61 @@ function showBarchartsContainer(containerIndex) {
  * Cards template for each sample
  */
 function createRankingCards(data, index, barchartFiles) {
-  data.forEach(function(content) {
+  data.forEach(function(sample) {
     var formatPvalue = ""
-    if (Number(content["pvalue"]) < 0.01) {
+    if (Number(sample["pvalue"]) < 0.01) {
       formatPvalue = "< 0.01"
     } else {
-      if (Number(content["pvalue"]) == 1) {
+      if (Number(sample["pvalue"]) == 1) {
         formatPvalue = "N/A"
       } else {
-          formatPvalue = String(Math.round(content["pvalue"] * 100) / 100);
+          formatPvalue = String(Math.round(sample["pvalue"] * 100) / 100);
       }
     }
+
+    var studyLink = sample["Link"];
+    var sampleHeader = '<span title="' + sample['Name'] + '">#'
+      + sample['Ranking'] + ': ' + sample['Name'] + '</span>';
+
+    if (studyLink !== null) {
+      sampleHeader = '<a href="' + studyLink + '" target="_blank">' +
+        sampleHeader + ' <span class="glyphicon glyphicon-new-window glyphicon-sm"></span></a>';
+    }
+
+    studyTitleTruncated = (sample['Study'].length > 50)
+      ? sample['Study'].slice(0, 50) + "..."
+      : sample['Study'];
+
     var html = ''+
     '<div class="card">' +
-      '<h4>#' +
-        content['Ranking'] + ': ' + content['Name'] +
+      '<h4>' +
+        sampleHeader +
         '<br>'+
         '<small>' +
           '<strong>' +
-            '(Distance: ' + content['Total_Distance'] + ', ' +
-              '<abbr title="' + content["pvalue"] + '">P-value: ' + formatPvalue + '</abbr>' +
-            ', Sample size: ' + content['Total_Sample_Size'] + ')' +
+            '(Distance: ' + sample['Total_Distance'] + ', ' +
+              '<abbr title="' + sample["pvalue"] + '">P-value: ' + formatPvalue + '</abbr>' +
+            ', Sample size: ' + sample['Total_Sample_Size'] + ')' +
           '</strong>' +
         '</small>' +
       '</h4>' +
       '<p>' +
-        '<strong>' + content['Study'] + '</strong> ' +
-        '<em>' + content['Study_Source'] + '</em>' +
+        '<strong title="' + sample["Study"] + '">' + studyTitleTruncated + '</strong> ' +
+        '<em>(Source: ' + sample['Study_Source'] + ')</em>' +
         '<div class="row">' +
           '<div class="col-xs-4">' +
             '<p><strong>EnvO 1</strong> ' +
-              (content['S_EnvO_1'] == " " ? "-" : content['S_EnvO_1']) +
+              (sample['S_EnvO_1'] == " " ? "-" : sample['S_EnvO_1']) +
             '</p>' +
           '</div>' +
           '<div class="col-xs-4">' +
             '<p><strong>EnvO 2</strong> ' +
-              (content['S_EnvO_2'] == " " ? "-" : content['S_EnvO_2']) +
+              (sample['S_EnvO_2'] == " " ? "-" : sample['S_EnvO_2']) +
             '</p>' +
           '</div>' +
           '<div class="col-xs-4">' +
             '<p><strong>EnvO 3</strong> ' +
-              (content['S_EnvO_3'] == " " ? "-" : content['S_EnvO_3']) +
+              (sample['S_EnvO_3'] == " " ? "-" : sample['S_EnvO_3']) +
             '</p>' +
           '</div>' +
         '</div>' +
