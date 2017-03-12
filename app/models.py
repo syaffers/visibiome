@@ -70,7 +70,7 @@ class BiomSearchJob(models.Model):
     ANALYSISTYPES = (
         (BRAYCURTIS, "Bray Curtis"),
         (GNATUNIFRAC, "GNAT/UniFrac"),
-        (HIEREPUNIFRAC, "Hierarchical Representatives/UniFrac")
+        # (HIEREPUNIFRAC, "Hierarchical Representatives/UniFrac")
     )
 
     FILE_IO_ERROR = -1
