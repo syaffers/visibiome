@@ -162,3 +162,95 @@ div.tooltip::after {
   border-left: 4px solid #FF6666;
   border-bottom: 4px solid #FFFF66;
 }
+
+/* PLACEHOLDER CSS */
+@keyframes placeHolderShimmer{
+  0%{
+    background-position: -468px 0
+  }
+  100%{
+    background-position: 468px 0
+  }
+}
+
+.animated-background {
+  animation-duration: 1s;
+  animation-fill-mode: forwards;
+  animation-iteration-count: infinite;
+  animation-name: placeHolderShimmer;
+  animation-timing-function: linear;
+  background: #f6f7f8;
+  background: linear-gradient(to right, #eeeeee 8%, #dddddd 18%, #eeeeee 33%);
+  background-size: 800px 104px;
+  height: 132px;
+  position: relative;
+}
+
+.background-masker {
+  background: #fff;
+  position: absolute;
+}
+
+.background-masker.placeholder-header {
+  top: 0px;
+  left: 250px;
+  height: 24px;
+  width: calc(100% - 250px);
+}
+
+.background-masker.placeholder-subheader {
+  top: 28px;
+  left: 320px;
+  height: 14px;
+  width: calc(100% - 320px);
+}
+
+.background-masker.placeholder-details {
+  top: 54px;
+  left: 280px;
+  height: 14px;
+  width: calc(100% - 280px);
+}
+
+.background-masker.placeholder-break-details,
+.background-masker.placeholder-break-header,
+.background-masker.placeholder-break-subheader {
+  left: 0px;
+  width: 100%;
+}
+
+.background-masker.placeholder-break-header {
+  top: 24px;
+  height: 4px;
+}
+
+.background-masker.placeholder-break-subheader {
+  top: 42px;
+  height: 12px;
+}
+
+.background-masker.placeholder-break-details {
+  top: 68px;
+  height: 12px;
+}
+
+.background-masker.placeholder-envo-1,
+.background-masker.placeholder-envo-2 {
+  top: 80px;
+  height: 52px;
+  width: 30px;
+}
+
+.background-masker.placeholder-envo-1 {
+  top: 80px;
+  height: 52px;
+  left: 33%;
+  width: 30px;
+}
+
+.background-masker.placeholder-envo-2 {
+  top: 80px;
+  height: 52px;
+  left: 66%;
+  width: 30px;
+}

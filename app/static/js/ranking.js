@@ -44,6 +44,7 @@ function displayRankings(jobSamplesRankingFile, sampleIds, barchartFiles) {
         }
       }
 
+      $(".card-placeholder").remove();
     });
 
   });
