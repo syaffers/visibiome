@@ -120,6 +120,17 @@ function add(a, b) {
   return a + b;
 }
 
+var tablesorterOptions = {
+  headers: {
+    6: {
+      sorter: false
+    },
+    7: {
+      sorter: false
+    }
+  }
+}
+
 $(document).ready(function() {
   $(biomSearchFormId)
     .find(".checkbox-criteria input[type=checkbox]")
@@ -129,6 +140,6 @@ $(document).ready(function() {
   $(otuTextarea).blur(handleFillTextfield);
   $(removeJobButtons).click(handleRemoveJob);
   $(rerunJobButtons).click(handleRerunJob);
-  $("#table-dashboard").tablesorter();
+  $("#table-dashboard").tablesorter(tablesorterOptions);
   setInterval(handleUpdateJobDetails, 10000);
 });

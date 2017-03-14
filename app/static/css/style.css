@@ -173,6 +173,47 @@ div.tooltip::after {
   }
 }
 
+table.tablesorter thead tr {
+  background-image: url("../img/bg.gif");
+  background-repeat: no-repeat;
+  background-position: center right;
+  cursor: pointer;
+  cursor: pointer;
+}
+
+table.tablesorter .header:hover {
+  text-decoration: underline;
+}
+
+table.tablesorter thead tr .headerSortDown {
+    background-image: url("../img/desc.gif");
+}
+
+table.tablesorter thead tr .headerSortUp {
+    background-image: url("../img/asc.gif");
+}
+
+.caret-up {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 2px;
+  vertical-align: middle;
+  border-top: 4px dashed;
+  border-top: 4px solid \9;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+  transform: rotate(180deg) translate(0, 2px);
+}
+
+.headerSortDown .caret {
+  display: none;
+}
+
+.headerSortUp .caret-up {
+  display: none;
+}
+
 .animated-background {
   animation-duration: 1s;
   animation-fill-mode: forwards;
