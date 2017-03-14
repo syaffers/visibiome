@@ -244,7 +244,10 @@ class BiomSearchForm(forms.ModelForm):
         except KeyError:
             criteria = []
 
-        biom_file = self.cleaned_data["biom_file"]
+        try:
+            biom_file = self.cleaned_data["biom_file"]
+        except KeyError:
+            biom_file = None
 
         # if number of criteria chosen is more than 3
         if len(criteria) > 3:
