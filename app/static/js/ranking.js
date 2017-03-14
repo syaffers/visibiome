@@ -78,7 +78,7 @@ function createRankingCards(data, index, barchartFiles) {
     var sampleHeader = '<span title="' + sample['Name'] + '">#'
       + sample['Ranking'] + ': ' + sample['Name'] + '</span>';
 
-    if (studyLink !== null) {
+    if (studyLink !== null && studyLink !== undefined) {
       sampleHeader = '<a href="' + studyLink + '" target="_blank">' +
         sampleHeader + ' <span class="glyphicon glyphicon-new-window glyphicon-sm"></span></a>';
     }

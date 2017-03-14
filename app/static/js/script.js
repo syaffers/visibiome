@@ -129,5 +129,6 @@ $(document).ready(function() {
   $(otuTextarea).blur(handleFillTextfield);
   $(removeJobButtons).click(handleRemoveJob);
   $(rerunJobButtons).click(handleRerunJob);
+  $("#table-dashboard").tablesorter();
   setInterval(handleUpdateJobDetails, 10000);
 });
