@@ -23,34 +23,47 @@ class Sample:
                  ontology_id_3, ontology_term_3,
                  sample_size, distance, pvalue, study_source, link,
                  barcharts=None):
-    	self.Ranking = rank
-    	self.Name = name
-    	self.Study = title
+        self.Ranking = rank
+        self.Name = name
+        self.Study = title
         self.pvalue = pvalue
 
-    	if not ontology_id_1: ## could be empty string or None
+        if not ontology_id_1: ## could be empty string or None
             self.S_EnvO_1 = " "
-    	else:
+        else:
             self.S_EnvO_1 = ontology_id_1 + ", " + ontology_term_1
 
-    	if not ontology_id_2:
+        if not ontology_id_2:
             self.S_EnvO_2 = " "
-    	else:
+        else:
             self.S_EnvO_2 = ontology_id_2 + ", " + ontology_term_2
 
-    	if not ontology_id_3:
+        if not ontology_id_3:
             self.S_EnvO_3 = " "
-    	else:
+        else:
             self.S_EnvO_3 = ontology_id_3 + ", " + ontology_term_3
 
-    	self.Total_Sample_Size = sample_size
-    	self.Total_Distance = distance
-    	self.Study_Source = study_source
+        self.Total_Sample_Size = sample_size
+        self.Total_Distance = distance
+        self.Study_Source = study_source
         self.Link = link
         if not barcharts is None:
             self.barchart_genus = barcharts[1]
             self.barchart_family = barcharts[2]
             self.barchart_phylum = barcharts[0]
+
+    def is_empty(self):
+        return (self.Name == None           and \
+                self.Ranking == 1           and \
+                self.Study == ""            and \
+                self.pvalue == 1            and \
+                self.S_EnvO_1 == " "        and \
+                self.S_EnvO_2 == " "        and \
+                self.S_EnvO_3 == " "        and \
+                self.Total_Sample_Size == 0 and \
+                self.Total_Distance == 0    and \
+                self.Study_Source == "")
+
 
 def retrieve_source(sample_study, sampleID=None):
     """String replacing subroutine"""
@@ -96,17 +109,13 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=
     for sample_id_j in n_sample_ids:
         rankingOfMatchedSamples = []
         # rearrange distance matrix for the jth sample and get sample IDs
-        ## New: deals with NaN values, individually (from GNAT ranking)
         top_m_j_sample_ids = list(m_n_df.sort_values(sample_id_j)[sample_id_j].dropna(axis=0).index)
 
         # get the top m sample IDs without losing order
         top_m_sample_ids = [m_sample_id for m_sample_id in top_m_j_sample_ids
                             if m_sample_id not in n_sample_ids][:top]
         print "Matches (sorted) for", top_m_sample_ids
-        ## we could actually allow other user samples
-        ### SYAFIQ: I agree, in that case, we should include the top 20 + all the
-        ### user samples after query but we have to be careful since the loop
-        ### below only considers the samples which are in the database
+
         json_metadata_query = """
             SELECT DISTINCT s.sample_event_ID, title, ea.OntologyTerm, ea.OntologyID, sample_size, s.study
             FROM samples_unified s
@@ -188,14 +197,20 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=
 
 
         rank = rank + 1
-        rankingOfMatchedSamples.append(vars(
-            Sample(rank, sample_event_id, title,
-                   ontology_ids[0], ontology_terms[0],
-                   ontology_ids[1], ontology_terms[1],
-                   ontology_ids[2], ontology_terms[2],
-                   sample_size, distance, pvalue, study, link
-            )
-        ))
+
+        sample_object = Sample(rank, sample_event_id, title,
+               ontology_ids[0], ontology_terms[0],
+               ontology_ids[1], ontology_terms[1],
+               ontology_ids[2], ontology_terms[2],
+               sample_size, distance, pvalue, study, link
+        )
+
+        # check if no matches were found, if so then just append a null
+        if sample_object.is_empty():
+            rankingOfMatchedSamples.append(None)
+        else:
+            rankingOfMatchedSamples.append(vars(sample_object))
+
         noInfoSamples = set(top_m_j_sample_ids).difference(annotatedSamples)
         if noInfoSamples:
             #print "Matches for %s" % sample_id_i
@@ -235,11 +250,11 @@ def generate_barcharts(gnatresults, filepath):
         ax = df.plot.bar(width=0.2, stacked=True, legend=drawLegend, color=colors,
                          figsize=(4, 3)) # Syafiq: figures are too big for the page, I need to minify
         ## Beautifying the plot
-        # Syafiq: ticks are unreadable, i need to cut them
+
         ax.set_xticklabels(map(cutoff_sample_id, df.index.values), rotation='horizontal')
         ax.set_ylabel('Relative abundance')
         ax.set_ylim(0, 1)
-        # Syafiq: can't access the zoom functions easily, raising the plot
+
         box = ax.get_position()
         ax.set_position([box.x0, box.y0 + box.height * 0.10, box.width, box.height * 0.90])
 
