@@ -16,10 +16,10 @@
       <span class="glyphicon glyphicon-save" aria-hidden="true"></span>
     </a>
   </p>
-  <p>
-    <strong>OTUs pre-normalized:</strong> {{ job.is_normalized_otu }}
-  </p>
   <p><strong>Analysis Type:</strong> {{ job.get_analysis_type_display }}</p>
+  {% if job.analysis_type == job.GNATUNIFRAC %}
+    <p><strong>Range query value:</strong> {{ job.range_query_value }}</p>
+  {% endif %}
   <p><strong>Criteria:</strong> {{ criteria }}</p>
   <div>
     <p><strong>Samples:</strong></p>
@@ -29,6 +29,8 @@
     {% endfor %}
     </ul>
   </div>
+  <p><strong>OTUs pre-normalized:</strong> {{ job.is_normalized_otu }}</p>
+  <p><strong>Alpha rarefaction applied:</strong> {{ job.alpha_rarefaction_flag }}</p>
   <p><strong>Status:</strong> {{ job.get_status_display }}</p>
   <p><strong>Created on:</strong> {{ job.created_at }}</p>
   <p><strong>Last run on:</strong> {{ job.last_run_at }}</p>

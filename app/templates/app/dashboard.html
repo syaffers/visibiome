@@ -9,17 +9,17 @@
   <table id="table-dashboard" class="table table-striped table-hover tablesorter">
     <thead>
       <tr>
-        <th width="12.5%">
+        <th width="14.5%">
           Name
           <br>
           <span class="caret"></span><span class="caret-up"></span>
         </th>
-        <th width="12.5%">
+        <th width="8.5%">
           Criteria
           <br>
           <span class="caret"></span><span class="caret-up"></span>
         </th>
-        <th width="8%">
+        <th width="12%">
           Analysis type
           <br>
           <span class="caret"></span><span class="caret-up"></span>
@@ -29,12 +29,12 @@
           <br>
           <span class="caret"></span><span class="caret-up"></span>
         </th>
-        <th width="12%">
+        <th width="11%">
           Last run time
           <br>
           <span class="caret"></span><span class="caret-up"></span>
         </th>
-        <th width="12%">
+        <th width="11%">
           Completion time
           <br>
           <span class="caret"></span><span class="caret-up"></span>
@@ -67,6 +67,9 @@
           </td>
           <td>
             {{ job.get_analysis_type_display }}
+            {% if job.analysis_type == job.GNATUNIFRAC %}
+              ({{job.range_query_value}})
+            {% endif %}
           </td>
           <td class="job-status" data-status-code="{{job.status}}">
             {% if job.status >= job.VALIDATING and job.status < job.COMPLETED %}
