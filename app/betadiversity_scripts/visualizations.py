@@ -228,7 +228,7 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=
     conn.close()
     print filepath
     with open(filepath, "w") as json_output_file:
-        json.dump(all_samples_dict, json_output_file, sort_keys=True, indent=4)
+        json.dump(all_samples_dict, json_output_file, sort_keys=True, separators=(',',':'))
 
 def generate_barcharts(gnatresults, filepath):
     '''Drawing pairwise stacked barcharts of compositions, connecting corresponding fractions by lines.
@@ -843,4 +843,4 @@ def generate_dendrogram_file(mnMatrix, mnsampleid, filepath):
     print mnMatrix.shape, filepath
     with open(filepath, "w") as json_output_file:
         print("Writing to file {}...".format(filepath))
-        json.dump(dendrogram, json_output_file, sort_keys=True, indent=4)
+        json.dump(dendrogram, json_output_file, sort_keys=True, separators=(',',':'))
