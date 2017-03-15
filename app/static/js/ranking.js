@@ -82,7 +82,7 @@ function createRankingCards(data, index, barchartFiles) {
       if (studyLink !== null && studyLink !== undefined) {
         var loginNotice = "";
         if (studyLink.indexOf("qiita") >= 0) {
-          loginNotice = "<span>(login required)</span>"
+          loginNotice = '<span class="small">(login required)</span>'
         }
         sampleHeader = '<a href="' + studyLink + '" target="_blank">' +
           sampleHeader +
