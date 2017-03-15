@@ -101,7 +101,7 @@ class Sample:
          Convenient barchart construction: df.groupby(['phylum']).sum()
          Only needed for query matches that are top ranked!
         '''
-        ## this requires EArthMicroBiome!!
+        ## this requires EarthMicroBiome database!!
         columns = 'otu_id phylum family genus'.split()
         lineageQuery = "SELECT %s FROM OTUS_unified WHERE otu_id IN (%s)"
         query = lineageQuery % (','.join(columns), ','.join(["'%s'"%otu for otu in self.otus]))

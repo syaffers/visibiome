@@ -85,9 +85,6 @@ class DistanceStats:
         self.userSampleIDs = [usample.sampleID for usample in userSamples]
         ddd = defaultdict(list)
         for (s1, s2), d in compDists.items():
-            # if s2 in self.userSampleIDs: ## remove this part!!!
-            #     print "Warning: missing out", s2, s1
-            #     pdb.set_trace()
             ddd[s1].append((s2, d))
 
         ## data frame: rows are query samples, columns are matched DB samples
@@ -100,29 +97,29 @@ class DistanceStats:
         self.mxn_distmtx = self.ddf.dropna(axis=0, how='any')
         ## reduce further, eg. by taking the 100 best matches per query
         self.msubset = set({})
+        print "@@@@", '4.3.CL.N.139815' in self.ddf.index.values
         for sample in self.userSampleIDs:
-            ## sorting columns individually, taking top matches (sample ids)
-            self.msubset.update(set(self.mxn_distmtx[sample].sort_values(inplace=False).index.values[:top]))
+            ## sorting columns individually, taking union of top matches (sample ids)
+            topset = set(self.mxn_distmtx[sample].sort_values(inplace=False).index.values[:top])
+            print "@@@@", sample, topset
+            self.msubset.update(topset)
         self.rankings = self.ddf.loc[self.msubset]  ## not really needed anymore with GNATquery.ranking being refactored
 
 
 class GNATquery:
-    def __init__(self, gnatz, qsample, threshold=0.3): ## threshold is chosen such that
+    def __init__(self, gnatz, qsample, distdict={}, threshold=0.3): ## threshold is chosen such that
         def getMissingDist(sample):
             """With GNATs not all distances are explicitely calculated. It can well be that a solution is provided and
             it can be guaranteed to be within the threshold, without knowing the exact distance. For proper ranking, we
             still want those values ... (just a few)"""
-            d = gnatz.metric.dist(qsample, sample)
-            #print "getting missing distance for", sample.sampleID, d
-            return d
+            return gnatz.metric.dist(qsample, sample)
 
-        print "Performing GNAT search on %s" % qsample.sampleID
         self.qsample = qsample
         countStart = gnatz.metric.counter ## stats needed for the manuscript
         gnatz.metric.traversedNodes = {} ## stats needed for the manuscript
         solutions = set(gnatz.query(qsample, threshold)) ## MAIN COMMAND!!!
         self.comparisons = (gnatz.metric.counter - countStart) ## stats needed for the manuscript
-        self.traversedNodes = gnatz.metric.traversedNodes ## stats needed for the manuscript
+        #self.traversedNodes = gnatz.metric.traversedNodes ## stats needed for the manuscript
         ## getting sample objects. this is a bit redundant but less memory intensive and easier to program than
         ## saving samples when encountered, which is not complete anyway because of Guilt-by-association matches
         self.solutionSamples = [gnatz.db.get_sample(sol, calculateComposition=True) for sol in solutions]
@@ -130,17 +127,23 @@ class GNATquery:
         self.solutionSamples = [solSample for solSample in self.solutionSamples if len(solSample.otus) > 1]
         ## possibly some solutions are without distance!
         keys = [(qsample.sampleID, solSample.sampleID) for solSample in self.solutionSamples]
-        distdict = gnatz.metric.computedDistances # not all samples are having a calculated distance
+        #distdict = gnatz.metric.computedDistances # not all samples are having a calculated distance
         ## Ranking: [(d1, <Sample obj1>), (d2, <Sample obj2>) ...]
         allDists = [distdict.get(key, getMissingDist(sol)) for (key, sol) in zip(keys, self.solutionSamples)]
         self.ranking = sorted(zip(allDists, self.solutionSamples))
-
+    def merge(self, other): ## TODO: remove redundancy
+        ## this is used in multiple GNAT searches
+        #assert self.qsample == other.qsample, "Can only merge GNAT results for the same query sample"
+        self.comparisons += other.comparisons
+        self.solutionSamples += other.solutionSamples
+        self.ranking += other.ranking
+        self.ranking.sort()
 
     def printReport(self, top=10, verbose=False):
-        travNodes = np.array(self.traversedNodes.values())
+        #travNodes = np.array(self.traversedNodes.values())
         if verbose:
             print "Distinct OTUs", len(self.qsample.otus)
-            print "traversed Nodes (avg, std)", travNodes.mean(), travNodes.std()
+            #print "traversed Nodes (avg, std)", travNodes.mean(), travNodes.std()
         print "Nr of emdusparse comparisons made", self.comparisons
         print "Matches for %s" % self.qsample.sampleID
         for dist, sample in self.ranking[:top]:
@@ -159,13 +162,12 @@ class SearchEngine:
         self.conn = MySQLdb.connect(**server_db)
         self.curs = self.conn.cursor()
         print "Search engine/DB initialized...", n_sample_ids
-
+        print "Criteria", criteria
     def make_m_n_distmtx(self): ## master, calling self.methods
         ## Expects gnatsearch to be done!
         ## get mxn_distmtx and also m', i.e the usable subset of m
-        ds = DistanceStats(self.gnatz.metric.computedDistances, self.userSamples)
+        ds = DistanceStats(self.metric.computedDistances, self.userSamples)
 
-        #compositions = dict([sample.composition(self.curs) for sample in self.gnatz.metric.topSamples.values() + self.userSamples])
         ds.make_mxn_distmtx()
         self.make_nxn_distmtx()
         print "Made N x N matrix:"
@@ -190,9 +192,7 @@ class SearchEngine:
              np.hstack((mxn_distmtx.T, self.nxn_distmtx)))
         )
         ## return value should have been a dataframe
-        return m_n_distmtx, list(msubsetSampleIDs) + self.n_sample_ids, ds.rankings
-        #ds.rankings, compositions, ds.selectPairsForBarcharts()
-
+        return m_n_distmtx, list(msubsetSampleIDs) + self.n_sample_ids, self.rankings
 
     def make_nxn_distmtx(self):
         dm = np.zeros((len(self.userSamples), len(self.userSamples)))
@@ -201,13 +201,36 @@ class SearchEngine:
                 dm[i,j] = self.metric.dist(self.userSamples[i], self.userSamples[j])
         self.nxn_distmtx = dm + dm.T
 
-    def gnatsearch(self, threshold=0.3): ## TODO gnatsearch against individual environments or at least filter results accordingly
+    def gnatsearch(self, threshold=0.3):
         self.db = MicrobiomeSQLDB(self.l_data_path, self.curs)
-        self.metric = EMDUnifrac(rare=True, l_data_path=self.l_data_path)
-        self.gnatz = load_gnat('%s/gnat24Kemdu50b_noRef.pcl' % self.l_data_path, self.db, self.metric)
+        self.metric = EMDUnifrac(rare=False, l_data_path=self.l_data_path)
+
+        if 'All_eco' in self.criteria: self.criteria = ['All_eco'] # ignore others
+        self.GNATresults = []
         for qsample in self.userSamples[:10]:
+            first = True
             qsample.computeComposition(self.curs)
-        self.GNATresults = [GNATquery(self.gnatz, qsample, 0.3) for qsample in self.userSamples[:10]]
+            for ecosystem in self.criteria:
+                gnatfile = '%s/gnat24Kemdu50_%s.pcl' % (self.l_data_path, ecosystem)
+                gnatz = load_gnat(gnatfile, self.db, self.metric)
+                ## note that self.metric is passed by ref into all GNAT nodes.
+                ## any update (especially to computedDistances) during the GNAT search are
+                ## accessible through self.metric, tested, works.
+                print "Performing GNAT (%s) search on %s" % (ecosystem, qsample.sampleID)
+                gnatquery = GNATquery(gnatz, qsample, self.metric.computedDistances, 0.3)
+                if first:
+                    combinedGnatQuery = gnatquery
+                    first = False
+                else:
+                    combinedGnatQuery.merge(gnatquery)
+                print "GQ Ranking after %s" % ecosystem
+                print " | ".join(["%s: %.3f"%(s.sampleID,d) for d,s in combinedGnatQuery.ranking])
+            combinedGnatQuery.printReport()
+            self.GNATresults.append(combinedGnatQuery)
+
+        toSeries = lambda ranking: pd.Series(dict([(s.sampleID, d) for (d,s) in ranking]))
+        keys = [gr.qsample.sampleID for gr in self.GNATresults]
+        self.rankings = pd.concat([toSeries(gr.ranking) for gr in self.GNATresults], axis=1, keys=keys)
 
     def shortReport(self, verbose=False): ## possible after gnatsearch only!!!
         for gr in self.GNATresults:
@@ -240,26 +263,27 @@ if __name__ == "__main__":
         with open('%s_otus.pcl'%samplefile[:-7]) as f:
             otus = cPickle.load(f)
         return dict(zip(otus, abus))
-
     l_data_path = '/home/qiime/visibiome/app/static/data'
-    sampledatadir = '/home/qiime/visibiome/app/static/testdata'
-    sampleFiles = glob.glob('%s/*_sc.npy' % sampledatadir)[-1:]
-    #sampleFiles = []
+    if False:
+        sampledatadir = '/home/qiime/visibiome/app/static/testdata'
+        sampleFiles = glob.glob('%s/*_sc.npy' % sampledatadir)[-1:]
 
-    index = ["User_%s" % os.path.basename(sf)[:-7] for sf in sampleFiles]
-    ## creating a dataframe from OTU dictionaries
-    ## the dataframe is then handy to simulate the data as it comes from tasks.py
-    df = pd.DataFrame([createDict(samplefile) for samplefile in sampleFiles], index=index)
+        index = ["User_%s" % os.path.basename(sf)[:-7] for sf in sampleFiles]
+        ## creating a dataframe from OTU dictionaries
+        ## the dataframe is then handy to simulate the data as it comes from tasks.py
+        df = pd.DataFrame([createDict(samplefile) for samplefile in sampleFiles], index=index)
 
-    engine = SearchEngine(df.values, list(df.columns.values), index, l_data_path,    ['All'])
+        engine = SearchEngine(df.values, list(df.columns.values), index, l_data_path, ['Freshwater', 'Plant'])
+    else:
+        df = pd.read_csv('/media/sf_SharedFolderQiimeVM/membranes.csv', sep='\t', index_col='#OTU_ID')
+        df = df[['ERR542775']].T
+        engine = SearchEngine(df.values, map(str,df.columns.values), list(df.index.values), l_data_path, ['All_eco'])
     engine.gnatsearch()
-    #engine.shortReport(verbose=True)
-    #for s, r in zip(engine.userSamples, engine.GNATresults):
-    #    print s.sampleID, r.ranking
-    #dm, sids, rankingDF, compositions, compositionPairs  = engine.make_m_n_distmtx()
+    engine.shortReport(verbose=False)
 
-    #DistanceStats(gnatz.db.computedDistances, index)
-    # n_otu_matrix, n_otu_ids, n_sample_ids = df.values, list(df.columns.values), index
-    # userSamples = [UserSample(n_sample_id, sample, n_otu_ids) for (n_sample_id, sample) in
-    #                zip(n_sample_ids, n_otu_matrix)]
-    # metric.dist(userSamples[0], userSamples[0])
+    dm, sids, rankingDF = engine.make_m_n_distmtx()
+    print
+    print "Samples Used For bar charts", [s.sampleID for (d,s) in engine.GNATresults[0].ranking]
+    print "Supposed to be equal to (used for ranking cards)", engine.rankings.index.values
+
+

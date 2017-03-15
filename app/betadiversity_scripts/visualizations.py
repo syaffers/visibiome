@@ -28,17 +28,17 @@ class Sample:
     	self.Study = title
         self.pvalue = pvalue
 
-    	if ontology_id_1 == "":
+    	if not ontology_id_1: ## could be empty string or None
             self.S_EnvO_1 = " "
     	else:
             self.S_EnvO_1 = ontology_id_1 + ", " + ontology_term_1
 
-    	if ontology_id_2 == "":
+    	if not ontology_id_2:
             self.S_EnvO_2 = " "
     	else:
             self.S_EnvO_2 = ontology_id_2 + ", " + ontology_term_2
 
-    	if ontology_id_3 == "":
+    	if not ontology_id_3:
             self.S_EnvO_3 = " "
     	else:
             self.S_EnvO_3 = ontology_id_3 + ", " + ontology_term_3
@@ -52,23 +52,25 @@ class Sample:
             self.barchart_family = barcharts[2]
             self.barchart_phylum = barcharts[0]
 
-def retrieve_source(sample_study):
+def retrieve_source(sample_study, sampleID=None):
     """String replacing subroutine"""
     mgrast_link = "http://metagenomics.anl.gov/linkin.cgi?project=mgp"
     emb_link = "https://qiita.ucsd.edu/study/description/"
+    chaffron_paper = "http://www.genome.org/cgi/doi/10.1101/gr.104521.109"
+    sra_link = 'https://trace.ncbi.nlm.nih.gov/Traces/sra/?run='
 
     if sample_study.find('CHA_') != -1:
-        return ("Chaffron Data", None)
+        return ("Chaffron Data", chaffron_paper)
 
     elif sample_study.find('QDB_') != -1:
         study_id = sample_study.split("QDB_")[1]
-        return ("Earth Microbiome Project", emb_link + study_id)
+        return ("Earth Microbiome Project/QiimeDB/Qiita", emb_link + study_id)
 
     elif sample_study.find('MI_MIT_') != -1:
         return ("MI MIT Sequencing", None)
 
     elif sample_study.find('SRA_') != -1:
-        return ("SRA Data", None)
+        return ("SRA Data", sra_link + sampleID)
 
     elif sample_study.find('MGRAST_') != -1:
         study_id = sample_study.split("MGRAST_")[1]
@@ -96,24 +98,23 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=
         # rearrange distance matrix for the jth sample and get sample IDs
         ## New: deals with NaN values, individually (from GNAT ranking)
         top_m_j_sample_ids = list(m_n_df.sort_values(sample_id_j)[sample_id_j].dropna(axis=0).index)
-        print "Matches (sorted) for", sample_id_j, list(m_n_df.sort_values(sample_id_j).index)[:10]
+
         # get the top m sample IDs without losing order
         top_m_sample_ids = [m_sample_id for m_sample_id in top_m_j_sample_ids
                             if m_sample_id not in n_sample_ids][:top]
+        print "Matches (sorted) for", top_m_sample_ids
         ## we could actually allow other user samples
         ### SYAFIQ: I agree, in that case, we should include the top 20 + all the
         ### user samples after query but we have to be careful since the loop
         ### below only considers the samples which are in the database
         json_metadata_query = """
-            SELECT DISTINCT sample_event_ID, title, OntologyTerm, OntologyID,
-                sample_size, study
-            FROM `samples_unified`
-            NATURAL JOIN samples_sizes_unified
-            NATURAL JOIN samples_EnvO_annotation_unified
-            NATURAL JOIN envoColors
-            WHERE `sample_event_ID`
+            SELECT DISTINCT s.sample_event_ID, title, ea.OntologyTerm, ea.OntologyID, sample_size, s.study
+            FROM samples_unified s
+            LEFT JOIN samples_sizes_unified ss ON s.sample_event_ID = ss.sample_event_ID
+            LEFT JOIN samples_EnvO_annotation_unified ea ON s.sample_event_ID = ea.sample_event_ID
+            WHERE s.sample_event_ID
             IN ('{m_sample_ids}')
-            ORDER BY FIELD(sample_event_ID, '{m_sample_ids}')
+            ORDER BY FIELD(s.sample_event_ID, '{m_sample_ids}')
         """.format(m_sample_ids='\',\''.join(top_m_sample_ids))
 
         #print json_metadata_query
@@ -125,14 +126,18 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=
         ontology_ids = ["", "", ""]
         cnt = distance = rank = sample_size = 0
         sample_event_id = None
+        pvalue = 1
+        link = None
 
+        annotatedSamples = set({})
         for row in curs.fetchall():
             sample_id_i = row["sample_event_ID"]
+            annotatedSamples.add(sample_id_i)
             sample_size_i = row["sample_size"]
-            study_i = row["study"]
-            title_i = row["title"]
-            ontology_term = row["OntologyTerm"]
-            ontology_id = row["OntologyID"]
+            study_i = row["study"] or ''
+            title_i = row["title"] or ''
+            ontology_term = row["OntologyTerm"] or ''
+            ontology_id = row["OntologyID"] or ''
 
             # first run
             if sample_event_id is None:
@@ -146,7 +151,7 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=
 
                 pvalue = pvalues[min(int(m_n_df[sample_id_j][sample_id_i]*10000),9999)]
 
-                study, link = retrieve_source(study_i)
+                study, link = retrieve_source(study_i, sample_event_id)
 
             # when we encounter a new sample from database
             elif sample_event_id != sample_id_i:
@@ -172,7 +177,7 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=
                 distance = "%.4f" % m_n_df[sample_id_j][sample_id_i]
                 pvalue = pvalues[min(int(m_n_df[sample_id_j][sample_id_i] * 10000), 9999)]
 
-                study, link = retrieve_source(study_i)
+                study, link = retrieve_source(study_i, sample_event_id)
 
             # if its the same sample
             else:
@@ -191,7 +196,12 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=
                    sample_size, distance, pvalue, study, link
             )
         ))
-
+        noInfoSamples = set(top_m_j_sample_ids).difference(annotatedSamples)
+        if noInfoSamples:
+            #print "Matches for %s" % sample_id_i
+            print "!!! No sample info was retrieved for %s" % noInfoSamples
+            if len(noInfoSamples) > 10:
+                print json_metadata_query
 
         all_samples_dict[sample_id_j] = {
             "ranking": rankingOfMatchedSamples,
@@ -265,11 +275,15 @@ def generate_barcharts(gnatresults, filepath):
 
         fig = ax.get_figure()
         #filetype = 'html' #json ## change back to json!!!
-        #filename = os.path.join(filepath, "%s___%s.%s" % (userSample.sampleID, rank, filetype))
+
         #filename1 = os.path.join('/tmp/', "%s___%s.%s" % (userSample.sampleID, rank, filetype))
         #print "Trying to save %s" % filename
-        return mpld3.fig_to_dict(fig) ## encountered issues with save_html
-
+        figdict =  mpld3.fig_to_dict(fig) ## encountered issues with save_html
+        if not figdict:
+            print "Warning: no figure generated:",
+            filename = os.path.join(filepath, "%s___%s.%s" % (userSample.sampleID, rank, 'svg'))
+            plt.savefig(filename)
+            print df.head()
         #with open(filename, 'w') as w:
         #    print >> w, html
         #with open(filename, 'w') as w:
@@ -279,7 +293,7 @@ def generate_barcharts(gnatresults, filepath):
         #saveFct = getattr(mpld3, 'save_%s' % filetype)
         #saveFct(fig, filename)
         #fig.savefig(filename) ## could also just save the svg/png (without all mpld3 wizzardry)
-        #return filename
+        return figdict
 
     def groupby(rank, sample):
         df = sample.composition.groupby(rank).sum()
@@ -293,18 +307,22 @@ def generate_barcharts(gnatresults, filepath):
         with open(os.path.join(settings.L_MATRIX_DATA_PATH, '%sColorDict.pcl'%rank)) as f:
             colorDict[rank] = cPickle.load(f)
     barcharts = defaultdict(dict)
-
+    #with open('/tmp/gnatresults.pcl', 'w') as w:
+    #    cPickle.dump(gnatresults, w)
     for gnatresult in gnatresults:
         userSample = gnatresult.qsample
         if gnatresult.ranking:
             matchSamples = list(zip(*gnatresult.ranking)[1][:5])
+            print "### Top 5 for %s"%(userSample.sampleID), [(s.sampleID, d) for d,s in gnatresult.ranking][:10]
             for rank in ['phylum', 'genus', 'family']:
-                print "Multiple barchart for", userSample.sampleID, rank
+                #print "Multiple barchart for", userSample.sampleID, rank
                 taxaGroupedTables = [groupby(rank, sample) for sample in [userSample] + matchSamples]
                 combinedAbundances = pd.concat(taxaGroupedTables, axis=1, join='outer').fillna(0.00001)
                 combinedAbundances.sort_values(userSample.sampleID, inplace=True, ascending=False)
-                print combinedAbundances.head()
+                #print combinedAbundances.head()
                 barcharts[userSample.sampleID][rank] = comparativeBarchart(combinedAbundances.T, rank)
+        else:
+            print "Warning: no ranking found for query sample", userSample.sampleID
     return barcharts
 
 
@@ -425,7 +443,7 @@ def query_pcoa_metadata(sample_id):
         ontology_term = row["OntologyTerm"].strip()
         ontology_id = row["OntologyID"].strip()
         ecosystem = row["ecosystem"].strip()
-        study_source, link = retrieve_source(row["study"].strip())
+        study_source, link = retrieve_source(row["study"].strip(), row["sample_event_ID"])
 
         # first run
         if sample_event_id is None:
@@ -726,7 +744,7 @@ def query_dendrogram_metadata(m_sample_id):
             sample_event_id = row["sample_event_ID"]
             title = row["title"]
             sample_size = float(row["sample_size"])
-            study_source, link = retrieve_source(row["study"])
+            study_source, link = retrieve_source(row["study"], row["sample_event_ID"])
             ontology_terms.append(ontology_term)
             ecosystems.append(ecosystem)
             ecocolors.append(ecocolor)
