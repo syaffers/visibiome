@@ -9,14 +9,47 @@
   <table id="table-dashboard" class="table table-striped table-hover tablesorter">
     <thead>
       <tr>
-        <th width="12.5%">Name <span class="caret"></span><span class="caret-up"></span></th>
-        <th width="12.5%">Criteria <span class="caret"></span><span class="caret-up"></span></th>
-        <th width="10%">Status <span class="caret"></span><span class="caret-up"></span></th>
-        <th width="16%">Last run time <span class="caret"></span><span class="caret-up"></span></th>
-        <th width="16%">Completion time <span class="caret"></span><span class="caret-up"></span></th>
-        <th width="28%">Error messages <span class="caret"></span><span class="caret-up"></span></th>
-        <th width="2.5%">Remove</th>
-        <th width="2.5%">Re-run</th>
+        <th width="12.5%">
+          Name
+          <br>
+          <span class="caret"></span><span class="caret-up"></span>
+        </th>
+        <th width="12.5%">
+          Criteria
+          <br>
+          <span class="caret"></span><span class="caret-up"></span>
+        </th>
+        <th width="8%">
+          Analysis type
+          <br>
+          <span class="caret"></span><span class="caret-up"></span>
+        </th>
+        <th width="10%">
+          Status
+          <br>
+          <span class="caret"></span><span class="caret-up"></span>
+        </th>
+        <th width="12%">
+          Last run time
+          <br>
+          <span class="caret"></span><span class="caret-up"></span>
+        </th>
+        <th width="12%">
+          Completion time
+          <br>
+          <span class="caret"></span><span class="caret-up"></span>
+        </th>
+        <th width="28%">
+          Error messages
+          <br>
+          <span class="caret"></span><span class="caret-up"></span>
+        </th>
+        <th width="2.5%">
+          Remove
+        </th>
+        <th width="2.5%">
+          Re-run
+        </th>
   		</tr>
   	</thead>
   	<tbody>
@@ -31,6 +64,9 @@
             {% for criterion in job.criteria.all %}
               <span class="criterion">{{ criterion }}</span>
             {% endfor %}
+          </td>
+          <td>
+            {{ job.get_analysis_type_display }}
           </td>
           <td class="job-status" data-status-code="{{job.status}}">
             {% if job.status >= job.VALIDATING and job.status < job.COMPLETED %}

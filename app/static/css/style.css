@@ -17,6 +17,10 @@
   color: #FFFFFF;
 }
 
+#table-dashboard th {
+  vertical-align: top;
+}
+
 .jumbo {
   font-size: 3em;
   font-weight: bold;
