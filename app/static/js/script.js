@@ -135,6 +135,7 @@ $(document).ready(function() {
   $(biomSearchFormId)
     .find(".checkbox-criteria input[type=checkbox]")
     .click(handleBiomCheckbox);
+  $(allEcoCheckbox).click();
   $(otuTextarea).val(otuTextareaPlaceholder);
   $(otuTextarea).click(handleClearTextfield);
   $(otuTextarea).blur(handleFillTextfield);
