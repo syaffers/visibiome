@@ -201,9 +201,9 @@ class SearchEngine:
                 dm[i,j] = self.metric.dist(self.userSamples[i], self.userSamples[j])
         self.nxn_distmtx = dm + dm.T
 
-    def gnatsearch(self, threshold=0.3):
+    def gnatsearch(self, threshold=0.3, rare=True):
         self.db = MicrobiomeSQLDB(self.l_data_path, self.curs)
-        self.metric = EMDUnifrac(rare=False, l_data_path=self.l_data_path)
+        self.metric = EMDUnifrac(rare=rare, l_data_path=self.l_data_path)
 
         if 'All_eco' in self.criteria: self.criteria = ['All_eco'] # ignore others
         self.GNATresults = []
@@ -217,7 +217,7 @@ class SearchEngine:
                 ## any update (especially to computedDistances) during the GNAT search are
                 ## accessible through self.metric, tested, works.
                 print "Performing GNAT (%s) search on %s" % (ecosystem, qsample.sampleID)
-                gnatquery = GNATquery(gnatz, qsample, self.metric.computedDistances, 0.3)
+                gnatquery = GNATquery(gnatz, qsample, self.metric.computedDistances, threshold)
                 if first:
                     combinedGnatQuery = gnatquery
                     first = False
