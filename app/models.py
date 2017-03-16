@@ -144,7 +144,7 @@ class BiomSearchJob(models.Model):
         choices=ANALYSISTYPES, default=GNATUNIFRAC
     )
     range_query_value = models.FloatField(choices=RANGE_QUERY_VALUES, default=0.3)
-    alpha_rarefaction_flag = models.BooleanField(default=False)
+    adaptive_rarefaction_flag = models.BooleanField(default=False)
     status = models.IntegerField(choices=STATUSES, default=VALIDATING)
     error_code = models.IntegerField(choices=ERRORS, default=NO_ERRORS)
     is_normalized_otu = models.BooleanField(default=False)
@@ -203,15 +203,16 @@ class BiomSearchForm(forms.ModelForm):
             "biom_file": forms.FileField,
             "criteria": forms.MultipleChoiceField(required=True),
             "is_normalized_otu": forms.BooleanField(required=False),
-            "alpha_rarefaction_flag": forms.BooleanField(required=False),
+            "adaptive_rarefaction_flag": forms.BooleanField(required=False),
             "analysis_type": forms.ChoiceField(required=True),
             "range_query_value": forms.ChoiceField
         }
         labels = {
             "criteria": "Select the ecosystem(s)",
-            "is_normalized_otu": "I have normalized the 16s OTU copy numbers "\
-                                 "for this BIOM table",
-            "alpha_rarefaction_flag": "Perform alpha rarefaction on my samples",
+            "is_normalized_otu":
+                "I have normalized the 16s OTU copy numbers for this BIOM table",
+            "adaptive_rarefaction_flag":
+                "Perform adaptive rarefaction on my samples",
             "range_query_value": "Range query value"
         }
         widgets = {
