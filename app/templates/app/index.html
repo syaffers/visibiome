@@ -143,7 +143,11 @@
           </div>
 
           <label for="adaptive_rarefaction_flag" class="col-xs-12 col-sm-2 control-label">
-            {{ form.adaptive_rarefaction_flag.label }}<br><em>(optional)</em>
+            {{form.adaptive_rarefaction_flag.label}}<br><em>(optional)</em><br>
+            <button type="button" id="adaptive-rarefaction-btn" class="btn btn-info btn-xs"
+                    data-toggle="modal" data-target="#adaptive-rarefaction-modal">
+              More info
+            </button>
           </label>
           <div class="col-xs-12 col-sm-5">
             <div class="row">
@@ -161,5 +165,30 @@
       </form>
     </div>
   </div>
+
+  <div class="modal fade" id="adaptive-rarefaction-modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">Note on performing adaptive rarefactione</h4>
+        </div>
+        <div class="modal-body">
+          <p>To account for sampling depth bias, it is recommended to rarefy
+          samples to an even size. We therefore optionally offer Adaptive Rarefaction as
+          described <a href='http://dx.doi.org/10.1371/journal.pcbi.1004468'>here</a>. In
+          a nutshell, only the current two samples used in a distance calculation are
+          rarefied, so to avoid unnecessary loss of information as in conventional
+          rarefaction, when rarifying to the size of the smallest sample in a DB with
+          samples of strongly differing sizes. Note that this method is slightly more
+          computationally expensive and adds an element of randomness to distance
+          calculations.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
 
 {% endblock %}

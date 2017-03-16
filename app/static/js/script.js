@@ -141,5 +141,6 @@ $(document).ready(function() {
   $(removeJobButtons).click(handleRemoveJob);
   $(rerunJobButtons).click(handleRerunJob);
   $("#table-dashboard").tablesorter(tablesorterOptions);
+  $("#adaptive-rarefaction-modal").modal({show: false});
   setInterval(handleUpdateJobDetails, 10000);
 });
