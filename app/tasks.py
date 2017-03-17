@@ -31,7 +31,7 @@ def gnat_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n
 
     engine = gs.SearchEngine(n_otu_matrix, n_otu_ids, n_sample_ids, l_data_path, criteria)
     try:
-        engine.gnatsearch()
+        engine.gnatsearch(threshold=job.range_query_value, rare=job.adaptive_rarefaction_flag)
         engine.shortReport()
         m_n_distmtx, m_n_sample_ids, rankingDF = engine.make_m_n_distmtx()
     finally:

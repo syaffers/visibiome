@@ -1,4 +1,11 @@
 function drawDendrogram(dataPath, sampleIds) {
+  var loaderHTML = '<span class="loading-text">Loading' +
+    '<span class="loading-ellipsis">.</span>' +
+    '<span class="loading-ellipsis">.</span>' +
+    '<span class="loading-ellipsis">.</span>' +
+    '</span>';
+  $("#dendrogram").html(loaderHTML);
+
   var width = 200;
   var height = 200;
   var radius = Math.min(width, height) / 2;
@@ -98,7 +105,6 @@ function drawDendrogram(dataPath, sampleIds) {
 
     nodes.forEach(function(node) {
       if (Object.keys(node).indexOf("ecocolor") >= 0) {
-        console.log(node.ecocolor[0]);
         if (node.ecocolor[0] === "White") {
           node.ecocolor[0] = "black"
           node.ecocolor[1] = "black"
@@ -230,6 +236,8 @@ function drawDendrogram(dataPath, sampleIds) {
       .text(function(d) {
         return d.name;
       });
+
+      $("#dendrogram .loading-text").remove();
   });
 
 

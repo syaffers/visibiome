@@ -135,11 +135,13 @@ $(document).ready(function() {
   $(biomSearchFormId)
     .find(".checkbox-criteria input[type=checkbox]")
     .click(handleBiomCheckbox);
+  $(allEcoCheckbox).click();
   $(otuTextarea).val(otuTextareaPlaceholder);
   $(otuTextarea).click(handleClearTextfield);
   $(otuTextarea).blur(handleFillTextfield);
   $(removeJobButtons).click(handleRemoveJob);
   $(rerunJobButtons).click(handleRerunJob);
   $("#table-dashboard").tablesorter(tablesorterOptions);
+  $("#adaptive-rarefaction-modal").modal({show: false});
   setInterval(handleUpdateJobDetails, 10000);
 });

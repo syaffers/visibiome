@@ -35,7 +35,12 @@ function startPcoa(filePath) {
 // }
 
 function drawPcoaByGroup(filePath) {
-  $(".svg-container").html('<span>Loading...</span>');
+  var loaderHTML = '<span class="loading-text">Loading' +
+    '<span class="loading-ellipsis">.</span>' +
+    '<span class="loading-ellipsis">.</span>' +
+    '<span class="loading-ellipsis">.</span>' +
+    '</span>';
+  $(".svg-container").html(loaderHTML);
 
   $.ajax({"url": filePath}).done(function(data, err){
     mpld3.draw_figure("pcoa-pc1-pc2-ecosystem", data["PC12Ecosystem"]);

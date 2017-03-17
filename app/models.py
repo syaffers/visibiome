@@ -47,6 +47,7 @@ class EcosystemChoice(models.Model):
 
 
 class BiomSearchJob(models.Model):
+    """Job status IDs"""
     STOPPED = -1
     VALIDATING = 0
     QUEUED = 1
@@ -63,6 +64,7 @@ class BiomSearchJob(models.Model):
         (COMPLETED, "Completed"),
     )
 
+    """Analysis type IDs"""
     BRAYCURTIS = 1
     GNATUNIFRAC = 2
     HIEREPUNIFRAC = 3
@@ -73,6 +75,7 @@ class BiomSearchJob(models.Model):
         # (HIEREPUNIFRAC, "Hierarchical Representatives/UniFrac")
     )
 
+    """Error type IDs"""
     FILE_IO_ERROR = -1
     NO_ERRORS = 0
     FILE_VALIDATION_ERROR = 1
@@ -105,6 +108,21 @@ class BiomSearchJob(models.Model):
          "Try again or contact site admin."),
     )
 
+    """Range query value IDs"""
+    NARROWEST = 0.1
+    NARROWER = 0.2
+    NORMAL = 0.3
+    BROADER = 0.4
+    BROADEST = 0.5
+
+    RANGE_QUERY_VALUES = (
+        (NARROWEST, "0.1"),
+        (NARROWER, "0.2"),
+        (NORMAL, "0.3"),
+        (BROADER, "0.4"),
+        (BROADEST, "0.5")
+    )
+
     alphanumeric_spaces = RegexValidator(
         r"^[0-9a-zA-Z\s]*$", "Only alphanumeric characters and spaces allowed"
     )
@@ -125,6 +143,8 @@ class BiomSearchJob(models.Model):
     analysis_type = models.IntegerField(
         choices=ANALYSISTYPES, default=GNATUNIFRAC
     )
+    range_query_value = models.FloatField(choices=RANGE_QUERY_VALUES, default=0.3)
+    adaptive_rarefaction_flag = models.BooleanField(default=False)
     status = models.IntegerField(choices=STATUSES, default=VALIDATING)
     error_code = models.IntegerField(choices=ERRORS, default=NO_ERRORS)
     is_normalized_otu = models.BooleanField(default=False)
@@ -183,12 +203,17 @@ class BiomSearchForm(forms.ModelForm):
             "biom_file": forms.FileField,
             "criteria": forms.MultipleChoiceField(required=True),
             "is_normalized_otu": forms.BooleanField(required=False),
-            "analysis_type": forms.ChoiceField(required=True)
+            "adaptive_rarefaction_flag": forms.BooleanField(required=False),
+            "analysis_type": forms.ChoiceField(required=True),
+            "range_query_value": forms.ChoiceField
         }
         labels = {
             "criteria": "Select the ecosystem(s)",
-            "is_normalized_otu": "I have normalized the 16s OTU copy numbers "\
-                                 "for this BIOM table"
+            "is_normalized_otu":
+                "I have normalized the 16s OTU copy numbers for this BIOM table",
+            "adaptive_rarefaction_flag":
+                "Perform adaptive rarefaction on my samples",
+            "range_query_value": "Range query value"
         }
         widgets = {
             "criteria": forms.CheckboxSelectMultiple,
