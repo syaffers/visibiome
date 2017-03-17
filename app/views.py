@@ -191,7 +191,7 @@ def ex_dend_similar(request):
 
 
 def handler404(request):
-    response = render_to_response('404.html', {},
+    response = render_to_response('404.html', context,
                                   context_instance=RequestContext(request))
 
     response.status_code = 404

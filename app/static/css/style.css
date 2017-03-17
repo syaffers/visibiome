@@ -21,6 +21,10 @@
   vertical-align: top;
 }
 
+#dashboard-paginator ul {
+  margin: 12px 0 0 0;
+}
+
 .jumbo {
   font-size: 3em;
   font-weight: bold;

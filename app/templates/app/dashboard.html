@@ -5,7 +5,43 @@
 {% block content %}
   <h2>Dashboard</h2>
   {% if jobs %}
-  <h3>Jobs list</h3>
+  <div class="row">
+    <div class="col-xs-6">
+      <h3>Jobs list</h3>
+    </div>
+    <div class="col-xs-6">
+      <nav aria-label="Dashboard navigation" id="dashboard-paginator" class="pull-right">
+        <ul class="pagination">
+          {% if jobs.has_previous %}
+            <li>
+              <a href="?page={{ jobs.previous_page_number }}&limit={{ limit }}"
+                 aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+          {% endif %}
+
+          {% for page_number in pages %}
+            <li class="{% if page_number == curr_page_number %}active{% endif %}">
+              <a href="?page={{ page_number }}&limit={{ limit }}"
+                 aria-label="Page {{ page_number }}">
+                <span aria-hidden="true">{{ page_number }}</span>
+              </a>
+            </li>
+          {% endfor %}
+
+          {% if jobs.has_next %}
+            <li>
+              <a href="?page={{ jobs.next_page_number }}&limit={{ limit }}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+  </div>
+
   <table id="table-dashboard" class="table table-striped table-hover tablesorter">
     <thead>
       <tr>

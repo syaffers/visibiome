@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -13,6 +14,9 @@ context = {"flash": None, "is_example": False}
 unauthorized_access_message = "Unauthorized access."
 json_encoder = DjangoJSONEncoder()
 
+# default number of jobs per page
+jobs_per_page_default_limit = 10
+
 
 @login_required
 def dashboard(request):
@@ -20,10 +24,27 @@ def dashboard(request):
     templates/app/dashboard.html
     """
     msg_storage = messages.get_messages(request)
-    jobs = BiomSearchJob.objects.filter(user=request.user.pk)
-    jobs = jobs.order_by('-created_at').all()
+    all_jobs = BiomSearchJob.objects.filter(user=request.user.pk) \
+        .order_by('-created_at')
 
-    context['jobs'] = jobs
+    page_number = request.GET.get('page')
+    limit = request.GET.get('limit') or jobs_per_page_default_limit
+    dashboard_paginator = Paginator(all_jobs, limit)
+
+    try:
+        jobs_in_current_page = dashboard_paginator.page(page_number)
+    except PageNotAnInteger:
+        # if page is not an integer, deliver first page.
+        jobs_in_current_page = dashboard_paginator.page(1)
+        page_number = 1
+    except EmptyPage:
+        # if page is out of range (e.g. 9999), deliver last page of results.
+        jobs_in_current_page = dashboard_paginator.page(paginator.num_pages)
+
+    context['jobs'] = jobs_in_current_page
+    context['pages'] = dashboard_paginator.page_range
+    context['curr_page_number'] = int(page_number)
+    context['limit'] = limit
     context['flash'] = msg_storage
     return render(request, 'app/dashboard.html', context)
 
