@@ -149,7 +149,7 @@ line.minor {
   display: none;
 }
 
-div.tooltip {
+div.tooltip.d3 {
   position: absolute;
   text-align: left;
   pointer-events: none;
@@ -157,7 +157,7 @@ div.tooltip {
   white-space: pre-wrap;
 }
 
-div.tooltip::after {
+div.tooltip.d3::after {
   width: 0;
   height: 0;
   background: #fff;

@@ -40,16 +40,6 @@ function handleBiomCheckbox() {
   }
 }
 
-function handleClearTextfield() {
-  if ($(this).val() == "Paste OTU table here")
-    $(this).val("");
-}
-
-function handleFillTextfield() {
-  if ($(this).val() == "")
-    $(this).val("Paste OTU table here");
-}
-
 function handleUpdateJobDetails() {
   $(jobDashboardRow).each(function (index, row) {
     var jobId = $(this).attr("id");
@@ -136,12 +126,10 @@ $(document).ready(function() {
     .find(".checkbox-criteria input[type=checkbox]")
     .click(handleBiomCheckbox);
   $(allEcoCheckbox).click();
-  $(otuTextarea).val(otuTextareaPlaceholder);
-  $(otuTextarea).click(handleClearTextfield);
-  $(otuTextarea).blur(handleFillTextfield);
   $(removeJobButtons).click(handleRemoveJob);
   $(rerunJobButtons).click(handleRerunJob);
   $("#table-dashboard").tablesorter(tablesorterOptions);
   $("#adaptive-rarefaction-modal").modal({show: false});
+  $('[data-toggle="tooltip"]').tooltip();
   setInterval(handleUpdateJobDetails, 10000);
 });

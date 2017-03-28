@@ -145,6 +145,7 @@ class BiomSearchJob(models.Model):
     )
     range_query_value = models.FloatField(choices=RANGE_QUERY_VALUES, default=0.3)
     adaptive_rarefaction_flag = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=False)
     status = models.IntegerField(choices=STATUSES, default=VALIDATING)
     error_code = models.IntegerField(choices=ERRORS, default=NO_ERRORS)
     is_normalized_otu = models.BooleanField(default=False)
@@ -204,16 +205,23 @@ class BiomSearchForm(forms.ModelForm):
             "criteria": forms.MultipleChoiceField(required=True),
             "is_normalized_otu": forms.BooleanField(required=False),
             "adaptive_rarefaction_flag": forms.BooleanField(required=False),
+            "is_public": forms.BooleanField(required=False),
             "analysis_type": forms.ChoiceField(required=True),
             "range_query_value": forms.ChoiceField
         }
         labels = {
             "criteria": "Select the ecosystem(s)",
             "is_normalized_otu":
-                "I have normalized the 16s OTU copy numbers for this BIOM table",
+                "I have normalized the 16S OTU copy numbers for this BIOM table",
             "adaptive_rarefaction_flag":
                 "Perform adaptive rarefaction on my samples",
-            "range_query_value": "Range query value"
+            "is_public": "Make public",
+        }
+        help_texts = {
+            "criteria": "Selecter either the 'All' criteria or a maximum of 3 ecosystems",
+            "is_normalized_otu": "Optional but recommended if you are not sure",
+            "adaptive_rarefaction_flag": "Optional",
+            "range_query_value": "Only applies to GNAT/UniFrac",
         }
         widgets = {
             "criteria": forms.CheckboxSelectMultiple,
@@ -227,12 +235,20 @@ class BiomSearchForm(forms.ModelForm):
 
     biom_file = forms.FileField(
         label="or upload your BIOM file",
+        help_text="Maximum 10 samples (TSV/JSON/HDF5/BIOM format)",
         required=False,
     )
 
+    otu_text_attrs = {
+        "cols": 30,
+        "rows": 5,
+        "placeholder": "Paste OTU table here"
+    }
     otu_text = forms.CharField(
         label="Paste your OTU table",
-        widget=forms.Textarea(attrs={'cols': 30, 'rows': 12}),
+        help_text="Maximum 10 samples (TSV/JSON/HDF5/BIOM format)",
+        widget=forms.Textarea(attrs=otu_text_attrs),
+        required=False
     )
 
     def _empty_otu_text(self, otu_text):
@@ -242,9 +258,6 @@ class BiomSearchForm(forms.ModelForm):
         :param otu_text: String OTU table in text format
         :return: Boolean truth value of the check
         """
-        # if the default string is found, consider it empty
-        if otu_text == "Paste OTU table here":
-            return True
         # if the box is empty
         if otu_text is None or otu_text == "":
             return True

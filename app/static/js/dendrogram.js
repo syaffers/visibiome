@@ -55,7 +55,7 @@ function drawDendrogram(dataPath, sampleIds) {
 
   // Add tooltip div
   var div = d3.select("#dendrogram-tooltip").append("div")
-    .attr("class", "tooltip")
+    .attr("class", "tooltip d3")
     .style("opacity", 1e-6)
     .style("font", 12)
     .style("background", "#FFFF66")
