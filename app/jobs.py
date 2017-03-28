@@ -10,7 +10,7 @@ from .models import BiomSearchJob
 from .tasks import validate_biom
 
 # general context for all pages
-context = {"flash": None, "is_example": False}
+context = {"flash": None, "is_example": False, "is_public": False}
 unauthorized_access_message = "Unauthorized access."
 json_encoder = DjangoJSONEncoder()
 

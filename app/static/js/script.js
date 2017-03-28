@@ -43,7 +43,7 @@ function handleBiomCheckbox() {
 function handleUpdateJobDetails() {
   $(jobDashboardRow).each(function (index, row) {
     var jobId = $(this).attr("id");
-    var detailsUrl = "/job/" + jobId + "/details.json";
+    var detailsUrl = "/jobs/" + jobId + "/details.json";
     var jobStatusCode = $(this).find(jobStatusTd)[0].dataset.statusCode;
 
     if (jobStatusCode >= 0 && jobStatusCode < 10) {

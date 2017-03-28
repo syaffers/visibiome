@@ -8,6 +8,8 @@
       <li><span class="nav-divider-custom">Details</span></li>
       {% if is_example %}
         {% url 'app:example_job_details' as details_url %}
+      {% elif is_public %}
+        {% url 'app:public_job_details' job.pk as details_url  %}
       {% else %}
         {% url 'app:job_details' job.pk as details_url  %}
       {% endif %}
@@ -15,6 +17,8 @@
 
       {% if is_example %}
         {% url 'app:example_job_ranking' as ranking_url %}
+      {% elif is_public %}
+        {% url 'app:public_job_ranking' job.pk as ranking_url %}
       {% else %}
         {% url 'app:job_ranking' job.pk as ranking_url %}
       {% endif %}
@@ -27,6 +31,8 @@
       <!--  PLOT SUMMARY LINKS -->
       <!-- {% if is_example %}
         {% url 'app:example_job_plot_summary' as plot_summary_url %}
+      {% elif is_public %}
+        {% url 'app:public_job_plot_summary' job.pk as plot_summary_url %}
       {% else %}
         {% url 'app:job_plot_summary' job.pk as plot_summary_url %}
       {% endif %}
@@ -51,6 +57,8 @@
       <!--  PCOA REPS LINKS -->
       {% if is_example %}
         {% url 'app:example_job_pcoa_reps' as pcoa_url %}
+      {% elif is_public %}
+        {% url 'app:public_job_pcoa_reps' job.pk as pcoa_url %}
       {% else %}
         {% url 'app:job_pcoa_reps' job.pk as pcoa_url %}
       {% endif %}
@@ -78,6 +86,8 @@
       <!--  DEND REPS LINKS -->
       {% if is_example %}
         {% url 'app:example_job_dend_reps' as dend_url %}
+      {% elif is_public %}
+        {% url 'app:public_job_dend_reps' job.pk as dend_url %}
       {% else %}
         {% url 'app:job_dend_reps' job.pk as dend_url %}
       {% endif %}

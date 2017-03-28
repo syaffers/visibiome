@@ -8,7 +8,7 @@ from .models import BiomSearchJob, BiomSearchForm
 import cPickle
 import os
 
-context = {'flash': None, 'is_example': True}
+context = {'flash': None, 'is_example': True, 'is_public': False}
 json_encoder = DjangoJSONEncoder()
 
 
