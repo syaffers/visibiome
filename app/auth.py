@@ -91,7 +91,8 @@ def login(request):
             messages.add_message(
                 request, messages.ERROR, "Invalid email and/or password"
             )
-            return render(request, "auth/login.html", {"flash": msg_storage})
+            context["flash"] = msg_storage
+            return render(request, "auth/login.html", context)
 
 
 def logout(request):
@@ -145,5 +146,5 @@ def update_details(request):
     request.user.refresh_from_db()
     context["form"] = form
     context["flash"] = msg_storage
-    
+
     return render(request, 'auth/update.html', context)

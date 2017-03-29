@@ -20,6 +20,8 @@ def index(request):
     form = BiomSearchForm()
     context['form'] = form
 
+    msg_storage = messages.get_messages(request)
+    context["flash"] = msg_storage
     return render(request, 'app/index.html', context)
 
 
@@ -27,6 +29,8 @@ def contact(request):
     """Contact page route. Static HTML can be found in
     templates/app/contact.html
     """
+    msg_storage = messages.get_messages(request)
+    context["flash"] = msg_storage
     return render(request, 'app/contact.html', context)
 
 
@@ -34,6 +38,8 @@ def help(request):
     """Help page route. Static HTML can be found in
     templates/app/help.html
     """
+    msg_storage = messages.get_messages(request)
+    context["flash"] = msg_storage
     return render(request, 'app/help.html', context)
 
 
