@@ -26,7 +26,7 @@ def details_public(request, job_id):
         return render(request, 'job/details.html', context)
     else:
         messages.add_message(request, messages.ERROR, job_is_public_message)
-        return redirect('app:dashboard')
+        return redirect('app:index')
 
 
 def ranking_public(request, job_id):
@@ -51,7 +51,7 @@ def ranking_public(request, job_id):
         return render(request, 'job/ranking.html', context)
     else:
         messages.add_message(request, messages.ERROR, job_is_public_message)
-        return redirect('app:dashboard')
+        return redirect('app:index')
 
 
 def pcoa_reps_public(request, job_id):
@@ -72,7 +72,7 @@ def pcoa_reps_public(request, job_id):
         return render(request, 'job/pcoa_reps.html', context)
     else:
         messages.add_message(request, messages.ERROR, job_is_public_message)
-        return redirect('app:dashboard')
+        return redirect('app:index')
 
 
 def dend_reps_public(request, job_id):
@@ -94,4 +94,4 @@ def dend_reps_public(request, job_id):
         return render(request, 'job/dend_reps.html', context)
     else:
         messages.add_message(request, messages.ERROR, job_is_public_message)
-        return redirect('app:dashboard')
+        return redirect('app:index')

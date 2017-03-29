@@ -54,6 +54,8 @@ urlpatterns = [
     url(r'^jobs/(?P<job_id>[0-9]+)/remove$', jobs.remove, name='job_remove'),
     url(r'^jobs/(?P<job_id>[0-9]+)/rerun$', jobs.rerun, name='job_rerun'),
     url(r'^jobs/(?P<job_id>[0-9]+)/details\.json$', jobs.details_json, name='job_details_json'),
+    url(r'^jobs/(?P<job_id>[0-9]+)/make-public$', jobs.make_public,
+        name='make_job_public'),
 
     ##### PUBLIC JOBS ROUTES #####
     url(r'^public/jobs/(?P<job_id>[0-9]+)/details$', public_jobs.details_public,

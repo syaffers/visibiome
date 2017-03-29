@@ -3,55 +3,77 @@
 
 {% block title %}Details for {{ job.name }}{% endblock %}
 {% block job_page %}
-  <h2>Details for {{ job.name }}</h2>
-  <p>
-    <strong>Input:</strong>
-    <a target="_blank" class="btn btn-primary btn-xs"
-       href="{% if is_example %}
-               {{example_biom_file}}
-             {% else %}
-               {{job.biom_file.url}}
-             {% endif %}">
-      Uploaded File
-      <span class="glyphicon glyphicon-save" aria-hidden="true"></span>
-    </a>
-  </p>
-  <p><strong>Analysis Type:</strong> {{ job.get_analysis_type_display }}</p>
-  {% if job.analysis_type == job.GNATUNIFRAC %}
-    <p><strong>Range query value:</strong> {{ job.range_query_value }}</p>
-  {% endif %}
-  <p><strong>Criteria:</strong> {{ criteria }}</p>
-  <div>
-    <p><strong>Samples:</strong></p>
-    <ul>
-    {% for sample in job.samples.all %}
-      <li>{{ sample }}</li>
-    {% endfor %}
-    </ul>
+  <div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+      <h2>Details for {{ job.name }}</h2>
+    </div>
   </div>
-  <p><strong>OTUs pre-normalized:</strong> {{ job.is_normalized_otu }}</p>
-  <p><strong>Adaptive rarefaction applied:</strong> {{ job.adaptive_rarefaction_flag }}</p>
-  <p><strong>Status:</strong> {{ job.get_status_display }}</p>
-  <p><strong>Created on:</strong> {{ job.created_at }}</p>
-  <p><strong>Last run on:</strong> {{ job.last_run_at }}</p>
-  <p>
-    <strong>Completed on:</strong>
-    {% if job.status < 10 %}
-      -
-    {% else %}
-      {{ job.updated_at }}
-    {% endif %}
-  </p>
-  {% if is_example %}
-    <p>
-      <em>
-        This example job was run by performing the following query in the
-        search/home page
-      </em>
-    </p>
-    <img src="{% static 'img/visibiome-screenshot.jpg' %}"
-         alt="A screenshot of submitting an input for processing"
-         class="img-responsive img-thumbnail">
-  {% endif %}
+  <div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+      <p>
+        <strong>Input:</strong>
+        <a target="_blank" class="btn btn-primary btn-xs"
+           href="{% if is_example %}{{example_biom_file}}{% else %}{{job.biom_file.url}}{% endif %}">
+          Uploaded File
+          <span class="glyphicon glyphicon-save" aria-hidden="true"></span>
+        </a>
+      </p>
+
+      {% if job.is_public %}
+      <p>
+        <strong>Public link:</strong>
+        <a href="/public/jobs/9/details">{{request.META.HTTP_HOST}}/public/jobs/{{job.id}}/details</a>
+      </p>
+      {% else %}
+      <form action="{% url 'app:make_job_public' job.pk %}" method="post">
+        {% csrf_token %}
+        <p>
+          <strong>Make public:</strong>
+          <button type="submit" class="btn btn-xs btn-warning" name="button">
+            Make public
+          </button>
+        </p>
+      </form>
+      {% endif %}
+
+      <p><strong>Analysis Type:</strong> {{ job.get_analysis_type_display }}</p>
+      {% if job.analysis_type == job.GNATUNIFRAC %}
+      <p><strong>Range query value:</strong> {{ job.range_query_value }}</p>
+      {% endif %}
+      <p><strong>Criteria:</strong> {{ criteria }}</p>
+      <div>
+        <p><strong>Samples:</strong></p>
+        <ul>
+          {% for sample in job.samples.all %}
+          <li>{{ sample }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <p><strong>OTUs pre-normalized:</strong> {{ job.is_normalized_otu }}</p>
+      <p><strong>Adaptive rarefaction applied:</strong> {{ job.adaptive_rarefaction_flag }}</p>
+      <p><strong>Status:</strong> {{ job.get_status_display }}</p>
+      <p><strong>Created on:</strong> {{ job.created_at }}</p>
+      <p><strong>Last run on:</strong> {{ job.last_run_at }}</p>
+      <p>
+        <strong>Completed on:</strong>
+        {% if job.status < 10 %}
+        -
+        {% else %}
+        {{ job.updated_at }}
+        {% endif %}
+      </p>
+      {% if is_example %}
+      <p>
+        <em>
+          This example job was run by performing the following query in the
+          search/home page
+        </em>
+      </p>
+      <img src="{% static 'img/visibiome-screenshot.jpg' %}"
+      alt="A screenshot of submitting an input for processing"
+      class="img-responsive img-thumbnail">
+      {% endif %}
+    </div>
+  </div>
 
 {% endblock %}

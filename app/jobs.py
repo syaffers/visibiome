@@ -5,6 +5,7 @@ from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.urlresolvers import reverse
 from posixpath import basename, dirname, join
 from .models import BiomSearchJob
 from .tasks import validate_biom
@@ -95,6 +96,29 @@ def rerun(request, job_id):
     else:
         messages.add_message(request, messages.ERROR, unauthorized_access_message)
         return redirect('app:dashboard')
+
+
+@login_required
+def make_public(request, job_id):
+    """Route for making jobs public. Called in details.html page"""
+    msg_storage = messages.get_messages(request)
+    if request.method == "POST":
+        job = get_object_or_404(BiomSearchJob, id=job_id)
+
+        if job.user_id == request.user.pk:
+            job.is_public = True
+            job.save()
+
+            public_path = reverse("app:public_job_details", kwargs={"job_id": job.pk})
+            msg_base = 'Job is now public and viewable at <a href="{}">this link</a>'
+
+            messages.add_message(request, messages.SUCCESS,
+                                 msg_base.format(public_path),
+                                 extra_tags='safe')
+            return redirect('app:job_details', job_id=job.pk)
+        else:
+            messages.add_message(request, messages.ERROR, unauthorized_access_message)
+            return redirect("app:job_details", job_id=job.pk)
 
 
 @login_required

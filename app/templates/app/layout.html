@@ -89,9 +89,13 @@
       <div class="container container-page" id="content-top">
         {% if flash %}
           {% for msg in flash %}
-            <div class="alert alert-{{ msg.tags }}">
+            <div class="alert {% for tag in msg.tags.split %} alert-{{ tag }} {% endfor %}">
               <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-              {{ msg }}
+              {% if 'safe' in msg.tags %}
+                {{ msg|safe }}
+              {% else %}
+                {{ msg }}
+              {% endif %}
             </div>
           {% endfor %}
         {% endif %}

@@ -113,6 +113,10 @@
   font-weight: normal;
 }
 
+.alert a {
+  text-decoration: underline;
+}
+
 .axis path,
 .axis line,
 .line {
