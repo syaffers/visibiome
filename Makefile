@@ -14,7 +14,7 @@ load-init-data-local:
 	python manage.py loaddata initial.json --settings=vzb.settings.local
 
 migrate-dev:
-	python manage.py migrate --settings=vzb.settings.dev
+	python manage.py migrate --settings=vzb.settings.development
 
 migrate-local:
 	python manage.py migrate --settings=vzb.settings.local
