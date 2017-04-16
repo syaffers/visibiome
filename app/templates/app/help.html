@@ -314,6 +314,49 @@
       </div>
     </div>
   </div>
-</div>
+
+  <h2>Download Visibiome</h2>
+  <p>
+    We offer a prepared copy of Visibiome (excluding a few databases to minimize storage size) for
+    users to download and use. Visibiome is distributed as a VirtualBox image under Xubuntu 16.04.
+    The download link can be found
+    <a href="https://s3.amazonaws.com/visibiome-data-files/Visibiome-amd64.vdi.gz">here</a>
+    and further information regarding how to download the missing files are attached in a
+    README file in the distribution.
+  </p>
+
+  <p>
+    To install Visibiome,
+    <ol>
+      <li>extract the <code>.vdi</code> file from the downloaded file,</li>
+      <li>Once extracted, run the VM VirtualBox Manager on your computer,</li>
+      <li>Create a new virtual machine and a window will appear,</li>
+      <li>
+        Give the new VM an appropriate name, and set the type to <strong>Linux</strong> and the
+        version to <strong>Ubuntu (64-bit)</strong>. Once completed click next,
+      </li>
+      <li>
+        We recommend setting the memory to at least 2048 MB (2GB) although more is advised.
+        Once completed click next,
+      </li>
+      <li>
+        For the hard disk, select <strong>User an existing virtual hard disk file</strong>.
+        Select the extracted <code>.vdi</code> file and click next,
+      </li>
+      <li>
+        Click finish and you should be able to run the Xubuntu VM. Open a new web browser window
+        and Visibiome should appear on the homepage.
+      </li>
+    </ol>
+  </p>
+
+  <p>
+    We urge users to read the <code>before-you-start.txt</code> file on the desktop before
+    continuing to use Visibiome as some files are still missing from a complete installation of
+    Visibiome and needs to be downloaded. It also contains important information regarding
+    passwords and access details. Please report any errors you may encounter to the authors of
+    Visibiome or to the <a href="https://bitbucket.org/syaffers/visibiome">git repository</a>.
+    Contact information can be found in the <a href="{% url 'app:contact' %}">contact page</a>.
+  </p>
 
 {% endblock %}
