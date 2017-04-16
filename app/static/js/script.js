@@ -14,6 +14,14 @@ var biomSearchFormId = "#biom-search-form",
   jobUpdatedAtTd = "td.job-updated-at",
   jobLastRunAtTd = "td.job-last-run-at";
 
+
+/**
+ * Search page checkbox select handler.
+ *
+ * This function limits user criteria selection to a maximum of 3 individual
+ * ecosystems xor the "All" ecosystem. This is checked every time a user
+ * clicks one of the checkboxes.
+ */
 function handleBiomCheckbox() {
   var checkedBoxes = $(biomSearchFormId)
     .find(".checkbox-criteria input[type=checkbox]")
@@ -40,6 +48,31 @@ function handleBiomCheckbox() {
   }
 }
 
+
+function uncheck(index, elem) {
+  if ($(elem).val() != allEcoValue)
+    $(elem).prop("checked", false);
+}
+
+
+function isChecked() {
+  return $(this).prop("checked") ? 1 : 0;
+}
+
+
+function add(a, b) {
+  return a + b;
+}
+
+
+/**
+ * Dashboard AJAX job update handler.
+ *
+ * This is run every few seconds (see end of file for the actual value of
+ * seconds) and is used to automatically update the details of jobs which are
+ * currently running. It calls the following function to actually do the text
+ * updating etc.
+ */
 function handleUpdateJobDetails() {
   $(jobDashboardRow).each(function (index, row) {
     var jobId = $(this).attr("id");
@@ -52,6 +85,15 @@ function handleUpdateJobDetails() {
   });
 }
 
+
+/**
+ * Job row details updater.
+ *
+ * This is called from handleUpdateJobDetails to do text manipulation and
+ * actually update the view on the dashboard. The function normalizes strings
+ * and checks job statuses to properly set the classes and texts for each
+ * running job row.
+ */
 function updateJobDetailsText(data) {
   if (data.status == 200) {
     var job = data.data;
@@ -79,6 +121,13 @@ function updateJobDetailsText(data) {
   }
 }
 
+
+/**
+ * Remove job buttons functionality.
+ *
+ * On clicking, redirect to the remove job URL. The user must be the job's
+ * owner for this to be successfully executed.
+ */
 function handleRemoveJob(e) {
   e.preventDefault();
   var removeUrl = $(this).data("remove-url");
@@ -86,6 +135,13 @@ function handleRemoveJob(e) {
   remove ? location.href = removeUrl : false
 }
 
+
+/**
+ * Rerun job buttons functionality.
+
+ * On clicking, redirect to the rerun job URL. The user must be the job's
+ * owner for this to be successfully executed.
+ */
 function handleRerunJob(e) {
   e.preventDefault();
   if ($(this).hasClass("disabled")) {
@@ -97,19 +153,12 @@ function handleRerunJob(e) {
   }
 }
 
-function uncheck(index, elem) {
-  if ($(elem).val() != allEcoValue)
-    $(elem).prop("checked", false);
-}
 
-function isChecked() {
-  return $(this).prop("checked") ? 1 : 0;
-}
-
-function add(a, b) {
-  return a + b;
-}
-
+/**
+ * Table sorter options for the dashboard.
+ *
+ * Columns 6 and 7 are the rerun and delete button columns respectively
+ */
 var tablesorterOptions = {
   headers: {
     6: {
@@ -121,6 +170,10 @@ var tablesorterOptions = {
   }
 }
 
+
+/**
+ * RUN!
+ */
 $(document).ready(function() {
   $(biomSearchFormId)
     .find(".checkbox-criteria input[type=checkbox]")
