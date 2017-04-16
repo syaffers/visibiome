@@ -19,6 +19,7 @@
         </a>
       </p>
 
+      {% if not is_example %}
       {% if job.is_public %}
       <p>
         <strong>Public link:</strong>
@@ -34,6 +35,7 @@
           </button>
         </p>
       </form>
+      {% endif %}
       {% endif %}
 
       <p><strong>Analysis Type:</strong> {{ job.get_analysis_type_display }}</p>
