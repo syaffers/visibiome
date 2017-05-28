@@ -268,12 +268,12 @@ def m_n_betadiversity(job):
                 print("OTUs are not normalized... normalizing")
                 n_otu_matrix = n_otu_matrix / otu_copy_numbers
 
-                if job.analysis_type == BiomSearchJob.BRAYCURTIS:
-                    bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job)
-                elif job.analysis_type == BiomSearchJob.GNATUNIFRAC:
-                    gnat_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job)
-                else:
-                    pass
+            if job.analysis_type == BiomSearchJob.BRAYCURTIS:
+                bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job)
+            elif job.analysis_type == BiomSearchJob.GNATUNIFRAC:
+                gnat_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job)
+            else:
+                pass
 
     except:
         print("Unexpected error:", sys.exc_info())
