@@ -3,10 +3,17 @@
 var biomSearchFormId = "#biom-search-form",
   removeJobButtons = ".btn-job-remove",
   rerunJobButtons = ".btn-job-rerun",
+
   allEcoCheckbox = "#id_criteria_0",
   allEcoValue = "1",
+
+  phylumCheckbox = "#id_taxonomy_levels_1",
+  familyCheckbox = "#id_taxonomy_levels_4",
+  genusCheckbox = "#id_taxonomy_levels_5",
+
   otuTextarea = "#id_otu_text",
   otuTextareaPlaceholder = "Paste OTU table here",
+
   jobDashboardRow = ".job-row",
   jobStatusTd = "td.job-status",
   jobStatusTdSpan = "td.job-status span",
@@ -44,6 +51,23 @@ function handleBiomCheckbox() {
   else {
     $(biomSearchFormId)
       .find(".checkbox-criteria input[type=checkbox]:not(:checked)")
+      .prop('disabled', false);
+  }
+}
+
+function handleTaxonCheckbox() {
+  var checkedBoxes = $(biomSearchFormId)
+    .find(".checkbox-taxon input[type=checkbox]")
+    .map(isChecked).toArray();
+
+  if (checkedBoxes.reduce(add, 0) >= 3) {
+    $(biomSearchFormId)
+      .find(".checkbox-taxon input[type=checkbox]:not(:checked)")
+      .prop('disabled', true);
+  }
+  else {
+    $(biomSearchFormId)
+      .find(".checkbox-taxon input[type=checkbox]:not(:checked)")
       .prop('disabled', false);
   }
 }
@@ -178,7 +202,13 @@ $(document).ready(function() {
   $(biomSearchFormId)
     .find(".checkbox-criteria input[type=checkbox]")
     .click(handleBiomCheckbox);
+  $(biomSearchFormId)
+    .find(".checkbox-taxon input[type=checkbox]")
+    .click(handleTaxonCheckbox);
   $(allEcoCheckbox).click();
+  $(phylumCheckbox).click();
+  $(familyCheckbox).click();
+  $(genusCheckbox).click();
   $(removeJobButtons).click(handleRemoveJob);
   $(rerunJobButtons).click(handleRerunJob);
   $("#table-dashboard").tablesorter(tablesorterOptions);

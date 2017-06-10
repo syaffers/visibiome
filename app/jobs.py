@@ -132,6 +132,7 @@ def details(request, job_id):
     if job.user_id == request.user.pk:
         context["job"] = job
         context["criteria"] = ", ".join(map(str, job.criteria.all()))
+        context["taxonomy_levels"] = ", ".join(map(str, job.taxonomy_levels.all()))
         context["flash"] = msg_storage
         return render(request, 'job/details.html', context)
     else:

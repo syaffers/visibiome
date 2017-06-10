@@ -46,6 +46,14 @@ class EcosystemChoice(models.Model):
         return self.ecosystem_proper_name
 
 
+class TaxonomyLevelChoice(models.Model):
+    taxon_level = models.CharField(verbose_name="Taxonomy Chart Level", max_length=60)
+    taxon_level_proper_name = models.CharField(max_length=60)
+
+    def __unicode__(self):
+        return self.taxon_level_proper_name
+
+
 class BiomSearchJob(models.Model):
     """Job status IDs"""
     STOPPED = -1
@@ -136,6 +144,9 @@ class BiomSearchJob(models.Model):
     criteria = models.ManyToManyField(
         'EcosystemChoice', blank=False, max_length=3
     )
+    taxonomy_levels = models.ManyToManyField(
+        'TaxonomyLevelChoice', blank=False, max_length=3, default=["phylum", "class", "genus"]
+    )
     name = models.CharField(
         null=False, blank=False, max_length=100, default="Unnamed Job",
         validators=[alphanumeric_spaces]
@@ -207,7 +218,8 @@ class BiomSearchForm(forms.ModelForm):
             "adaptive_rarefaction_flag": forms.BooleanField(required=False),
             "is_public": forms.BooleanField(required=False),
             "analysis_type": forms.ChoiceField(required=True),
-            "range_query_value": forms.ChoiceField
+            "range_query_value": forms.ChoiceField,
+            "taxonomy_levels": forms.MultipleChoiceField(required=True),
         }
         labels = {
             "criteria": "Select the ecosystem(s)",
@@ -222,9 +234,11 @@ class BiomSearchForm(forms.ModelForm):
             "is_normalized_otu": "Optional but recommended if you are not sure",
             "adaptive_rarefaction_flag": "Optional",
             "range_query_value": "Only applies to GNAT/UniFrac",
+            "taxonomy_levels": "Select maximum of three taxonomy level charts (GNAT/UniFrac only)",
         }
         widgets = {
             "criteria": forms.CheckboxSelectMultiple,
+            "taxonomy_levels": forms.CheckboxSelectMultiple,
             "name": forms.TextInput(
                 attrs={
                     "placeholder": "Name this job",
