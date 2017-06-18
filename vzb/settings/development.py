@@ -87,3 +87,6 @@ L_MATRIX_DATA_PATH = os.path.join(STATIC_ROOT, 'data/')
 # BROKER_URL = "redis://:pizzaisgreat@"\
 #              "pub-redis-17533.us-east-1-4.3.ec2.garantiadata.com:17533"
 BROKER_URL = "redis://127.0.0.1//"
+
+# Set maximum number of uploadable samples in asingle BIOM file
+MAX_NO_OF_SAMPLES = 50

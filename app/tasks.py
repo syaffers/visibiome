@@ -148,7 +148,7 @@ def validate_biom(job, file_path):
         job.last_run_at = timezone.now()
         otu_table = load_table(file_path)
 
-        if len(otu_table.ids("sample")) <= 10:
+        if len(otu_table.ids("sample")) <= settings.MAX_NO_OF_SAMPLES:
             # if it's a rerun, remove any errors but don't add any samples to the DB
             if job.status == BiomSearchJob.RERUN:
                 job.error_code = BiomSearchJob.NO_ERRORS
