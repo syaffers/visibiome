@@ -6,7 +6,7 @@ VirtualBox image. This removes the necessary configuration and provides a
 barebones usable deployment complete with databases, pre-calculated matrix data
 and the webserver itself.
 
-The Visibiome distribution can be found at http://link.to-be-put-here.com/
+The Visibiome distribution can be found at https://s3.amazonaws.com/visibiome-data-files/Visibiome-amd64.vdi.gz
 
 ## QIIME-based Ubuntu VM Setup ##
 There are three possible deployment settings (indicated in this document with a
