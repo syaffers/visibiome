@@ -177,36 +177,36 @@
 
         <hr>
         <div class="form-group">
-          <label for="taxonomy_levels" class="col-xs-12 col-sm-3 control-label">
+          <label for="taxonomy_ranks" class="col-xs-12 col-sm-3 control-label">
             <abbr data-toggle="tooltip" data-placement="top"
-                  title="{{ form.taxonomy_levels.help_text }}">
-                  {{ form.taxonomy_levels.label }}
+                  title="{{ form.taxonomy_ranks.help_text }}">
+                  {{ form.taxonomy_ranks.label }}
             </abbr>
           </label>
           <div class="col-xs-12 col-sm-9">
             <div class="row">
-              {% for taxonomy_level in form.taxonomy_levels %}
+              {% for taxonomy_rank in form.taxonomy_ranks %}
                 {% if forloop.counter0|divisibleby:2 %}
                   <div class="col-xs-2">
                 {% endif %}
                     <div class="checkbox checkbox-taxon">
-                      {{ taxonomy_level }}
+                      {{ taxonomy_rank }}
                     </div>
                 {% if forloop.counter|divisibleby:2 %}
                   </div>
                 {% endif %}
               {% endfor %}
 
-              {% if form.taxonomy_levels.errors %}
+              {% if form.taxonomy_ranks.errors %}
                 <ul class="errorlist">
-                  {% for e in form.taxonomy_levels.errors %}
+                  {% for e in form.taxonomy_ranks.errors %}
                     <li>{{ e }}</li>
                   {% endfor %}
                 </ul>
               {% endif %}
             </div>
           </div>
-          
+
           <div class="row">
             <div class="col-xs-12 col-sm-3 col-xs-offset-9">
               <input type="submit" name="submit" id="submit" value="Analyze" class="btn btn-primary">

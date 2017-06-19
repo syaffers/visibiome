@@ -46,12 +46,12 @@ class EcosystemChoice(models.Model):
         return self.ecosystem_proper_name
 
 
-class TaxonomyLevelChoice(models.Model):
-    taxon_level = models.CharField(verbose_name="Taxonomy Chart Level", max_length=60)
-    taxon_level_proper_name = models.CharField(max_length=60)
+class TaxonomyRankChoice(models.Model):
+    taxon_rank = models.CharField(verbose_name="Taxonomy Chart Rank", max_length=60)
+    taxon_rank_proper_name = models.CharField(max_length=60)
 
     def __unicode__(self):
-        return self.taxon_level_proper_name
+        return self.taxon_rank_proper_name
 
 
 class BiomSearchJob(models.Model):
@@ -144,8 +144,8 @@ class BiomSearchJob(models.Model):
     criteria = models.ManyToManyField(
         'EcosystemChoice', blank=False, max_length=3
     )
-    taxonomy_levels = models.ManyToManyField(
-        'TaxonomyLevelChoice', blank=False, max_length=3, default=["phylum", "class", "genus"]
+    taxonomy_ranks = models.ManyToManyField(
+        'TaxonomyRankChoice', blank=False, max_length=3, default=["phylum", "family", "genus"]
     )
     name = models.CharField(
         null=False, blank=False, max_length=100, default="Unnamed Job",
@@ -219,7 +219,7 @@ class BiomSearchForm(forms.ModelForm):
             "is_public": forms.BooleanField(required=False),
             "analysis_type": forms.ChoiceField(required=True),
             "range_query_value": forms.ChoiceField,
-            "taxonomy_levels": forms.MultipleChoiceField(required=True),
+            "taxonomy_ranks": forms.MultipleChoiceField(required=True),
         }
         labels = {
             "criteria": "Select the ecosystem(s)",
@@ -234,11 +234,11 @@ class BiomSearchForm(forms.ModelForm):
             "is_normalized_otu": "Optional but recommended if you are not sure",
             "adaptive_rarefaction_flag": "Optional",
             "range_query_value": "Only applies to GNAT/UniFrac",
-            "taxonomy_levels": "Select maximum of three taxonomy level charts (GNAT/UniFrac only)",
+            "taxonomy_ranks": "Select maximum of three taxonomy level charts (GNAT search only)",
         }
         widgets = {
             "criteria": forms.CheckboxSelectMultiple,
-            "taxonomy_levels": forms.CheckboxSelectMultiple,
+            "taxonomy_ranks": forms.CheckboxSelectMultiple,
             "name": forms.TextInput(
                 attrs={
                     "placeholder": "Name this job",
