@@ -42,6 +42,12 @@ restart-dev:
 	sleep 4
 	uwsgi --ini uwsgi.ini
 
+shell-dev:
+	python manage.py shell --settings=vzb.settings.development
+
+shell-local:
+	python manage.py shell --settings=vzb.settings.local
+
 start-local:
 	python manage.py runserver 8001
 
