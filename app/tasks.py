@@ -23,40 +23,46 @@ import re
 
 import cPickle
 from betadiversity_scripts import gnatsearch as gs
+from betadiversity_scripts import aesa as ae
 from betadiversity_scripts import microbiomeUtils as mu
 #from betadiversity_scripts.microbiomeUtils import SearchEngine
 
-def gnat_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job):
-    print "GNATing..."
+def search_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job, engineClass):
+    print "Searching...", engineClass
 
-    engine = gs.SearchEngine(n_otu_matrix, n_otu_ids, n_sample_ids, l_data_path, criteria)
+    engine = engineClass(n_otu_matrix, n_otu_ids, n_sample_ids, l_data_path, criteria)
     try:
-        engine.gnatsearch(threshold=job.range_query_value, rare=job.adaptive_rarefaction_flag)
-        engine.shortReport()
+        engine.search(threshold=job.range_query_value, rare=job.adaptive_rarefaction_flag)
+        #engine.shortReport() ## not (yet) implemented for AESA
         m_n_distmtx, m_n_sample_ids, rankingDF = engine.make_m_n_distmtx()
     finally:
         engine.close() ## closes Database connection
 
     print("Making top hit correspondence barcharts...")
-    barchartDicts = generate_barcharts(engine.GNATresults, job_dir_path)
+    ranks = [trank.taxon_rank for trank in job.taxonomy_ranks.all()]
+    barchartDicts = generate_barcharts(engine.results, job_dir_path, ranks)
 
-    print("Making dendrogram...")
-    filepath = os.path.join(job_dir_path, "d3dendrogram.json")
-    generate_dendrogram_file(m_n_distmtx, m_n_sample_ids, filepath)
+    if "GNAT" in str(engineClass).upper(): ## this is new! TESTING
+        print("Making dendrogram...")
+        filepath = os.path.join(job_dir_path, "d3dendrogram.json")
 
-    # pcoa for available samples
-    print("Making PCOA...")
-    filepath = os.path.join(job_dir_path, "pcoa_1000.json")
-    generate_pcoa_file(m_n_distmtx, m_n_sample_ids, n_sample_ids, filepath)
+        generate_dendrogram_file(m_n_distmtx, m_n_sample_ids, filepath)
+
+        # pcoa for available samples
+        print("Making PCOA...")
+        filepath = os.path.join(job_dir_path, "pcoa_1000.json")
+        generate_pcoa_file(m_n_distmtx, m_n_sample_ids, n_sample_ids, filepath)
 
     sample_filename = job.file_safe_name() + ".json"
     filepath = os.path.join(job_dir_path, sample_filename)
     ## this interface has been updated to cope with multiple rankings
-    print "Making sample metadata file (from GNAT results) with barchart info"
+    print "Making sample metadata file (from range search results) with barchart info"
     generate_samples_metadata(rankingDF, n_sample_ids, filepath, barcharts=barchartDicts)
     print "Done"
     job.status = BiomSearchJob.COMPLETED
     job.save()
+
+#def aesa_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job):
 
 def bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job):
     # query the representatives
@@ -270,10 +276,12 @@ def m_n_betadiversity(job):
 
             if job.analysis_type == BiomSearchJob.BRAYCURTIS:
                 bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job)
-            elif job.analysis_type == BiomSearchJob.GNATUNIFRAC:
-                gnat_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job)
+            #elif job.analysis_type == BiomSearchJob.GNATUNIFRAC:
+            #    search_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job,
+            #                   engineClass=gs.GNATsearch)
             else:
-                pass
+                search_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job,
+                               engineClass=ae.AESA)
 
     except:
         print("Unexpected error:", sys.exc_info())

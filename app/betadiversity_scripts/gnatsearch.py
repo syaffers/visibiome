@@ -8,16 +8,17 @@ import pandas as pd
 import scipy.sparse
 import MySQLdb
 import pdb
-# datastructure  got pickled
 from collections import defaultdict
-from config import server_db
-from django.conf import settings
-from itertools import izip
 import sys
+from django.conf import settings
+from config import server_db ### UNCOMMENT THIS  AGAIN!!!!
 sys.path.append(settings.COORD_UTIL_PATH)
+#sys.path.append('coord_util')
 import gnat
+
 from microbiomeUtils import emdusparse, UserSample, SQLSample, rarefy
 
+from itertools import izip
 def add_refs(gnatnode, db, metric):
     gnatnode.db = db
     gnatnode.metric = metric
@@ -68,7 +69,6 @@ class MicrobiomeSQLDB(object):
         for key in range(len(self.sampleIDs)):
             yield key #ps.seqP
     def get_sample(self, key, calculateComposition=False): ## given an integer key, look up sample ID -> retrieve data from MySQL
-        ## make sure curs is global
         sampleID = self.sampleIDs[key]
         sample = SQLSample(sampleID, self.curs) #list of tuples
         if calculateComposition:
@@ -97,11 +97,9 @@ class DistanceStats:
         self.mxn_distmtx = self.ddf.dropna(axis=0, how='any')
         ## reduce further, eg. by taking the 100 best matches per query
         self.msubset = set({})
-        print "@@@@", '4.3.CL.N.139815' in self.ddf.index.values
         for sample in self.userSampleIDs:
             ## sorting columns individually, taking union of top matches (sample ids)
             topset = set(self.mxn_distmtx[sample].sort_values(inplace=False).index.values[:top])
-            print "@@@@", sample, topset
             self.msubset.update(topset)
         self.rankings = self.ddf.loc[self.msubset]  ## not really needed anymore with GNATquery.ranking being refactored
 
@@ -144,14 +142,17 @@ class GNATquery:
         if verbose:
             print "Distinct OTUs", len(self.qsample.otus)
             #print "traversed Nodes (avg, std)", travNodes.mean(), travNodes.std()
+
+
         print "Nr of emdusparse comparisons made", self.comparisons
         print "Matches for %s" % self.qsample.sampleID
         for dist, sample in self.ranking[:top]:
             print "    %-30s: %.4f" % (sample.sampleID, dist)
         #return len(self.qsample.otus),self.comparisons, travNodes.mean(), travNodes.std()
 
-class SearchEngine:
-    def __init__(self, n_otu_matrix, n_otu_ids, n_sample_ids, l_data_path, criteria):
+
+class SearchEngine(object):
+    def __init__(self, n_otu_matrix, n_otu_ids, n_sample_ids, l_data_path, criteria, conn=None):
         self.n_otu_matrix = n_otu_matrix
         self.n_otu_ids = n_otu_ids
         self.n_sample_ids = n_sample_ids
@@ -159,10 +160,13 @@ class SearchEngine:
         self.criteria = criteria
         self.userSamples = [UserSample(n_sample_id, sample, self.n_otu_ids) for
                             (n_sample_id, sample) in zip(self.n_sample_ids, self.n_otu_matrix)]
-        self.conn = MySQLdb.connect(**server_db)
+
+        self.conn = MySQLdb.connect(**server_db) if conn is None else conn
         self.curs = self.conn.cursor()
         print "Search engine/DB initialized...", n_sample_ids
         print "Criteria", criteria
+
+
     def make_m_n_distmtx(self): ## master, calling self.methods
         ## Expects gnatsearch to be done!
         ## get mxn_distmtx and also m', i.e the usable subset of m
@@ -181,18 +185,24 @@ class SearchEngine:
 
         sampleIDs_to_index = dict(zip(self.db.sampleIDs, range(len(self.db.sampleIDs))))
         ## in the future, this should simply be a right join of pandas dfs on their indices
-        msubset, msubsetSampleIDs = zip(*sorted([(sampleIDs_to_index[sampleID], sampleID) for sampleID in ds.msubset]))
-        msubset = np.array(msubset)
-        m_distmtx = mxm_distmtx[msubset][:,msubset].compute()
-        mxn_distmtx = ds.mxn_distmtx.loc[list(msubsetSampleIDs)].values ## arrange mxn matrix accordingly
-        ## compose all parts of the distance matrix
-        # stack matrices to make the m + n distance matrix
-        m_n_distmtx = np.vstack(
-            (np.hstack((m_distmtx, mxn_distmtx)),
-             np.hstack((mxn_distmtx.T, self.nxn_distmtx)))
-        )
+        #pdb.set_trace()
+        if ds.msubset:
+            msubset, msubsetSampleIDs = zip(*sorted([(sampleIDs_to_index[sampleID], sampleID) for sampleID in ds.msubset]))
+            msubset = np.array(msubset)
+            m_distmtx = mxm_distmtx[msubset][:,msubset].compute()
+
+            mxn_distmtx = ds.mxn_distmtx.loc[list(msubsetSampleIDs)].values ## arrange mxn matrix accordingly
+            ## compose all parts of the distance matrix
+            # stack matrices to make the m + n distance matrix
+            m_n_distmtx = np.vstack(
+                (np.hstack((m_distmtx, mxn_distmtx)),
+                np.hstack((mxn_distmtx.T, self.nxn_distmtx)))
+            )
+            return m_n_distmtx, list(msubsetSampleIDs) + self.n_sample_ids, self.rankings
+        else:
+            return self.nxn_distmtx, self.n_sample_ids, self.rankings  ## not so nice, does not enable contextualization against DB
         ## return value should have been a dataframe
-        return m_n_distmtx, list(msubsetSampleIDs) + self.n_sample_ids, self.rankings
+
 
     def make_nxn_distmtx(self):
         dm = np.zeros((len(self.userSamples), len(self.userSamples)))
@@ -201,12 +211,33 @@ class SearchEngine:
                 dm[i,j] = self.metric.dist(self.userSamples[i], self.userSamples[j])
         self.nxn_distmtx = dm + dm.T
 
-    def gnatsearch(self, threshold=0.3, rare=True):
+    def close(self):
+        self.conn.close()
+
+    def traversalStats(self):
+        import matplotlib.pyplot as plt
+        traversedNodes = [np.array(gr.traversedNodes.values()) for gr in self.results]
+        nrOtus = [len(gr.qsample.otus) for gr in self.results]
+        means = [r.mean() for r in traversedNodes]
+        sampleIDs = [gr.qsample.sampleID for gr in self.results]
+        sortedData = sorted(zip(nrOtus, means, traversedNodes, sampleIDs))
+        ## boxplot from node traversal data
+        plt.boxplot([rec[2] for rec in sortedData])
+        plt.ylabel('Traversed nodes')
+        plt.xticks(np.arange(1, len(self.results) + 1), ["%s (%s)" % (rec[-1][5:], rec[0]) for rec in sortedData], rotation=90)
+        plt.tight_layout()
+        plt.savefig('/media/sf_SharedFolderQiimeVM/boxplotTraversedNodes2.png')
+        plt.savefig('/media/sf_SharedFolderQiimeVM/boxplotTraversedNodes2.svg')
+        plt.show()
+
+class GNATSearch(SearchEngine):
+
+    def search(self, threshold=0.3, rare=True):
         self.db = MicrobiomeSQLDB(self.l_data_path, self.curs)
         self.metric = EMDUnifrac(rare=rare, l_data_path=self.l_data_path)
 
         if 'All_eco' in self.criteria: self.criteria = ['All_eco'] # ignore others
-        self.GNATresults = []
+        self.results = []
         for qsample in self.userSamples[:10]:
             first = True
             qsample.computeComposition(self.curs)
@@ -226,34 +257,17 @@ class SearchEngine:
                 print "GQ Ranking after %s" % ecosystem
                 print " | ".join(["%s: %.3f"%(s.sampleID,d) for d,s in combinedGnatQuery.ranking])
             combinedGnatQuery.printReport()
-            self.GNATresults.append(combinedGnatQuery)
+            self.results.append(combinedGnatQuery)
 
         toSeries = lambda ranking: pd.Series(dict([(s.sampleID, d) for (d,s) in ranking]))
-        keys = [gr.qsample.sampleID for gr in self.GNATresults]
-        self.rankings = pd.concat([toSeries(gr.ranking) for gr in self.GNATresults], axis=1, keys=keys)
+        keys = [gr.qsample.sampleID for gr in self.results]
+        self.rankings = pd.concat([toSeries(gr.ranking) for gr in self.results], axis=1, keys=keys)
 
     def shortReport(self, verbose=False): ## possible after gnatsearch only!!!
-        for gr in self.GNATresults:
+        for gr in self.results:
             gr.printReport(5, verbose=verbose)
 
-        if verbose: ## generating figures for manuscript
-            import matplotlib.pyplot as plt
-            traversedNodes = [np.array(gr.traversedNodes.values()) for gr in self.GNATresults]
-            nrOtus = [len(gr.qsample.otus) for gr in self.GNATresults]
-            means = [r.mean() for r in traversedNodes]
-            sampleIDs = [gr.qsample.sampleID for gr in self.GNATresults]
-            sortedData = sorted(zip(nrOtus, means, traversedNodes, sampleIDs))
-            ## boxplot from node traversal data
-            plt.boxplot([rec[2] for rec in sortedData])
-            plt.ylabel('Traversed nodes')
-            plt.xticks(np.arange(1, len(self.GNATresults)+1), ["%s (%s)" % (rec[-1][5:], rec[0]) for rec in sortedData], rotation=90)
-            plt.tight_layout()
-            plt.savefig('/media/sf_SharedFolderQiimeVM/boxplotTraversedNodes2.png')
-            plt.savefig('/media/sf_SharedFolderQiimeVM/boxplotTraversedNodes2.svg')
-            plt.show()
 
-    def close(self):
-        self.conn.close()
 
 
 
@@ -268,22 +282,23 @@ if __name__ == "__main__":
         sampledatadir = '/home/qiime/visibiome/app/static/testdata'
         sampleFiles = glob.glob('%s/*_sc.npy' % sampledatadir)[-1:]
 
+
         index = ["User_%s" % os.path.basename(sf)[:-7] for sf in sampleFiles]
         ## creating a dataframe from OTU dictionaries
         ## the dataframe is then handy to simulate the data as it comes from tasks.py
         df = pd.DataFrame([createDict(samplefile) for samplefile in sampleFiles], index=index)
 
-        engine = SearchEngine(df.values, list(df.columns.values), index, l_data_path, ['Freshwater', 'Plant'])
+        engine = GNATSearch(df.values, list(df.columns.values), index, l_data_path, ['Freshwater', 'Plant'])
     else:
         df = pd.read_csv('/media/sf_SharedFolderQiimeVM/membranes.csv', sep='\t', index_col='#OTU_ID')
         df = df[['ERR542775']].T
-        engine = SearchEngine(df.values, map(str,df.columns.values), list(df.index.values), l_data_path, ['All_eco'])
-    engine.gnatsearch()
+        engine = GNATSearch(df.values, map(str, df.columns.values), list(df.index.values), l_data_path, ['All_eco'])
+    engine.search()
     engine.shortReport(verbose=False)
 
     dm, sids, rankingDF = engine.make_m_n_distmtx()
     print
-    print "Samples Used For bar charts", [s.sampleID for (d,s) in engine.GNATresults[0].ranking]
+    print "Samples Used For bar charts", [s.sampleID for (d,s) in engine.results[0].ranking]
     print "Supposed to be equal to (used for ranking cards)", engine.rankings.index.values
 
 

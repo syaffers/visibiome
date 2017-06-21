@@ -14,7 +14,7 @@ import pandas as pd
 import scipy.cluster.hierarchy as sch
 from collections import defaultdict
 from django.conf import settings
-
+from matplotlib import colors as mcolors
 
 class Sample:
     def __init__(self, rank, name, title,
@@ -127,7 +127,7 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=
         """.format(m_sample_ids='\',\''.join(top_m_sample_ids))
 
         #print json_metadata_query
-        curs = conn.cursor(DictCursor)
+        curs = conn.cursor(DictCursor) ## creating a cursor inside the loop?
         n = curs.execute(json_metadata_query)
         #print len(top_m_j_sample_ids), len(top_m_sample_ids), n
         authors_list = title = study = ""
@@ -230,7 +230,7 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=
     with open(filepath, "w") as json_output_file:
         json.dump(all_samples_dict, json_output_file, sort_keys=True, separators=(',',':'))
 
-def generate_barcharts(gnatresults, filepath):
+def generate_barcharts(searchresults, filepath, selectedRanks):
     '''Drawing pairwise stacked barcharts of compositions, connecting corresponding fractions by lines.
        Latest version uses mpld3 to be hooked up with d3 javascript library
        Possible TODO: instead of pairwise'''
@@ -241,7 +241,7 @@ def generate_barcharts(gnatresults, filepath):
             return sample_id[:cutoff] + "..."
         return sample_id
 
-    def comparativeBarchart(df, rank, drawLegend=False):
+    def comparativeBarchart(df, rank, drawLegend=False, figsaveInfo=""):
         tooltip_html = "Sample: %s<br>Clade: %s<br>Abundance: %.2f%%"
         colors = [colorDict[rank][phyl] for phyl in df.columns.values]
         df.columns = [taxa if taxa else '(unassigned)' for taxa in df.columns.values]
@@ -293,6 +293,9 @@ def generate_barcharts(gnatresults, filepath):
 
         #filename1 = os.path.join('/tmp/', "%s___%s.%s" % (userSample.sampleID, rank, filetype))
         #print "Trying to save %s" % filename
+        svgfile = "%s/bar__%s__%s.svg" % (os.path.splitext(filepath)[0], figsaveInfo, rank)
+        print "Saving bar diagram in %s" % svgfile
+        plt.savefig(svgfile)
         figdict =  mpld3.fig_to_dict(fig) ## encountered issues with save_html
         if not figdict:
             print "Warning: no figure generated:",
@@ -312,30 +315,36 @@ def generate_barcharts(gnatresults, filepath):
 
     def groupby(rank, sample):
         df = sample.composition.groupby(rank).sum()
-        df.columns = [sample.sampleID]
-        #print df.head()
-        return df
-    ## loading color dicts for consistent coloring
 
+
+        df.columns = [sample.sampleID]
+        print df.head()
+        return df
+    ## creating color dicts for consistent coloring
+    conn = MySQLdb.connect(**server_db)
+    curs = conn.cursor()
+    colors = np.array(mcolors.CSS4_COLORS.values())
     colorDict = {}
-    for rank in ['phylum', 'genus', 'family']: ## TODO: simplify: just pickle the entire thing as one dict
-        with open(os.path.join(settings.L_MATRIX_DATA_PATH, '%sColorDict.pcl'%rank)) as f:
-            colorDict[rank] = cPickle.load(f)
+    for rank in selectedRanks: ## TODO: create remaining colordicts
+        np.random.shuffle(colors)
+        curs.execute('SELECT DISTINCT `%s` FROM OTUS_unified' %rank)
+        clades = curs.fetchall()
+        colorDict[rank] = dict([(clades[i][0], colors[i%len(colors)]) for i in range(len(clades))])
+    conn.close()
     barcharts = defaultdict(dict)
-    #with open('/tmp/gnatresults.pcl', 'w') as w:
-    #    cPickle.dump(gnatresults, w)
-    for gnatresult in gnatresults:
-        userSample = gnatresult.qsample
-        if gnatresult.ranking:
-            matchSamples = list(zip(*gnatresult.ranking)[1][:5])
-            print "### Top 5 for %s"%(userSample.sampleID), [(s.sampleID, d) for d,s in gnatresult.ranking][:10]
-            for rank in ['phylum', 'genus', 'family']:
-                #print "Multiple barchart for", userSample.sampleID, rank
+
+
+    for result in searchresults:
+        userSample = result.qsample
+        if result.ranking:
+            matchSamples = list(zip(*result.ranking)[1][:5])
+            #print "### Top 5 for %s"%(userSample.sampleID), [(s.sampleID, d) for d,s in gnatresult.ranking][:10]
+            for rank in selectedRanks:
                 taxaGroupedTables = [groupby(rank, sample) for sample in [userSample] + matchSamples]
+                #print taxaGroupedTables
                 combinedAbundances = pd.concat(taxaGroupedTables, axis=1, join='outer').fillna(0.00001)
                 combinedAbundances.sort_values(userSample.sampleID, inplace=True, ascending=False)
-                #print combinedAbundances.head()
-                barcharts[userSample.sampleID][rank] = comparativeBarchart(combinedAbundances.T, rank)
+                barcharts[userSample.sampleID][rank] = comparativeBarchart(combinedAbundances.T, rank, figsaveInfo=userSample.sampleID)
         else:
             print "Warning: no ranking found for query sample", userSample.sampleID
     return barcharts
@@ -511,6 +520,10 @@ def generate_pcoa_file(distmtx, m_n_sample_ids, n_sample_ids, filepath):
     coords = coords[idxs_descending]
 
     # from google10c
+    print "Distance Matrix distmtx"
+    print distmtx, coords
+    print 'm_n_sample_ids' + str(len(m_n_sample_ids)), m_n_sample_ids
+    print "n_sample_ids" + str(len(n_sample_ids)), n_sample_ids
     colormap = [
         "#3366cc", "#dc3912", "#ff9900", "#109618", "#990099", "#0099c6", "#dd4477",
         "#66aa00", "#b82e2e", "#316395", "#994499", "#22aa99", "#aaaa11", "#6633cc",
@@ -661,6 +674,9 @@ def generate_pcoa_file(distmtx, m_n_sample_ids, n_sample_ids, filepath):
 
             plot_name = (pc1 + 1, pc2 + 1, group.capitalize())
             plots["PC%d%d%s" % plot_name] = mpld3.fig_to_dict(fig)
+            svgfile = "%s_PC%s%s_%s.svg" %((os.path.splitext(filepath)[0],) + plot_name)
+            print "Saving PCoA in %s" % svgfile
+            plt.savefig(svgfile)
 
     """ FINISH! """
     with open(filepath, "w") as f_pcoa:

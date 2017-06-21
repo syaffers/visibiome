@@ -75,12 +75,12 @@ class BiomSearchJob(models.Model):
     """Analysis type IDs"""
     BRAYCURTIS = 1
     GNATUNIFRAC = 2
-    HIEREPUNIFRAC = 3
+    AESAUNIFRAC = 3
 
     ANALYSISTYPES = (
         (BRAYCURTIS, "Bray Curtis"),
         (GNATUNIFRAC, "GNAT/UniFrac"),
-        # (HIEREPUNIFRAC, "Hierarchical Representatives/UniFrac")
+        (AESAUNIFRAC, "AESA/UniFrac")
     )
 
     """Error type IDs"""

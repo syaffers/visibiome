@@ -102,13 +102,15 @@ class Sample:
          Only needed for query matches that are top ranked!
         '''
         ## this requires EarthMicroBiome database!!
-        columns = 'otu_id phylum family genus'.split()
+        columns = 'otu_id phylum class order family genus species'.split()
         lineageQuery = "SELECT %s FROM OTUS_unified WHERE otu_id IN (%s)"
-        query = lineageQuery % (','.join(columns), ','.join(["'%s'"%otu for otu in self.otus]))
+        query = lineageQuery % (','.join(['`%s`'%col for col in columns]),
+                                ','.join(["'%s'"%otu for otu in self.otus]))
 
         curs.execute(query)
         records = list(curs.fetchall())
         df = pd.DataFrame(records, columns=columns)
+        print df.head()
         df.set_index('otu_id', inplace=True)
         df0 = pd.DataFrame(zip(self.otus, self.seqP), columns=['otu_id', 'rel_abundance'])
         df0.set_index('otu_id', inplace=True)
