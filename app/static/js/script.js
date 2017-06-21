@@ -7,9 +7,9 @@ var biomSearchFormId = "#biom-search-form",
   allEcoCheckbox = "#id_criteria_0",
   allEcoValue = "1",
 
-  phylumCheckbox = "#id_taxonomy_ranks_1",
-  familyCheckbox = "#id_taxonomy_ranks_4",
-  genusCheckbox = "#id_taxonomy_ranks_5",
+  phylumCheckbox = "#id_taxonomy_ranks_0",
+  familyCheckbox = "#id_taxonomy_ranks_3",
+  genusCheckbox = "#id_taxonomy_ranks_4",
 
   otuTextarea = "#id_otu_text",
   otuTextareaPlaceholder = "Paste OTU table here",
