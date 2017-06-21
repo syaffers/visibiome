@@ -89,4 +89,6 @@ L_MATRIX_DATA_PATH = os.path.join(STATIC_ROOT, 'data/')
 BROKER_URL = "redis://127.0.0.1//"
 
 # Set maximum number of uploadable samples in asingle BIOM file
-MAX_NO_OF_SAMPLES = 50
+BRAYCURTIS_MAX_SAMPLES = 100
+AESAUNIFRAC_MAX_SAMPLES = 100
+GNATUNIFRAC_MAX_SAMPLES = 10

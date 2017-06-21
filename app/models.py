@@ -98,7 +98,8 @@ class BiomSearchJob(models.Model):
         (FILE_VALIDATION_ERROR,
          "File/text content has errors. Check JSON/TSV content."),
         (SAMPLE_COUNT_ERROR,
-         "Too many samples, only up to 10 samples allowed."),
+         "Too many user samples for that analysis type, please refer to the " +
+         "help page for more information on maximum samples sizes"),
         (DUPLICATE_ID_ERROR,
          "Duplicate observation IDs."),
         (FILE_IO_ERROR,

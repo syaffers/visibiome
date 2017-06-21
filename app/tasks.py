@@ -153,25 +153,43 @@ def validate_biom(job, file_path):
     try:
         job.last_run_at = timezone.now()
         otu_table = load_table(file_path)
+        user_sample_size = len(otu_table.ids("sample"))
 
-        if len(otu_table.ids("sample")) <= settings.MAX_NO_OF_SAMPLES:
-            # if it's a rerun, remove any errors but don't add any samples to the DB
-            if job.status == BiomSearchJob.RERUN:
-                job.error_code = BiomSearchJob.NO_ERRORS
-            else:
-                # atomic transaction to speed up saving multiple samples
-                with transaction.atomic():
-                    for sample_name in otu_table.ids(axis="sample"):
-                        sample = BiomSample(name=sample_name, job=job)
-                        sample.save()
-
-            job.status = BiomSearchJob.QUEUED
-            job.save()
-            m_n_betadiversity.delay(job)
-        else:
+        ## check for maximum number of samples violation
+        if user_sample_size > settings.BRAYCURTIS_MAX_SAMPLES and \
+           job.analysis_type == BiomSearchJob.BRAYCURTIS:
             job.status = BiomSearchJob.STOPPED
             job.error_code = BiomSearchJob.SAMPLE_COUNT_ERROR
             job.save()
+            return
+
+        if user_sample_size > settings.GNATUNIFRAC_MAX_SAMPLES and \
+           job.analysis_type == BiomSearchJob.GNATUNIFRAC:
+            job.status = BiomSearchJob.STOPPED
+            job.error_code = BiomSearchJob.SAMPLE_COUNT_ERROR
+            job.save()
+            return
+
+        if user_sample_size > settings.AESAUNIFRAC_MAX_SAMPLES and \
+           job.analysis_type == BiomSearchJob.AESAUNIFRAC:
+            job.status = BiomSearchJob.STOPPED
+            job.error_code = BiomSearchJob.SAMPLE_COUNT_ERROR
+            job.save()
+            return
+
+        # if it's a rerun, remove any errors but don't add any samples to the DB
+        if job.status == BiomSearchJob.RERUN:
+            job.error_code = BiomSearchJob.NO_ERRORS
+        else:
+            # atomic transaction to speed up saving multiple samples
+            with transaction.atomic():
+                for sample_name in otu_table.ids(axis="sample"):
+                    sample = BiomSample(name=sample_name, job=job)
+                    sample.save()
+
+        job.status = BiomSearchJob.QUEUED
+        job.save()
+        m_n_betadiversity.delay(job)
 
     except IOError:
         job.status = BiomSearchJob.STOPPED
@@ -276,9 +294,9 @@ def m_n_betadiversity(job):
 
             if job.analysis_type == BiomSearchJob.BRAYCURTIS:
                 bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job)
-            #elif job.analysis_type == BiomSearchJob.GNATUNIFRAC:
-            #    search_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job,
-            #                   engineClass=gs.GNATsearch)
+            # elif job.analysis_type == BiomSearchJob.GNATUNIFRAC:
+            #     search_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job,
+            #                    engineClass=gs.GNATsearch)
             else:
                 search_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job,
                                engineClass=ae.AESA)

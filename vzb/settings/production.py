@@ -85,4 +85,7 @@ BROKER_URL = "redis://:pizzaisgreat@"\
              "pub-redis-17533.us-east-1-4.3.ec2.garantiadata.com:17533"
 
 # Set maximum number of uploadable samples in asingle BIOM file
-MAX_NO_OF_SAMPLES = 50
+# Set maximum number of uploadable samples in asingle BIOM file
+BRAYCURTIS_MAX_SAMPLES = 100
+AESAUNIFRAC_MAX_SAMPLES = 100
+GNATUNIFRAC_MAX_SAMPLES = 10
