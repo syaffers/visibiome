@@ -39,7 +39,7 @@
       {% endif %}
 
       <p><strong>Analysis Type:</strong> {{ job.get_analysis_type_display }}</p>
-      {% if job.analysis_type == job.GNATUNIFRAC %}
+      {% if job.analysis_type != job.BRAYCURTIS %}
       <p><strong>Range query value:</strong> {{ job.range_query_value }}</p>
       {% endif %}
       <p><strong>Criteria:</strong> {{ criteria }}</p>

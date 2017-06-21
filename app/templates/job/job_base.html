@@ -62,8 +62,12 @@
       {% else %}
         {% url 'app:job_pcoa_reps' job.pk as pcoa_url %}
       {% endif %}
-      <li><span class="nav-divider-custom">PCoA</span></li>
-      <li class="{% active pcoa_url %} {% if job.status < 10 %} disabled {% endif %}">
+      <li class="{% if job.analysis_type == job.AESAUNIFRAC%}hidden{% endif %}">
+        <span class="nav-divider-custom">PCoA</span>
+      </li>
+      <li class="{% active pcoa_url %}
+                 {% if job.status < 10 %} disabled {% endif %}
+                 {% if job.analysis_type == job.AESAUNIFRAC%}hidden{% endif %}">
         <a href="{% if job.status < 10 %} # {% else %}{{ pcoa_url }}{% endif %}">
           Representatives
         </a>
@@ -91,8 +95,12 @@
       {% else %}
         {% url 'app:job_dend_reps' job.pk as dend_url %}
       {% endif %}
-      <li><span class="nav-divider-custom">Dendrogram</span></li>
-      <li class="{% active dend_url %} {% if job.status < 10 %} disabled {% endif %}">
+      <li class="{% if job.analysis_type == job.AESAUNIFRAC%}hidden{% endif %}">
+        <span class="nav-divider-custom">Dendrogram</span>
+      </li>
+      <li class="{% active dend_url %}
+                 {% if job.status < 10 %} disabled {% endif %}
+                 {% if job.analysis_type == job.AESAUNIFRAC%}hidden{% endif %}">
         <a href="{% if job.status < 10 %} # {% else %}{{ dend_url }}{% endif %}">
           Representatives
         </a>

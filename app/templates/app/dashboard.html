@@ -103,7 +103,7 @@
           </td>
           <td>
             {{ job.get_analysis_type_display }}
-            {% if job.analysis_type == job.GNATUNIFRAC %}
+            {% if job.analysis_type != job.BRAYCURTIS %}
               ({{job.range_query_value}})
             {% endif %}
           </td>
