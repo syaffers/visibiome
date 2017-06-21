@@ -323,7 +323,7 @@ def generate_barcharts(searchresults, filepath, selectedRanks):
     ## creating color dicts for consistent coloring
     conn = MySQLdb.connect(**server_db)
     curs = conn.cursor()
-    colors = np.array(mcolors.CSS4_COLORS.values())
+    colors = np.array(mcolors.cnames.values())
     colorDict = {}
     for rank in selectedRanks: ## TODO: create remaining colordicts
         np.random.shuffle(colors)
