@@ -188,6 +188,9 @@ def ranking(request, job_id):
         context["flash"] = msg_storage
         context["barchart_files"] = json_encoder.encode([])
 
+        for i, taxonomy_rank in enumerate(job.taxonomy_ranks.all()):
+            context["taxonomy_rank_{}".format(i + 1)] = taxonomy_rank
+
         return render(request, 'job/ranking.html', context)
     else:
         messages.add_message(request, messages.ERROR, unauthorized_access_message)

@@ -34,9 +34,10 @@ function displayRankings(jobSamplesRankingFile, sampleIds, barchartFiles) {
           $(sampleBarchartsContainer + " .barchart-container").children().remove();
           $(sampleBarchartsContainer + " .barchart-container").html(loaderHtml);
           $.ajax(jobSamplesRankingFile).done(function(data, status) {
-            mpld3.draw_figure("barchart-family-" + (index+1), data[sampleId]["barcharts"]["family"]);
-            mpld3.draw_figure("barchart-genus-" + (index+1), data[sampleId]["barcharts"]["genus"]);
-            mpld3.draw_figure("barchart-phylum-" + (index+1), data[sampleId]["barcharts"]["phylum"]);
+            var selectedTaxons = taxonomySort(Object.keys(data[sampleId]["barcharts"]));
+            mpld3.draw_figure("barchart-left-" + (index+1), data[sampleId]["barcharts"][selectedTaxons[0]]);
+            mpld3.draw_figure("barchart-middle-" + (index+1), data[sampleId]["barcharts"][selectedTaxons[1]]);
+            mpld3.draw_figure("barchart-right-" + (index+1), data[sampleId]["barcharts"][selectedTaxons[2]]);
 
             $(sampleBarchartsContainer + " .barchart-container > span").remove();
           });
@@ -51,6 +52,19 @@ function displayRankings(jobSamplesRankingFile, sampleIds, barchartFiles) {
 
   $($(".sample-tab")[0]).click();
 
+}
+
+function taxonomySort(userTaxonList) {
+  var orderedTaxons = ["kingdom", "phylum", "class", "order", "family", "genus"];
+  var orderedSubTaxons = [];
+
+  orderedTaxons.forEach(function(taxon) {
+    if (userTaxonList.indexOf(taxon) >= 0) {
+      orderedSubTaxons.push(taxon);
+    }
+  });
+
+  return orderedSubTaxons;
 }
 
 function showBarchartsContainer(containerIndex) {

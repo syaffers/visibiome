@@ -20,16 +20,16 @@
   <section id="ranking-barcharts-{{forloop.counter}}" class="ranking-barcharts-section">
     <div class="row">
       <div class="col-xs-4">
-        <h4>Phylum</h4>
-        <div class="barchart-container" id="barchart-phylum-{{forloop.counter}}"></div>
+        <h4>{{taxonomy_rank_1}}</h4>
+        <div class="barchart-container" id="barchart-left-{{forloop.counter}}"></div>
       </div>
       <div class="col-xs-4">
-        <h4>Family</h4>
-        <div class="barchart-container" id="barchart-family-{{forloop.counter}}"></div>
+        <h4>{{taxonomy_rank_2}}</h4>
+        <div class="barchart-container" id="barchart-middle-{{forloop.counter}}"></div>
       </div>
       <div class="col-xs-4">
-        <h4>Genus</h4>
-        <div class="barchart-container" id="barchart-genus-{{forloop.counter}}"></div>
+        <h4>{{taxonomy_rank_3}}</h4>
+        <div class="barchart-container" id="barchart-right-{{forloop.counter}}"></div>
       </div>
     </div>
   </section>
