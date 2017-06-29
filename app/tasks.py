@@ -138,6 +138,41 @@ def bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_
         job.error_code = BiomSearchJob.UNKNOWN_ERROR
         job.save()
 
+def pick_otus(file_path):
+    outdir = os.path.join(os.path.dirname(file_path), 'uclust')
+    if False: ## Making fasta format compatible with qiime (for some reason not working, assume user provides it)
+        import skbio  ## Im using scikit-bio for fasta I/O (comes with qiime)
+        from skbio.sequence import BiologicalSequence
+        print "Preprocessing FASTA " + file_path
+        file_path1 = '%s_1%s' % tuple(os.path.splitext(file_path))
+        outfile = open(file_path1, "w") ## reformatting fasta
+        fastafile = skbio.read(file_path, format='fasta')
+        print "Reading "+file_path
+        print "File handle: " + str(fastafile)
+        for seqcount, rec in enumerate(fastafile):
+            print seqcount + rec.__repr__()
+            try:
+                int(rec.id.split('_')[1]) ## if the sequence adheres to qiime's expected format <sample_id>_<seq_counter>
+                skbio.write(rec, 'fasta', outfile) ## write down the record as is
+            except ValueError, IndexError: ## else: enforce an id format compatible with qiime's otu picker
+                rec1 = BiologicalSequence(rec.sequence, "User_%05d"%seqcount)
+                skbio.write(rec1, 'fasta', outfile)
+        outfile.close()
+        file_path = file_path1
+    print "picking OTUs"
+    ref = '/usr/local/lib/python2.7/dist-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta'  ## FIX!!!
+
+    cmd = 'pick_closed_reference_otus.py -r %s -f -o %s -i %s --suppress_taxonomy_assignment' % (ref, outdir, file_path)
+    os.system(cmd)
+    print cmd
+    biomfile = os.path.join(outdir, 'otu_table.biom')
+    if os.path.exists(biomfile):
+        print "Success", biomfile
+        return biomfile
+    else:
+        print "Error! No biomfile produced in pick_otus"
+
+
 
 @app.task
 def validate_biom(job, file_path):
@@ -152,6 +187,9 @@ def validate_biom(job, file_path):
     """
     try:
         job.last_run_at = timezone.now()
+        print "*** 1 " + file_path
+        if os.path.splitext(file_path)[-1] in ['.fasta', '.fa', 'fna']:
+            file_path = pick_otus(file_path)
         otu_table = load_table(file_path)
         user_sample_size = len(otu_table.ids("sample"))
 
@@ -189,7 +227,7 @@ def validate_biom(job, file_path):
 
         job.status = BiomSearchJob.QUEUED
         job.save()
-        m_n_betadiversity.delay(job)
+        m_n_betadiversity.delay(job, updated_file_path=file_path)
 
     except IOError:
         job.status = BiomSearchJob.STOPPED
@@ -208,13 +246,16 @@ def validate_biom(job, file_path):
 
 
 @app.task
-def m_n_betadiversity(job):
+def m_n_betadiversity(job, updated_file_path=None):
     job.status = BiomSearchJob.PROCESSING
     job.save()
 
     regexp = re.compile("[^A-Za-z0-9]")
     job_dir_path = os.path.split(job.biom_file.path)[0]
-    userbiom = job.biom_file.path
+    if updated_file_path is None:
+        userbiom = job.biom_file.path
+    else:
+        userbiom = updated_file_path ## this is a bit of a hack
 
     # Changing Animal/Human to Animal_Human for database table processing
     # HACK: any way to do this cleaner?
@@ -294,9 +335,9 @@ def m_n_betadiversity(job):
 
             if job.analysis_type == BiomSearchJob.BRAYCURTIS:
                 bray_curtis(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job)
-            # elif job.analysis_type == BiomSearchJob.GNATUNIFRAC:
-            #     search_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job,
-            #                    engineClass=gs.GNATsearch)
+            elif job.analysis_type == BiomSearchJob.GNATUNIFRAC:
+                search_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job,
+                               engineClass=gs.GNATSearch)
             else:
                 search_unifrac(l_data_path, criteria, n_otu_matrix, n_otu_ids, job_dir_path, n_sample_ids, job,
                                engineClass=ae.AESA)
