@@ -110,7 +110,7 @@ class Sample:
         curs.execute(query)
         records = list(curs.fetchall())
         df = pd.DataFrame(records, columns=columns)
-        print df.head()
+        #print df.head()
         df.set_index('otu_id', inplace=True)
         df0 = pd.DataFrame(zip(self.otus, self.seqP), columns=['otu_id', 'rel_abundance'])
         df0.set_index('otu_id', inplace=True)

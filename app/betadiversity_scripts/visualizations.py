@@ -155,9 +155,10 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=
                 ontology_terms[cnt] = ontology_term
                 ontology_ids[cnt] = ontology_id
                 sample_size = float(sample_size_i)
-
-                distance = "%.4f" % m_n_df[sample_id_j][sample_id_i]
-
+                try:
+                    distance = "%.4f" % m_n_df[sample_id_j][sample_id_i]
+                except:
+                    pdb.set_trace()
                 pvalue = pvalues[min(int(m_n_df[sample_id_j][sample_id_i]*10000),9999)]
 
                 study, link = retrieve_source(study_i, sample_event_id)
@@ -520,8 +521,8 @@ def generate_pcoa_file(distmtx, m_n_sample_ids, n_sample_ids, filepath):
     coords = coords[idxs_descending]
 
     # from google10c
-    print "Distance Matrix distmtx"
-    print distmtx, coords
+    #print "Distance Matrix distmtx"
+    #print distmtx, coords
     print 'm_n_sample_ids' + str(len(m_n_sample_ids)), m_n_sample_ids
     print "n_sample_ids" + str(len(n_sample_ids)), n_sample_ids
     colormap = [

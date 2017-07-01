@@ -35,11 +35,12 @@ class AESA(SearchEngine):
         d = f['distance matrix']
         self.dm = da.from_array(d, chunks=(1000, 1000))
 
-    def search(self, threshold=0.3, rare=True):
+    def search(self, threshold=0.3, rare=True): ## wrapper
         self.metric = EMDUnifrac(rare=rare, l_data_path=self.l_data_path)
         self.db = MicrobiomeSQLDB(self.l_data_path, self.curs)
         self.results = []
-        self.rankings = pd.concat([self.search1(sample, threshold) for sample in self.userSamples])
+        self.rankings = pd.concat([self.search1(sample, threshold) for sample in self.userSamples], axis=1)
+        pdb.set_trace()
         ## ideally rewrite visualizations (generate_barcharts so to deprecate GNATresults, just should use rankings)
         #print self.metric.computedDistances.keys()
     def search1(self, q, r): # query here: sample
@@ -66,7 +67,7 @@ class AESA(SearchEngine):
                     if dqpoMax < r:  ## close enough to be a solution
                         #solutions.add((o, (max(0,dqpoMin), dqpoMax)))
                         osample = self.db.get_sample(o)
-                        assert osample.sampleID == self.db.sampleIDs[o], "double checking"
+                        #assert osample.sampleID == self.db.sampleIDs[o], "double checking"
                         dqo = self.metric.dist(q, osample)
                         solutionDict[self.db.sampleIDs[o]] = dqo
                         solutions.append((dqo, osample))
