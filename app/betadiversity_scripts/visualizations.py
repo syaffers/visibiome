@@ -155,10 +155,7 @@ def generate_samples_metadata(m_n_df, n_sample_ids, filepath, top=20, barcharts=
                 ontology_terms[cnt] = ontology_term
                 ontology_ids[cnt] = ontology_id
                 sample_size = float(sample_size_i)
-                try:
-                    distance = "%.4f" % m_n_df[sample_id_j][sample_id_i]
-                except:
-                    pdb.set_trace()
+                distance = "%.4f" % m_n_df[sample_id_j][sample_id_i]
                 pvalue = pvalues[min(int(m_n_df[sample_id_j][sample_id_i]*10000),9999)]
 
                 study, link = retrieve_source(study_i, sample_event_id)

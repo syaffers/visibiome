@@ -40,7 +40,7 @@ class AESA(SearchEngine):
         self.db = MicrobiomeSQLDB(self.l_data_path, self.curs)
         self.results = []
         self.rankings = pd.concat([self.search1(sample, threshold) for sample in self.userSamples], axis=1)
-        pdb.set_trace()
+        #pdb.set_trace()
         ## ideally rewrite visualizations (generate_barcharts so to deprecate GNATresults, just should use rankings)
         #print self.metric.computedDistances.keys()
     def search1(self, q, r): # query here: sample
