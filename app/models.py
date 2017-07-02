@@ -249,8 +249,8 @@ class BiomSearchForm(forms.ModelForm):
         }
 
     biom_file = forms.FileField(
-        label="or upload your BIOM file",
-        help_text="Maximum 10 samples (TSV/JSON/HDF5/BIOM format)",
+        label="or upload your BIOM or FASTA file",
+        help_text="Max. 10 samples for GNAT/UniFrac, 100 samples for AESA/UniFrac & Bray-Curtis",
         required=False,
     )
 
@@ -261,7 +261,7 @@ class BiomSearchForm(forms.ModelForm):
     }
     otu_text = forms.CharField(
         label="Paste your OTU table",
-        help_text="Maximum 10 samples (TSV/JSON/HDF5/BIOM format)",
+        help_text="Max. 10 samples for GNAT/UniFrac, 100 samples for AESA/UniFrac & Bray-Curtis",
         widget=forms.Textarea(attrs=otu_text_attrs),
         required=False
     )

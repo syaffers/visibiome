@@ -43,7 +43,7 @@
                   title="{{ form.otu_text.help_text }}">
                   {{ form.otu_text.label }}
             </abbr>
-            <br><em>GreenGenes 13.5 OTUs only!</em>
+            <br><em>BIOM: GreenGenes 13.5 OTUs only</em>
           </label>
           <div class="col-xs-12 col-sm-9">
             {{ form.otu_text.as_widget }}
@@ -64,7 +64,11 @@
                   title="{{ form.biom_file.help_text }}">
                   {{ form.biom_file.label }}
             </abbr>
-            <br><em>GreenGenes 13.5 OTUs only!</em>
+            <br><em>BIOM: GreenGenes 13.5 OTUs only</em>
+            <br>
+            <em>
+              <a href="http://qiime.org/documentation/file_formats.html#post-split-libraries-fasta-file-overview">FASTA: in QIIME compatible format</a>
+            </em>
           </label>
           <div class="col-xs-12 col-sm-9">
             {{ form.biom_file.as_widget }}
