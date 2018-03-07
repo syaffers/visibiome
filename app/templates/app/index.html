@@ -100,7 +100,7 @@
                     <div class="checkbox checkbox-criteria">
                       {{ ecosystem }}
                     </div>
-                {% if forloop.counter|divisibleby:3 %}
+                {% if forloop.counter|divisibleby:3 or forloop.last %}
                   </div>
                 {% endif %}
               {% endfor %}
@@ -196,7 +196,7 @@
                     <div class="checkbox checkbox-taxon">
                       {{ taxonomy_rank }}
                     </div>
-                {% if forloop.counter|divisibleby:2 %}
+                {% if forloop.counter|divisibleby:2 or forloop.last %}
                   </div>
                 {% endif %}
               {% endfor %}
