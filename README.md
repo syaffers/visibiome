@@ -1,21 +1,33 @@
 # Visibiome: Microbiome Search and Visualization Tool #
 
-## Using the VirtualBox image
-We recommend users who would like to use Visibiome to download the prepared
-VirtualBox image. This removes the necessary configuration and provides a
-barebones usable deployment complete with databases, pre-calculated matrix data
-and the webserver itself.
+## Using the VirtualBox image ##
+
+We recommend users who would like to use Visibiome locally to download the
+prepared VirtualBox image. This removes the necessary configuration and provides
+a barebones usable deployment complete with databases, pre-calculated matrix
+data and the webserver itself.
 
 The Visibiome distribution can be found at https://s3.amazonaws.com/visibiome-data-files/Visibiome-amd64.vdi.gz
 
-## QIIME-based Ubuntu VM Setup ##
+## QIIME-based Ubuntu VM/EC2 Setup ##
+
 There are three possible deployment settings (indicated in this document with a
   placeholder `<SETTING>`). The settings are `local`, `deployment`, `production`
   which is stored under `vzb/settings`. Any lines showing the `$` sign at the
   start are terminal commands while lines that begin with `...` are parts of
   a file.
 
-1. Start a VM or EC2 server with QIIME pre-installed.
+### Installing Visibiome on fresh Ubuntu distributions ###
+
+If you are serving Visibiome using a fresh Ubuntu installation, start with the
+following installations:
+
+        $ sudo apt-get install git python-pip mysql-server libmysqld-dev
+
+### Main installation procedure ###
+
+1. Start a VM or EC2 server with the QIIME community image or a fresh Ubuntu
+  image (see subsection above).
 
 2. Setup a Redis cache. For distributed task queueing try RedisLabs, AWS
   ElastiCache is a little difficult to configure. For local redis deployment:
@@ -27,7 +39,9 @@ There are three possible deployment settings (indicated in this document with a
         $ git clone https://syaffers@bitbucket.org/syaffers/visibiome.git
         $ cd visibiome
 
-4. Install app dependencies (you may need superuser credentials)
+4. Install app dependencies (you may need superuser credentials). If you are
+  using the QIIME EC2 community image, remove `qiime==1.9.1` from the
+  `requirements.txt` file to avoid reinstalling packages.
 
         $ pip install -r requirements.txt
 
@@ -38,8 +52,10 @@ There are three possible deployment settings (indicated in this document with a
         backend : agg
 
 6. Visibiome handles many relational database systems but we use MySQL. Edit
-  `vzb/settings/<SETTING>.py` to update the webserver database configuration. Be
-  sure to create the database before doing the following steps
+  `vzb/settings/<SETTING>.py` to update the webserver database configuration.
+  You only really eed to edit the `NAME`, `USER` and `PASSWORD` variables, keep
+  the others as it is unless you know what you are doing. Be sure to create the
+  database before doing the following steps.
 
         ...
         DATABASES = {
@@ -96,15 +112,19 @@ There are three possible deployment settings (indicated in this document with a
         $ python manage.py createsuperuser --settings=vzb.settings.<SETTING>
 
 12. Download pre-calculated distance matrix files into the `staticfiles/data`
-  directory (for local deployment, put into `app/static/data/` folder)
+  directory (for local deployment, copy the downloaded files into the
+  `app/static/data/` folder)
 
         $ cd staticfiles/data (or app/static/data for local)
         $ for f in $(cat download_these_files.txt); do wget $f; done;
         $ gunzip 10k_bray_curtis_adaptive.npy.gz
 
-### Additional Settings for production
+### Additional Settings for Development and Production ###
+
 1. Edit the `prjroot` variable in `uwsgi.ini` file to configure paths correctly.
-  The `prjroot` value should point to the visibiome folder:
+  The `visibiome` folder is not in the `/home/ubuntu` directory then you should
+  edit the `prjroot` variable. The `prjroot` value should point to the visibiome
+  folder:
 
         ...
         prjroot        = /home/ubuntu/visibiome/
@@ -120,17 +140,19 @@ There are three possible deployment settings (indicated in this document with a
         include          /home/ubuntu/visibiome/uwsgi_params;
         ...
 
-#### Using `nginx`
+#### Using `nginx` ####
+
 1. Install nginx
 
         $ sudo apt-get install nginx
 
-2. Stop any other web servers sub as Apache
+2. Stop any other web servers such as Apache
 
         $ sudo service apache2 stop
 
 3. Copy the nginx configuration into `sites-available` and link to
-  `sites-enabled`
+  `sites-enabled`. If you get an error while restarting `nginx`, check that you
+  have not misspelled variables in the configuration file.
 
         $ sudo cp vzb_nginx.conf /etc/nginx/sites-available/
         $ sudo ln -s /etc/nginx/sites-available/vzb_nginx.conf /etc/nginx/sites-enabled/
@@ -142,18 +164,19 @@ There are three possible deployment settings (indicated in this document with a
 
         http://<SERVER_IP_ADDRESS>:8000/static/css/style.css
 
-5. Add the server IP address into the appropriate settings file you are using
-  (e.g. `vzb/settings/development.py`):
+5. Add the server IP address (or domain name, if you have one) into the
+  appropriate settings file you are using (e.g. `vzb/settings/development.py`):
 
         ...
         ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '<SERVER_IP_ADDRESS>']
         ...
 
-#### Automating guest job deletions (optional)
+#### Automating guest job deletions (optional) ####
+
 1. Commands have been configured for guest job deletions. By default, jobs
   expire daily although this can be changed by editing the `k` value in
-  `app/management/commands/deleteguestjobs.py`. `k = 1` denotes that jobs expire
-  daily, `k = 2` denotes that jobs expire every 2 days and so on
+  `app/management/commands/deleteguestjobs.py`. `k = 1` denotes that jobs
+  expire daily, `k = 2` denotes that jobs expire every 2 days and so on
 
         ...
         def handle(self, *args, **options):
@@ -176,8 +199,8 @@ There are three possible deployment settings (indicated in this document with a
 5. Alternatively, you can manually run the shell script without the need to
   setup a cron job although this is not repeated automatically.
 
+## Running a local server ##
 
-## Running a local server
 1. Start worker
 
         $ celery -A vzb worker
@@ -188,28 +211,25 @@ There are three possible deployment settings (indicated in this document with a
 
 3. Check your webserver IP at port 8000 and hope for the best 😎
 
-## Running a development or production server
-14. Start `development` or `production` server
+## Running a development or production server ##
+
+1. Start `development` or `production` server
 
         $ uwsgi --ini uwsgi.ini
 
-14. Check your webserver IP at port 8000 and hope for the best 😎
+2. Check your webserver IP at port 8000 and hope for the best 😎
 
-## Stopping servers
+## Stopping servers ##
+
 - Local servers: `Ctrl-C` in the window where `python manage.py runserver` was
-called
+  called
+
 - Development or production server:
 
         $ uwsgi --stop /tmp/vzb-master.pid
 
-## Installing Visibiome on fresh Ubuntu distributions ##
-1. Start with the following minimal installations:
+## Using the Makefile ##
 
-        $ sudo apt-get install git python-pip mysql-server libmysqld-dev
-
-2. Follow the tutorial above for QIIME-based VMs
-
-## Using the Makefile
 The `Makefile` in this project is provided as quick tools from the developer.
 These commands are aliases for sets of commands to perform initiation,
 termination and resets of deployments. Use at your own risk and always check the
