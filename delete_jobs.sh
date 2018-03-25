@@ -1,3 +1,3 @@
 #! /bin/bash
-cd /home/qiime/visibiome
+cd /home/ubuntu/visibiome
 python manage.py deleteguestjobs >> logs/delete.log
