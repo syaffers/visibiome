@@ -23,7 +23,7 @@
       {% if job.is_public %}
       <p>
         <strong>Public link:</strong>
-        <a href="/public/jobs/9/details">{{request.META.HTTP_HOST}}/public/jobs/{{job.id}}/details</a>
+        <a href="/public/jobs/{{job.id}}/details">{{request.META.HTTP_HOST}}/public/jobs/{{job.id}}/details</a>
       </p>
       {% else %}
       <form action="{% url 'app:make_job_public' job.pk %}" method="post">
