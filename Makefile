@@ -7,6 +7,12 @@ create-superuser-dev:
 create-superuser-local:
 	python manage.py createsuperuser --settings=vzb.settings.local
 
+delete-guest-jobs-local:
+	python manage.py deleteguestjobs --settings=vzb.settings.local >> logs/delete.log
+
+delete-guest-jobs-dev:
+	python manage.py deleteguestjobs --settings=vzb.settings.development >> logs/delete.log
+
 load-init-data-dev:
 	python manage.py loaddata initial.json --settings=vzb.settings.development
 
@@ -32,7 +38,7 @@ reset-local:
 	python manage.py migrate --settings=vzb.settings.local
 	python manage.py loaddata initial.json --settings=vzb.settings.local
 	python manage.py createsuperuser --settings=vzb.settings.local
-	# a really hard password
+	# Provide a really hard password
 
 restart-dev:
 	uwsgi --stop /tmp/vzb-master.pid
